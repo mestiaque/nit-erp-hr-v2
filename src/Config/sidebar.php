@@ -1,0 +1,438 @@
+<?php
+
+return [
+
+    // HR Center
+    [
+        'group_title' => '',
+        [
+            'title'      => 'HR Management',
+            'icon'       => 'fa-solid fa-people-group',
+            'icon_color' => 'text-primary',
+            'permission' => '',
+            'order'      => 10,
+            'children'   => [
+                [
+                    'title'      => 'Basic Info.',
+                    'icon'       => 'fa-solid fa-gear',
+                    'icon_color' => 'text-info',
+                    'permission' => '',
+                    'children'   => [
+                        [
+                            'title'      => 'Classification',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/classifications',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_classification',
+                        ],
+                        [
+                            'title'      => 'Block/Line',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/floor-lines',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_block',
+                        ],
+
+                        [
+                            'title'      => 'Bonus Policy',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/bonus-policies',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_bonus_policy',
+                        ],
+                        [
+                            'title'      => 'Bonus Title',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/bonus-titles',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_bonus_title',
+                        ],
+                        [
+                            'title'      => 'Country',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/countries',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_country',
+                        ],
+                        [
+                            'title'      => 'Division',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/divisions',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_division',
+                        ],
+
+                        [
+                            'title'      => 'District',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/districts',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_district',
+                        ],
+                        [
+                            'title'      => 'Po. Station',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/police-stations',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_police_station',
+                        ],
+                        [
+                            'title'      => 'Department',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/departments',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_department',
+                        ],
+                        [
+                            'title'      => 'Designation',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/designations',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_designation',
+                        ],
+                        [
+                            'title'      => 'Factory',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/factories',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_factory',
+                        ],
+                        [
+                            'title'      => 'Leave Info.',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/leave-infos',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_leave_info',
+                        ],
+                        [
+                            'title'      => 'Marital Status',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/marital-statuses',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_marital_status',
+                        ],
+
+                        [
+                            'title'      => 'Production Bonus(%)',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/production-bonuses',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_bonus',
+                        ],
+                        [
+                            'title'      => 'Religion',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/religions',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_religion',
+                        ],
+                        [
+                            'title'      => 'Sex',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/sexes',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_sex',
+                        ],
+                        [
+                            'title'      => 'Salary Keys',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/salary-keys',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_salary_keys',
+                        ],
+                        [
+                            'title'      => 'Salary Payment Mode',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/payment-methods',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_salary_payment_mode',
+                        ],
+                        [
+                            'title'      => 'Shift',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/shifts',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_shift',
+                        ],
+                        [
+                            'title'      => 'Section',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/sections',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_section',
+                        ],
+                        [
+                            'title'      => 'Sub Section',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/sub-sections',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_sub_section',
+                        ],
+                        [
+                            'title'      => 'Weeks',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/weeks',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_week',
+                        ],
+                        [
+                            'title'      => 'Working Place',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/working-places',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_working_place',
+                        ],
+                    ]
+                ],
+                [
+                    'title'      => 'Employee',
+                    'icon'       => 'fa-solid fa-arrow-right',
+                    'route'      => '/admin/hr-center/employees',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_employee'
+                ],
+                [
+                    'title'      => 'Attendance',
+                    'icon'       => 'fa-solid fa-calendar-check',
+                    'route'      => '/admin/hr-center/attendances',
+                    'icon_color' => 'text-success',
+                    'permission' => 'hr_attendance',
+                ],
+                [
+                    'title'      => 'Factory Holiday',
+                    'icon'       => 'fa-solid fa-arrow-right',
+                    'route'      => '/admin/hr-center/holidays',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_factory_holiday',
+                ],
+                [
+                    'title'      => 'Weekend to Regular',
+                    'icon'       => 'fa-solid fa-arrow-right',
+                    'route'      => '/admin/hr-center/regular-to-weekend',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_regular_to_weekend',
+                ],
+                [
+                    'title'      => 'Shift Rostering',
+                    'icon'       => 'fa-solid fa-calendar-days',
+                    'route'      => '/admin/hr-center/rosters',
+                    'icon_color' => 'text-info',
+                    'permission' => 'hr_shift_roastering',
+                ],
+                [
+                    'title'      => 'Reports',
+                    'icon'       => 'fa-solid fa-arrow-right',
+                    'icon_color' => 'text-warning',
+                    'permission' => '',
+                    'children'   => [
+                        [
+                            'title'      => 'Employee',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/employee',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_employee_report',
+                        ],
+                        [
+                            'title'      => 'Monthly',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/monthly',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_monthly_report',
+                        ],
+                        [
+                            'title'      => 'Personal File',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/personal-file',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_personal_file_report',
+                        ],
+                        // [
+                        //     'title'      => 'Attendance',
+                        //     'icon'       => 'fa-solid fa-arrow-right',
+                        //     'route'      => '/admin/hr-center/reports/attendance',
+                        //     'icon_color' => 'text-warning',
+                        //     'permission' => 'hr_attendance_report',
+                        // ],
+                        [
+                            'title'      => 'Job Card Report',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/job-card-report',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_job_card_report',
+                        ],
+                        [
+                            'title'      => 'Attendance Report',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/attendance-report',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_attendance_report',
+                        ],
+                        [
+                            'title'      => 'Attendance Report With OT',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/attendance-with-ot',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_attendance_with_ot_report',
+                        ],
+                        [
+                            'title'      => 'Monthly Late Report',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/monthly-late-report',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_monthly_late_report',
+                        ],
+                        [
+                            'title'      => 'Daily Manpower Report',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/daily-manpower-report',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_daily_manpower_report',
+                        ],
+                        [
+                            'title'      => 'Tiffin / Diner / Night',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/meal-report',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_meal_report',
+                        ],
+                        [
+                            'title'      => 'Bonus Sheet',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'icon_color' => 'text-success',
+                            'permission' => '',
+                            'children'   => [
+                                [
+                                    'title'      => 'Fixed',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=fixed',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_bonus_sheet_fixed',
+                                ],
+                                [
+                                    'title'      => 'Production',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=production',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_bonus_sheet_production',
+                                ],
+                            ],
+                        ],
+                        [
+                            'title'      => 'Salary Report',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'icon_color' => 'text-success',
+                            'permission' => '',
+                            'children'   => [
+                                [
+                                    'title'      => 'Fixed Salary',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/salary-report?report_type=fixed',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_salary_report_fixed',
+                                ],
+                                [
+                                    'title'      => 'Bonus Salary',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/salary-report?report_type=bonus',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_salary_report_bonus',
+                                ],
+                                [
+                                    'title'      => 'Production Salary',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/salary-report?report_type=production',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_salary_report_production',
+                                ],
+                                [
+                                    'title'      => 'Wages & Salary Summary',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/salary-report?report_type=wages-salary-summary',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_salary_report_wage',
+                                ],
+                            ],
+                        ],
+                        [
+                            'title'      => 'Pro. Job Card',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/reports/pro-job-card',
+                            'icon_color' => 'text-success',
+                            'permission' => 'hr_pro_job_card',
+                        ],
+                        [
+                            'title'       => 'Pay Slip Report',
+                            'icon'        => 'fa-solid fa-file-invoice-dollar',
+                            'route'       => '/admin/hr-center/reports/pay-slip',
+                            'icon_color'  => 'text-danger',
+                            'permission'  => 'pay_slip_report',
+                        ],
+                    ]
+                ],
+
+
+                [
+                    'title'      => 'Production Rate',
+                    'icon'       => 'fa-solid fa-arrow-right',
+                    'icon_color' => 'text-info',
+                    'permission' => '',
+                    'children'   => [
+                        [
+                            'title'      => 'Linking',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=linking',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_linking',
+                        ],
+                        [
+                            'title'      => 'Triming',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=triming',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_triming',
+                        ],
+
+                        [
+                            'title'      => 'Mending',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=mending',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_mending',
+                        ],
+                        [
+                            'title'      => 'Hole/Button/BarTack',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=hole-button-bartack',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_hole_button_bartack',
+                        ],
+                        [
+                            'title'      => 'Sewing',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=sewing',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_sewing',
+                        ],
+                        [
+                            'title'      => 'Ironing',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=ironing',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_ironing',
+                        ],
+                        [
+                            'title'      => 'Zipper',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/production-rate?process=zipper',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_production_rate_zipper',
+                        ],
+
+                    ]
+                ],
+            ]
+        ],
+    ],
+
+];
+
