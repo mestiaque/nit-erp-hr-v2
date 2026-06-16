@@ -5,9 +5,9 @@ namespace ME\Hr\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
-use ME\Hr\Models\HrAttendance as Attendance;
-use ME\Hr\Models\HrEmployee as Employee;
-use ME\Hr\Models\HrShift as Shift;
+use ME\Hr\Models\HrAttendance;
+use ME\Hr\Models\HrEmployee;
+use ME\Hr\Models\HrShift;
 
 use Illuminate\Routing\Controller;
 use function view;
@@ -22,7 +22,7 @@ class AttendanceController extends Controller
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
 
-        $employees = Employee::query();
+        $employees = HrEmployee::query();
         if ($employee) {
             $employees->where(function($q) use ($employee) {
                 $q->where('name', 'like', "%$employee%")
@@ -46,7 +46,7 @@ class AttendanceController extends Controller
             $dates = [$date];
         }
 
-        $attendanceQuery = Attendance::query();
+        $attendanceQuery = HrAttendance::query();
         if ($status) {
             $attendanceQuery->where('status', $status);
         }
@@ -59,7 +59,7 @@ class AttendanceController extends Controller
             return $a->employee_id . '_' . $a->date;
         });
 
-        $shiftMap = Shift::all()->keyBy('id');
+        $shiftMap = HrShift::all()->keyBy('id');
 
         $attendanceList = [];
         foreach ($employees as $emp) {
@@ -95,17 +95,17 @@ class AttendanceController extends Controller
 
     public function edit($userId, $date)
     {
-        $attendance = Attendance::where('employee_id', $userId)->where('date', $date)->first();
-        $employee = Employee::query()->findOrFail($userId);
-        $shift = Shift::find($employee->shift_id);
+        $attendance = HrAttendance::where('employee_id', $userId)->where('date', $date)->first();
+        $employee = HrEmployee::query()->findOrFail($userId);
+        $shift = HrShift::find($employee->shift_id);
         return view('hr::attendances.edit', compact('attendance', 'employee', 'shift', 'date'));
     }
 
     public function update(Request $request, $userId, $date)
     {
-        $employee = Employee::query()->findOrFail($userId);
-        $shift = Shift::find($employee->shift_id);
-        $attendance = Attendance::firstOrNew(['employee_id' => $userId, 'date' => $date]);
+        $employee = HrEmployee::query()->findOrFail($userId);
+        $shift = HrShift::find($employee->shift_id);
+        $attendance = HrAttendance::firstOrNew(['employee_id' => $userId, 'date' => $date]);
         $attendance->in_time = $request->input('in_time');
         $attendance->out_time = $request->input('out_time');
         $attendance->remarks = $request->input('remarks');

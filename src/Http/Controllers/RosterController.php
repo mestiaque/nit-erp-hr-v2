@@ -4,19 +4,19 @@ namespace ME\Hr\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use ME\Hr\Models\HrShiftRosterEmployee as Roaster;
-use ME\Hr\Models\HrEmployee as Employee;
-use ME\Hr\Models\HrShift as Shift;
-use ME\Hr\Models\HrSection as Section;
-use ME\Hr\Models\HrSubSection as SubSection;
+use ME\Hr\Models\HrShiftRosterEmployee;
+use ME\Hr\Models\HrEmployee;
+use ME\Hr\Models\HrShift;
+use ME\Hr\Models\HrSection;
+use ME\Hr\Models\HrSubSection;
 
 class RosterController extends Controller
 {
     public function index()
     {
-        $rosters = Roaster::with(['employee', 'shift'])->orderBy('roster_date', 'desc')->paginate(30);
-        $employees = Employee::query()->get();
-        $masterData = \App\Services\HrOptionsService::getOptions();
+        $rosters = HrShiftRosterEmployee::with(['employee', 'shift'])->orderBy('roster_date', 'desc')->paginate(30);
+        $employees = HrEmployee::query()->get();
+        $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
         $shifts = $masterData['shifts'];
         $sections = $masterData['sections'];
         $subSections = $masterData['subSections'];
@@ -26,8 +26,8 @@ class RosterController extends Controller
 
     public function create()
     {
-        $employees = Employee::query()->get();
-        $masterData = \App\Services\HrOptionsService::getOptions();
+        $employees = HrEmployee::query()->get();
+        $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
         $shifts = $masterData['shifts'];
         $sections = $masterData['sections'];
         $subSections = $masterData['subSections'];
@@ -42,7 +42,7 @@ class RosterController extends Controller
             'date' => 'required|date',
             'remarks' => 'nullable|string',
         ]);
-        Roaster::create([
+        HrShiftRosterEmployee::create([
             'employee_id' => $data['employee_id'] ?? null,
             'shift_id' => $data['shift_id'],
             'roster_date' => $data['date'],
@@ -53,7 +53,7 @@ class RosterController extends Controller
 
     public function destroy($id)
     {
-        $roster = Roaster::findOrFail($id);
+        $roster = HrShiftRosterEmployee::findOrFail($id);
         $roster->delete();
         return redirect()->route('hr-center.rosters.index')->with('success', 'Roster deleted.');
     }

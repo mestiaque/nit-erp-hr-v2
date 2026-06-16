@@ -4,7 +4,7 @@
     $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
     $na = $t('প্রযোজ্য নয়', 'N/A');
 
-    $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+    $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
     $employeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
     $companyName = $employeeData['company_name'];
     $companyAddress = $employeeData['company_address'];

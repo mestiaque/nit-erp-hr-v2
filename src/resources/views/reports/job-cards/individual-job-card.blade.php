@@ -18,14 +18,14 @@
 @foreach($employees as $employee)
     @php
         $factoryNo = hr_factory('factory_no');
-        $attendancePack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+        $attendancePack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
             $employee->id,
             $from,
             $to,
         );
         $attendance = $attendancePack['attendance'];
         $summary = $attendancePack['summary'];
-        $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+        $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
         $employeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
     @endphp
 

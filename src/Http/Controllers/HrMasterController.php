@@ -8,10 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-use ME\Hr\Models\HrClassification as Classification;
-use ME\Hr\Models\HrDepartment as Department;
-use ME\Hr\Models\HrFloorLine as FloorLine;
-use ME\Hr\Models\HrSection as Section;
+use ME\Hr\Models\HrClassification;
+use ME\Hr\Models\HrDepartment;
+use ME\Hr\Models\HrFloorLine;
+use ME\Hr\Models\HrSection;
 
 class HrMasterController extends Controller
 {
@@ -229,22 +229,22 @@ class HrMasterController extends Controller
     private function resolveAttributeLikeOptions(string $filter): array
     {
         return match ($filter) {
-            'department', 'departments' => Department::query()
+            'department', 'departments' => HrDepartment::query()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->pluck('name', 'id')
                 ->toArray(),
-            'section', 'sections' => Section::query()
+            'section', 'sections' => HrSection::query()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->pluck('name', 'id')
                 ->toArray(),
-            'classification', 'classifications' => Classification::query()
+            'classification', 'classifications' => HrClassification::query()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->pluck('name', 'id')
                 ->toArray(),
-            'line', 'lines' => FloorLine::query()
+            'line', 'lines' => HrFloorLine::query()
                 ->where('status', 'active')
                 ->orderBy('line_name')
                 ->pluck('line_name', 'id')

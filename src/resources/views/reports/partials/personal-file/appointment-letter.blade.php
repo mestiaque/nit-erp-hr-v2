@@ -32,7 +32,7 @@
         ? (data_get($sectionAttr, 'bn_name') ?? data_get($sectionAttr, 'name') ?? data_get($employee, 'section_bn_name') ?? data_get($employee, 'section_name') ?? $na)
         : (data_get($sectionAttr, 'name') ?? data_get($employee, 'section_name') ?? data_get($sectionAttr, 'bn_name') ?? data_get($employee, 'section_bn_name') ?? $na);
 
-    $masterData = \App\Services\HrOptionsService::getOptions();
+    $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
     $employeeOthers = $employee->otherInfo();
 
     $jobType = $isBangla

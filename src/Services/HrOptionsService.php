@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace ME\Hr\Services;
 
 class HrOptionsService
 {
@@ -347,7 +347,7 @@ class HrOptionsService
                     return [];
                 }
 
-                $attendancePack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                $attendancePack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                     $employee->id,
                     $from,
                     $to

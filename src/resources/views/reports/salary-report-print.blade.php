@@ -62,10 +62,10 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
     $address = general()->address_one ?? '';
     $fmt     = fn($v) => number_format((float)$v, 2);
     $byDept  = $employees->groupBy('department_id');
-    $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+    $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
 
     // Use central HR options service for all lookups
-    $hrOptions = \App\Services\HrOptionsService::getOptions();
+    $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
     $departmentMap = collect($hrOptions['departments'])->pluck('name', 'id');
     $sectionMap = collect($hrOptions['sections'])->pluck('name', 'id');
     $subSectionMap = collect($hrOptions['subSections'])->pluck('name', 'id');
@@ -97,7 +97,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
         $sal          = hr_employee_salary($emp);
         $otRate       = (float) ($employeeData['salary']['ot_rate'] ?? $sal['ot_rate'] ?? 0);
 
-        $attendancePack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+        $attendancePack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
             $emp->id,
             $from,
             $to

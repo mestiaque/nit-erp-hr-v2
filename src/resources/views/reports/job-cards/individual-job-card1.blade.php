@@ -90,8 +90,8 @@
                 $isLocked = !empty($other[$lockKey][$key]);
             }
             // Employee data
-            $hrOptions = \App\Services\HrOptionsService::getOptions();
-            $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+            $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
             $employeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
             $language = $language ?? data_get($request ?? null, 'language', 'bn');
             $isBangla = $language === 'bn';

@@ -43,7 +43,7 @@
 
 @php
     $factoryNo = hr_factory('factory_no');
-    $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+    $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
     $employeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
     $language = $language ?? data_get($request ?? null, 'language', 'bn');
     $isBangla = $language === 'bn';

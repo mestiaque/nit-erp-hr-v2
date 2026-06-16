@@ -10,8 +10,8 @@
         @php
             // প্রথম কর্মী থেকে section metadata
             $firstEmp = $sectionEmps->first();
-            $hrOptions = \App\Services\HrOptionsService::getOptions();
-            $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+            $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
             $employeeData = $employeeDataFn($firstEmp, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
             $companyName = $employeeData['company_name'] ?? $t('প্রযোজ্য নয়', 'N/A');
             $companyAddress = $employeeData['company_address'] ?? $t('প্রযোজ্য নয়', 'N/A');
@@ -65,7 +65,7 @@
             <tbody>
                 @foreach($sectionEmps as $employee)
                     @php
-                        $data = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                        $data = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                             $employee->id,
                             $from,
                             $to

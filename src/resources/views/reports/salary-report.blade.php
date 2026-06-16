@@ -17,7 +17,7 @@
     $salaryReportLabel = $reportTypes[$salaryReportType] ?? ucfirst($salaryReportType);
 
     // Use central HR options service for all lookups
-    $hrOptions = \App\Services\HrOptionsService::getOptions();
+    $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
     $departmentMap = collect($hrOptions['departments'])->pluck('name', 'id');
     $sectionMap = collect($hrOptions['sections'])->pluck('name', 'id');
     $subSectionMap = collect($hrOptions['subSections'])->pluck('name', 'id');

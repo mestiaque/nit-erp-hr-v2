@@ -8,13 +8,13 @@
         $bySection = $employees->groupBy('section_id');
 
         // 🔥 ONE CALL → all attendance
-        $attendanceData = \App\Services\EmployeeAttendanceService::getSectionWiseAttendance(
+        $attendanceData = \ME\Hr\Services\EmployeeAttendanceService::getSectionWiseAttendance(
             $employees->pluck('id')->toArray(),
             $from,
             $to
         );
 
-        $options = \App\Services\HrOptionsService::getOptions($request ?? null);
+        $options = \ME\Hr\Services\HrOptionsService::getOptions($request ?? null);
     @endphp
 
     @foreach($bySection as $sectionId => $sectionEmps)

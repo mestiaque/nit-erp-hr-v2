@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace ME\Hr\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -72,7 +72,7 @@ class JobcardDataService {
             $dStr = $date instanceof Carbon ? $date->toDateString() : $date;
             $att = $getAtt($employee->id, $dStr);
             // Fetch holidays from HrOptionsService
-            $hrOptions = \App\Services\HrOptionsService::getOptions();
+            $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
             $holidays = collect($hrOptions['holidays'] ?? []);
             // Fetch shift from employee
             $shift = $employee->shift ?? null;
@@ -227,7 +227,7 @@ class JobcardDataService {
             ->groupBy(fn ($a) => $a->employee_id . '_' . $a->date);
 
         // Holidays logic (mimic old logic, adjust as needed)
-        $hrOptions = \App\Services\HrOptionsService::getOptions();
+        $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
         $holidays = collect($hrOptions['holidays'] ?? []);
 
         // Shift logic (mimic old logic, adjust as needed)

@@ -2,43 +2,43 @@
 
 namespace ME\Hr\Http\Controllers;
 
-use ME\Hr\Models\HrEmployee as User;
+use ME\Hr\Models\HrEmployee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-use ME\Hr\Models\HrClassification as Classification;
-use ME\Hr\Models\HrDepartment as Department;
-use ME\Hr\Models\HrDesignation as Designation;
-use ME\Hr\Models\HrEmployeeLeave as Leave;
-use ME\Hr\Models\HrEmployeeAddress as EmployeeAddress;
-use ME\Hr\Models\HrEmployeeBasicInfo as EmployeeBasicInfo;
-use ME\Hr\Models\HrEmployeeSalaryIncrement as EmployeeIncrement;
-use ME\Hr\Models\HrEmployeeSalaryInfo as EmployeeSalaryInfo;
-use ME\Hr\Models\HrFloorLine as FloorLine;
-use ME\Hr\Models\HrGeoLocation as GeoLocation;
-use ME\Hr\Models\HrLeaveInfo as LeaveInfo;
-use ME\Hr\Models\HrMaritalStatus as MaritalStatus;
-use ME\Hr\Models\HrPaymentMethod as PaymentMethod;
-use ME\Hr\Models\HrReligion as Religion;
-use ME\Hr\Models\HrSection as Section;
-use ME\Hr\Models\HrSex as Sex;
-use ME\Hr\Models\HrShift as Shift;
-use ME\Hr\Models\HrSubSection as SubSection;
-use ME\Hr\Models\HrWorkingPlace as WorkingPlace;
-use ME\Hr\Models\HrEmployeeNominee as EmployeeNominee;
-use ME\Hr\Models\HrEmployeeAgeVerification as EmployeeAgeVerification;
-use ME\Hr\Models\HrEmployeeSeparation as EmployeeSeparation;
-use ME\Hr\Models\HrEmployeeFinalSettlement as EmployeeFinalSettlement;
-use ME\Hr\Models\HrEmployeeOtherTransaction as EmployeeOtherTransaction;
+use ME\Hr\Models\HrClassification;
+use ME\Hr\Models\HrDepartment;
+use ME\Hr\Models\HrDesignation;
+use ME\Hr\Models\HrEmployeeLeave;
+use ME\Hr\Models\HrEmployeeAddress;
+use ME\Hr\Models\HrEmployeeBasicInfo;
+use ME\Hr\Models\HrEmployeeSalaryIncrement;
+use ME\Hr\Models\HrEmployeeSalaryInfo;
+use ME\Hr\Models\HrFloorLine;
+use ME\Hr\Models\HrGeoLocation;
+use ME\Hr\Models\HrLeaveInfo;
+use ME\Hr\Models\HrMaritalStatus;
+use ME\Hr\Models\HrPaymentMethod;
+use ME\Hr\Models\HrReligion;
+use ME\Hr\Models\HrSection;
+use ME\Hr\Models\HrSex;
+use ME\Hr\Models\HrShift;
+use ME\Hr\Models\HrSubSection;
+use ME\Hr\Models\HrWorkingPlace;
+use ME\Hr\Models\HrEmployeeNominee;
+use ME\Hr\Models\HrEmployeeAgeVerification;
+use ME\Hr\Models\HrEmployeeSeparation;
+use ME\Hr\Models\HrEmployeeFinalSettlement;
+use ME\Hr\Models\HrEmployeeOtherTransaction;
 
 class HrEmployeeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::query()->filterByType('employee');
+        $query = HrEmployee::query()->filterByType('employee');
 
         if ($request->filled('emp_id')) {
             $query->where('employee_id', 'like', '%' . trim((string) $request->emp_id) . '%');
@@ -517,7 +517,7 @@ class HrEmployeeController extends Controller
 
             if (!empty($employee->designation_id)) {
                 if (Schema::hasTable((new Designation())->getTable())) {
-                    $designationRow = Designation::query()->find($employee->designation_id);
+                    $designationRow = HrDesignation::query()->find($employee->designation_id);
                     $designationBn = data_get($designationRow, 'bn_name');
                     $designationEn = data_get($designationRow, 'name');
                 }
@@ -541,7 +541,7 @@ class HrEmployeeController extends Controller
         $rows = collect();
         $table = (new EmployeeIncrement())->getTable();
         if (Schema::hasTable($table)) {
-            $query = EmployeeIncrement::query();
+            $query = HrEmployeeSalaryIncrement::query();
             if (Schema::hasColumn($table, 'user_id')) {
                 $query->where('user_id', $employee->id);
             } elseif (Schema::hasColumn($table, 'employee_id')) {
@@ -595,7 +595,7 @@ class HrEmployeeController extends Controller
             'amount' => 'required|numeric',
         ]);
 
-        $oldIncrement = EmployeeIncrement::where('employee_id', $employee->id)->latest()->first();
+        $oldIncrement = HrEmployeeSalaryIncrement::where('employee_id', $employee->id)->latest()->first();
 
         $previous_salary =  $oldIncrement ? $oldIncrement->new_salary : $employee->gross_salary;
         $increment_amount = $payload['amount'];
@@ -608,7 +608,7 @@ class HrEmployeeController extends Controller
         $new_comp_1 = $prev_comp_1 + $increment_amount;
         $new_comp_2 = $prev_comp_2 + $increment_amount;
 
-        $increment = EmployeeIncrement::create([
+        $increment = HrEmployeeSalaryIncrement::create([
             'employee_id' => $employee->id,
             'increment_date' => $payload['increment_date'],
             'previous_salary' => $previous_salary,
@@ -641,7 +641,7 @@ class HrEmployeeController extends Controller
         ]);
 
         // ১. বিদ্যমান ইনক্রিমেন্ট রেকর্ডটি খুঁজে বের করা
-        $increment = EmployeeIncrement::findOrFail($payload['identifier']);
+        $increment = HrEmployeeSalaryIncrement::findOrFail($payload['identifier']);
 
         // ২. স্যালারি রিভার্স করা (আগের ইনক্রিমেন্ট বাদ দিয়ে বেস স্যালারিতে ফিরে যাওয়া)
         $old_increment_amount = $increment->increment_amount;
@@ -687,7 +687,7 @@ class HrEmployeeController extends Controller
     {
         $this->ensureEmployee($employee);
 
-        $rows = EmployeeOtherTransaction::where('employee_id', $employee->id)
+        $rows = HrEmployeeOtherTransaction::where('employee_id', $employee->id)
             ->latest('txn_date')
             ->get()
             ->map(function ($row) {
@@ -739,7 +739,7 @@ class HrEmployeeController extends Controller
             'remarks' => 'nullable|string|max:500',
         ]);
 
-        EmployeeOtherTransaction::create([
+        HrEmployeeOtherTransaction::create([
             'employee_id' => $employee->id,
             'txn_date'    => $payload['date'],
             'advance_iou' => $payload['advance_iou'] ?? null,
@@ -770,7 +770,7 @@ class HrEmployeeController extends Controller
             'remarks' => 'nullable|string|max:500',
         ]);
 
-        $txn = EmployeeOtherTransaction::where('employee_id', $employee->id)->find((int) $payload['identifier']);
+        $txn = HrEmployeeOtherTransaction::where('employee_id', $employee->id)->find((int) $payload['identifier']);
         if (!$txn) {
             return redirect()->route('hr-center.employees.earnings.page', $employee->id)->with('error', 'Row not found.');
         }
@@ -796,7 +796,7 @@ class HrEmployeeController extends Controller
             'identifier' => 'required|integer|min:0',
         ]);
 
-        $txn = EmployeeOtherTransaction::where('employee_id', $employee->id)->find((int) $payload['identifier']);
+        $txn = HrEmployeeOtherTransaction::where('employee_id', $employee->id)->find((int) $payload['identifier']);
         if (!$txn) {
             return redirect()->route('hr-center.employees.earnings.page', $employee->id)->with('error', 'Row not found.');
         }
@@ -809,7 +809,7 @@ class HrEmployeeController extends Controller
     {
         $this->ensureEmployee($employee);
 
-        $rows = Leave::query()
+        $rows = HrEmployeeLeave::query()
             ->where('employee_id', $employee->id)
             ->latest()
             ->limit(100)
@@ -836,7 +836,7 @@ class HrEmployeeController extends Controller
             });
 
         $leaveTypes = Schema::hasTable((new LeaveInfo())->getTable())
-            ? LeaveInfo::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code', 'days'])
+            ? HrLeaveInfo::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code', 'days'])
             : collect();
 
         $takenByTypeId = $rows
@@ -884,7 +884,7 @@ class HrEmployeeController extends Controller
 
         $total_days = $this->calculateTotalDays($payload['start_date'], $payload['end_date']);
 
-        Leave::create([
+        HrEmployeeLeave::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $payload['leave_type_id'],
             'application_date' => $payload['application_date'],
@@ -915,7 +915,7 @@ class HrEmployeeController extends Controller
             'status' => 'nullable|string|max:20',
         ]);
 
-        $row = Leave::where('id', $payload['identifier'])->where('employee_id', $employee->id)->first();
+        $row = HrEmployeeLeave::where('id', $payload['identifier'])->where('employee_id', $employee->id)->first();
         if (!$row) {
             return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('error', 'Leave row not found.');
         }
@@ -941,7 +941,7 @@ class HrEmployeeController extends Controller
             'identifier' => 'required|string',
         ]);
 
-        $row = Leave::where('id', $payload['identifier'])->where('employee_id', $employee->id)->first();
+        $row = HrEmployeeLeave::where('id', $payload['identifier'])->where('employee_id', $employee->id)->first();
         if (!$row) {
             return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('error', 'Leave row not found.');
         }
@@ -958,17 +958,17 @@ class HrEmployeeController extends Controller
 
     private function options(): array
     {
-        $maritalStatuses = MaritalStatus::query()
+        $maritalStatuses = HrMaritalStatus::query()
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'bn_name', 'code']);
 
-        $religions = Religion::query()
+        $religions = HrReligion::query()
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'bn_name', 'code']);
 
-        $sexes = Sex::query()
+        $sexes = HrSex::query()
             ->where('status', 'active')
             ->orderBy('name')
             ->get(['id', 'name', 'bn_name', 'code']);
@@ -978,7 +978,7 @@ class HrEmployeeController extends Controller
             $paymentMethodColumns[] = 'bn_name';
         }
 
-        $paymentMethods = PaymentMethod::query()
+        $paymentMethods = HrPaymentMethod::query()
             ->orderBy('name')
             ->get($paymentMethodColumns);
 
@@ -987,8 +987,8 @@ class HrEmployeeController extends Controller
             $countryColumns[] = 'bn_name';
         }
 
-        $countries = GeoLocation::query()->where('type', 'country')->orderBy('name')->get($countryColumns);
-        $lines = FloorLine::query()->orderBy('line_name')->get()->map(static function ($line) {
+        $countries = HrGeoLocation::query()->where('type', 'country')->orderBy('name')->get($countryColumns);
+        $lines = HrFloorLine::query()->orderBy('line_name')->get()->map(static function ($line) {
             return (object) [
                 'id' => $line->id,
                 'name' => $line->line_name,
@@ -998,13 +998,13 @@ class HrEmployeeController extends Controller
         });
 
         return [
-            'classifications' => Classification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'departments' => Department::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'sections' => Section::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'subSections' => SubSection::orderBy('name')->get(['id', 'name']),
+            'classifications' => HrClassification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'departments' => HrDepartment::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'sections' => HrSection::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'subSections' => HrSubSection::orderBy('name')->get(['id', 'name']),
             'lines' => $lines,
-            'designations' => Designation::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'workingPlaces' => WorkingPlace::orderBy('name')->get(['id', 'name']),
+            'designations' => HrDesignation::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'workingPlaces' => HrWorkingPlace::orderBy('name')->get(['id', 'name']),
             'weeks' => collect([
                 (object) ['id' => 1, 'name' => 'Sunday'],
                 (object) ['id' => 2, 'name' => 'Monday'],
@@ -1014,14 +1014,14 @@ class HrEmployeeController extends Controller
                 (object) ['id' => 6, 'name' => 'Friday'],
                 (object) ['id' => 7, 'name' => 'Saturday'],
             ]),
-            'shifts' => Shift::orderBy('name')->get(['id', 'name']),
+            'shifts' => HrShift::orderBy('name')->get(['id', 'name']),
             'maritalStatuses' => $maritalStatuses,
             'religions' => $religions,
             'sexes' => $sexes,
             'paymentMethods' => $paymentMethods,
             'countries' => $countries,
-            'districts' => GeoLocation::where('type', 'district')->orderBy('name')->get(['id', 'name']),
-            'thanas' => GeoLocation::where('type', 'police_station')->orderBy('name')->get(['id', 'parent_id', 'name']),
+            'districts' => HrGeoLocation::where('type', 'district')->orderBy('name')->get(['id', 'name']),
+            'thanas' => HrGeoLocation::where('type', 'police_station')->orderBy('name')->get(['id', 'parent_id', 'name']),
         ];
     }
 
@@ -1032,7 +1032,7 @@ class HrEmployeeController extends Controller
             return null;
         }
 
-        return LeaveInfo::query()
+        return HrLeaveInfo::query()
             ->where('status', 'active')
             ->where('code', $leaveCode)
             ->first(['id', 'name', 'code', 'days']);
@@ -1048,9 +1048,9 @@ class HrEmployeeController extends Controller
 
     private function ensureEmployee(User $employee): void
     {
-        // dd($employee, User::query()->filterByType('employee')->whereKey($employee->id)->exists());
+        // dd($employee, HrEmployee::query()->filterByType('employee')->whereKey($employee->id)->exists());
         abort_unless(
-            User::query()->filterByType('employee')->whereKey($employee->id)->exists(),
+            HrEmployee::query()->filterByType('employee')->whereKey($employee->id)->exists(),
             404
         );
     }
@@ -1133,7 +1133,7 @@ class HrEmployeeController extends Controller
 
     private function upsertNomineeInfo(User $employee, array $payload, ?string $imagePath = null): void
     {
-        $nominee = EmployeeNominee::firstOrNew(['employee_id' => $employee->id]);
+        $nominee = HrEmployeeNominee::firstOrNew(['employee_id' => $employee->id]);
         $nominee->employee_id = $employee->id;
         $nominee->name       = $payload['nominee'] ?? $nominee->name ?? '';
         $nominee->age        = $payload['nominee_age'] ?? $nominee->age ?? null;
@@ -1163,7 +1163,7 @@ class HrEmployeeController extends Controller
 
     private function upsertAgeVerification(User $employee, array $payload): void
     {
-        $av = EmployeeAgeVerification::firstOrNew(['employee_id' => $employee->id]);
+        $av = HrEmployeeAgeVerification::firstOrNew(['employee_id' => $employee->id]);
         $av->employee_id = $employee->id;
         $av->physical_ability     = $payload['physical_ability'] ?? $av->physical_ability ?? null;
         $av->identification_mark  = $payload['distinguished_mark'] ?? $av->identification_mark ?? null;
@@ -1175,7 +1175,7 @@ class HrEmployeeController extends Controller
 
     private function upsertSeparation(User $employee, array $payload, bool $withPaid = false): void
     {
-        $sep = EmployeeSeparation::firstOrNew(['employee_id' => $employee->id]);
+        $sep = HrEmployeeSeparation::firstOrNew(['employee_id' => $employee->id]);
         $sep->employee_id = $employee->id;
         $sep->status           = $payload['employment_status'] ?? $sep->status ?? null;
         $sep->remarks          = $payload['resign_remarks'] ?? $sep->remarks ?? null;
@@ -1187,7 +1187,7 @@ class HrEmployeeController extends Controller
 
     private function upsertFinalSettlement(User $employee, array $payload): void
     {
-        $fs = EmployeeFinalSettlement::firstOrNew(['employee_id' => $employee->id]);
+        $fs = HrEmployeeFinalSettlement::firstOrNew(['employee_id' => $employee->id]);
         $fs->employee_id = $employee->id;
         $fs->absent_date           = $payload['absent_date'] ?? $fs->absent_date ?? null;
         $fs->first_letter_date     = $payload['letter_1_date'] ?? $fs->first_letter_date ?? null;
@@ -1284,7 +1284,7 @@ class HrEmployeeController extends Controller
         }
 
         if (!Schema::hasColumn($this->employeeTable(), 'working_place_id') && Schema::hasColumn($this->employeeTable(), 'location') && !empty($payload['working_place_id'])) {
-            $workingPlace = WorkingPlace::query()->find($payload['working_place_id']);
+            $workingPlace = HrWorkingPlace::query()->find($payload['working_place_id']);
             $employee->location = $workingPlace?->name;
         }
     }
@@ -1296,7 +1296,7 @@ class HrEmployeeController extends Controller
             return;
         }
 
-        $designation = Designation::query()->find($designationId);
+        $designation = HrDesignation::query()->find($designationId);
         if (!$designation) {
             return;
         }
@@ -1394,7 +1394,7 @@ class HrEmployeeController extends Controller
         $existing->effective_date = $payload['salary_info_date'] ?? $payload['effective_date'] ?? $existing->effective_date ?? null;
         $existing->status = ($payload['salary_info_status'] ?? null) === 'inactive' ? 0 : 1;
         if (array_key_exists('salary_type', $payload)) {
-            $existing->payment_method_id = $this->resolveLookupId(PaymentMethod::class, $payload['salary_type'] ?? null);
+            $existing->payment_method_id = $this->resolveLookupId(HrPaymentMethod::class, $payload['salary_type'] ?? null);
         }
         $existing->created_by = $existing->created_by ?? Auth::id();
         $existing->updated_by = Auth::id();
@@ -1409,17 +1409,17 @@ class HrEmployeeController extends Controller
         $basicInfo->bn_father_name = $payload['father_name_bn'] ?? $basicInfo->bn_father_name ?? null;
         $basicInfo->mother_name = $payload['mother_name'] ?? $basicInfo->mother_name ?? null;
         $basicInfo->bn_mother_name = $payload['mother_name_bn'] ?? $basicInfo->bn_mother_name ?? null;
-        $basicInfo->marital_status_id = $this->resolveLookupId(MaritalStatus::class, $payload['marital_status'] ?? null);
+        $basicInfo->marital_status_id = $this->resolveLookupId(HrMaritalStatus::class, $payload['marital_status'] ?? null);
         $basicInfo->spouse_name = $payload['spouse_name'] ?? $basicInfo->spouse_name ?? null;
         $basicInfo->bn_spouse_name = $payload['spouse_name_bn'] ?? $basicInfo->bn_spouse_name ?? null;
-        $basicInfo->sex_id = $this->resolveLookupId(Sex::class, $payload['gender'] ?? null);
+        $basicInfo->sex_id = $this->resolveLookupId(HrSex::class, $payload['gender'] ?? null);
         $basicInfo->children_boys = isset($payload['boys']) ? (int) $payload['boys'] : ($basicInfo->children_boys ?? 0);
         $basicInfo->children_girls = isset($payload['girls']) ? (int) $payload['girls'] : ($basicInfo->children_girls ?? 0);
-        $basicInfo->payment_method_id = $this->resolveLookupId(PaymentMethod::class, $payload['salary_type'] ?? null);
-        $basicInfo->religion_id = $this->resolveLookupId(Religion::class, $payload['religion'] ?? null);
+        $basicInfo->payment_method_id = $this->resolveLookupId(HrPaymentMethod::class, $payload['salary_type'] ?? null);
+        $basicInfo->religion_id = $this->resolveLookupId(HrReligion::class, $payload['religion'] ?? null);
         $basicInfo->birth_date = $payload['dob'] ?? $basicInfo->birth_date ?? null;
         $basicInfo->blood_group = $payload['blood_group'] ?? $basicInfo->blood_group ?? null;
-        $basicInfo->nationality_country_id = $this->resolveLookupId(GeoLocation::class, $payload['nationality'] ?? null, ['name', 'bn_name']);
+        $basicInfo->nationality_country_id = $this->resolveLookupId(HrGeoLocation::class, $payload['nationality'] ?? null, ['name', 'bn_name']);
         $basicInfo->national_id_no = $payload['nid_number'] ?? $basicInfo->national_id_no ?? null;
         $basicInfo->birth_registration_no = $payload['birth_registration'] ?? $basicInfo->birth_registration_no ?? null;
         $basicInfo->passport_no = $payload['passport_no'] ?? $basicInfo->passport_no ?? null;
@@ -1469,7 +1469,7 @@ class HrEmployeeController extends Controller
 
     private function upsertSingleAddress(User $employee, string $type, array $payload): void
     {
-        $address = EmployeeAddress::firstOrNew([
+        $address = HrEmployeeAddress::firstOrNew([
             'employee_id' => $employee->id,
             'type' => $type,
         ]);
@@ -1520,7 +1520,7 @@ class HrEmployeeController extends Controller
             return (int) $text;
         }
 
-        return GeoLocation::query()
+        return HrGeoLocation::query()
             ->where('type', $type)
             ->where(function ($builder) use ($text) {
                 $builder->whereRaw('lower(name) = ?', [strtolower($text)])

@@ -1,3 +1,5 @@
+
+
 @php
     try {
         $hrStats = \ME\Hr\Http\Controllers\HrDashboardController::stats();

@@ -4,7 +4,7 @@ namespace ME\Hr\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use ME\Hr\Models\HrHoliday as Holiday;
+use ME\Hr\Models\HrHoliday;
 use Illuminate\Routing\Controller;
 
 class HrHolidayController extends Controller
@@ -18,7 +18,7 @@ class HrHolidayController extends Controller
 
     public function index(Request $request)
     {
-        $query = Holiday::latest();
+        $query = HrHoliday::latest();
 
         if ($request->filled('search')) {
             $query->where('purpose', 'like', '%' . $request->search . '%')
@@ -51,14 +51,14 @@ class HrHolidayController extends Controller
 
         $validated['status'] = (int) ($validated['status'] ?? 1);
 
-        Holiday::create($validated);
+        HrHoliday::create($validated);
 
         return redirect()->route('hr-center.holidays.index')->with('success', 'Holiday created successfully.');
     }
 
     public function update(Request $request, int $id): RedirectResponse
     {
-        $holiday = Holiday::findOrFail($id);
+        $holiday = HrHoliday::findOrFail($id);
 
         $validated = $request->validate([
             'purpose'   => 'required|string|max:200',
@@ -78,7 +78,7 @@ class HrHolidayController extends Controller
 
     public function destroy(int $id): RedirectResponse
     {
-        Holiday::findOrFail($id)->delete();
+        HrHoliday::findOrFail($id)->delete();
 
         return redirect()->route('hr-center.holidays.index')->with('success', 'Holiday deleted successfully.');
     }

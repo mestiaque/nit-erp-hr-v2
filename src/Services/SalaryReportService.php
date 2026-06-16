@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace ME\Hr\Services;
 
 use ME\Hr\Models\HrEmployeeLeave as Leave;
 use ME\Hr\Models\HrDesignation as Designation;

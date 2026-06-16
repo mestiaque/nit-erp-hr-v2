@@ -2,7 +2,7 @@
 
 namespace ME\Hr\Http\Controllers;
 
-use ME\Hr\Models\HrEmployee as User;
+use ME\Hr\Models\HrEmployee;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -10,19 +10,20 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ME\Hr\Models\HrAttendance;
-use ME\Hr\Models\HrBonusPolicy as BonusPolicy;
-use ME\Hr\Models\HrBonusTitle as BonusTitle;
-use ME\Hr\Models\HrClassification as Classification;
-use ME\Hr\Models\HrDepartment as Department;
-use ME\Hr\Models\HrDesignation as Designation;
-use ME\Hr\Models\HrEmployeeSalaryIncrement as EmployeeIncrement;
-use ME\Hr\Models\HrFloorLine as FloorLine;
+use ME\Hr\Models\HrBonusPolicy;
+use ME\Hr\Models\HrBonusTitle;
+use ME\Hr\Models\HrClassification;
+use ME\Hr\Models\HrDepartment;
+use ME\Hr\Models\HrDesignation;
+use ME\Hr\Models\HrEmployeeSalaryIncrement;
+use ME\Hr\Models\HrFloorLine;
 use ME\Hr\Models\HrHoliday;
-use ME\Hr\Models\HrProductionBonus as ProductionBonus;
-use ME\Hr\Models\HrSection as Section;
-use ME\Hr\Models\HrShift as Shift;
-use ME\Hr\Models\HrSubSection as SubSection;
-use ME\Hr\Models\HrWorkingPlace as WorkingPlace;
+use ME\Hr\Models\HrProductionBonus;
+use ME\Hr\Models\HrSection;
+use ME\Hr\Models\HrShift;
+use ME\Hr\Models\HrSubSection;
+use ME\Hr\Models\HrSex;
+use ME\Hr\Models\HrWorkingPlace;
 
 
 
@@ -97,7 +98,7 @@ class HrReportController extends Controller
 
         DB::transaction(function () use ($rows, $payload) {
             foreach ($rows as $row) {
-                $employee = User::query()
+                $employee = HrEmployee::query()
                     ->filterByType('employee')
                     ->find(data_get($row, 'employee_row_id'));
                 if (!$employee) {
@@ -284,7 +285,7 @@ class HrReportController extends Controller
         $gradeMap = collect();
 
         $rows = $employees
-            ->filter(function (User $employee) use ($request) {
+            ->filter(function (HrEmployee $employee) use ($request) {
                 if (blank($employee->join_date)) {
                     return false;
                 }
@@ -304,7 +305,7 @@ class HrReportController extends Controller
             })
             ->values();
 
-        $detailRows = $rows->map(function (User $employee) use ($classificationMap, $departmentMap, $sectionMap, $designationMap, $gradeMap) {
+        $detailRows = $rows->map(function (HrEmployee $employee) use ($classificationMap, $departmentMap, $sectionMap, $designationMap, $gradeMap) {
             return [
                 'employee_id' => $employee->employee_id,
                 'name' => $employee->name,
@@ -320,7 +321,7 @@ class HrReportController extends Controller
         })->values();
 
         $summaryRows = $rows
-            ->groupBy(function (User $employee) {
+            ->groupBy(function (HrEmployee $employee) {
                 return implode('|', [
                     $employee->department_id,
                     $employee->section_id,
@@ -329,7 +330,7 @@ class HrReportController extends Controller
                 ]);
             })
             ->map(function ($group) use ($departmentMap, $sectionMap, $classificationMap, $designationMap) {
-                /** @var User $first */
+                /** @var HrEmployee $first */
                 $first = $group->first();
 
                 return [
@@ -338,7 +339,7 @@ class HrReportController extends Controller
                     'classification' => $classificationMap->get($first->classification_id, 'N/A'),
                     'designation' => $designationMap->get($first->designation_id, 'N/A'),
                     'total_employees' => $group->count(),
-                    'total_gross_salary' => $group->sum(fn (User $employee) => (float) ($employee->gross_salary ?? 0)),
+                    'total_gross_salary' => $group->sum(fn (HrEmployee $employee) => (float) ($employee->gross_salary ?? 0)),
                 ];
             })
             ->values();
@@ -356,7 +357,7 @@ class HrReportController extends Controller
         $designationMap = collect($options['designations'] ?? [])->pluck('name', 'id');
 
         $rows = $employees
-            ->filter(function (User $employee) use ($request) {
+            ->filter(function (HrEmployee $employee) use ($request) {
                 $status = strtolower((string) ($employee->employment_status ?? ''));
                 if (!in_array($status, ['transfer', 'lefty', 'left', 'resign', 'resigned'], true)) {
                     return false;
@@ -377,7 +378,7 @@ class HrReportController extends Controller
 
                 return true;
             })
-            ->map(function (User $employee) use ($departmentMap, $sectionMap, $designationMap) {
+            ->map(function (HrEmployee $employee) use ($departmentMap, $sectionMap, $designationMap) {
                 $other = is_array($employee->other_information) ? $employee->other_information : [];
                 $status = (string) ($employee->employment_status ?? 'N/A');
 
@@ -465,7 +466,7 @@ class HrReportController extends Controller
         $minConsecutive = max(1, (int) $request->input('min_absent_days', 3));
 
         $rows = $employees
-            ->map(function (User $employee) use ($attendanceByUser, $periodDates, $departmentMap, $sectionMap, $designationMap, $minConsecutive) {
+            ->map(function (HrEmployee $employee) use ($attendanceByUser, $periodDates, $departmentMap, $sectionMap, $designationMap, $minConsecutive) {
                 $presentSet = $attendanceByUser->get($employee->id, []);
 
                 // Find the longest consecutive absent streak among working days
@@ -527,7 +528,7 @@ class HrReportController extends Controller
         $gradeMap = collect();
 
         $rows = $employees
-            ->map(function (User $employee) use ($incrementMap, $request, $withRemarks) {
+            ->map(function (HrEmployee $employee) use ($incrementMap, $request, $withRemarks) {
                 $increment = $incrementMap[$employee->id] ?? null;
 
                 // increment-summary: only show employees with a saved increment record
@@ -559,7 +560,7 @@ class HrReportController extends Controller
             ->filter()
             ->values()
             ->map(function ($item) use ($classificationMap, $departmentMap, $sectionMap, $subSectionMap, $designationMap, $lineMap, $gradeMap, $incrementPercent, $effectiveDate, $withRemarks) {
-                /** @var User $employee */
+                /** @var HrEmployee $employee */
                 $employee = $item['employee'];
                 $increment = $item['increment'];
 
@@ -677,12 +678,12 @@ class HrReportController extends Controller
         ];
     }
 
-    private function upsertIncrementRecord(User $employee, string $effectiveDate, float $previousSalary, float $incrementValue, float $incrementPercent, float $newSalary): void
+    private function upsertIncrementRecord(HrEmployee $employee, string $effectiveDate, float $previousSalary, float $incrementValue, float $incrementPercent, float $newSalary): void
     {
-        $table = (new EmployeeIncrement())->getTable();
+        $table = (new HrEmployeeSalaryIncrement())->getTable();
 
         if (Schema::hasTable($table)) {
-            $query = EmployeeIncrement::query();
+            $query = HrEmployeeSalaryIncrement::query();
             if (Schema::hasColumn($table, 'user_id')) {
                 $query->where('user_id', $employee->id);
             } elseif (Schema::hasColumn($table, 'employee_id')) {
@@ -695,7 +696,7 @@ class HrReportController extends Controller
                 $query->whereDate('date', $effectiveDate);
             }
 
-            $row = $query->first() ?? new EmployeeIncrement();
+            $row = $query->first() ?? new HrEmployeeSalaryIncrement();
 
             if (Schema::hasColumn($table, 'user_id')) {
                 $row->user_id = $employee->id;
@@ -852,7 +853,7 @@ class HrReportController extends Controller
         $lineMap = collect($options['lines'] ?? [])->mapWithKeys(fn ($row) => [
             $row->id => trim(($row->name ?? '') . (filled($row->slug ?? null) ? ' - ' . $row->slug : '')),
         ]);
-        $shiftMap = Shift::query()->pluck('name', 'id');
+        $shiftMap = HrShift::query()->pluck('name', 'id');
 
         $rows = collect();
         $serial = 1;
@@ -918,7 +919,7 @@ class HrReportController extends Controller
                 'shift'            => $shiftMap->get($employee->shift_id, 'N/A'),
                 'weekend'          => data_get($profile, 'weekend', $employee->weekend ?? 'N/A'),
                 'contact_no'       => $employee->mobile ?? 'N/A',
-                'sex'              => $employee->gender ?? 'N/A',
+                'sex'              => $employee->sex ?? 'N/A',
             ]);
         }
         return $rows;
@@ -926,7 +927,7 @@ class HrReportController extends Controller
 
     private function employeeReportQuery(Request $request)
     {
-        $query = User::query()->filterByType('employee');
+        $query = HrEmployee::query()->filterByType('employee');
 
         if ($request->filled('employee_id')) {
             $query->where('employee_id', 'like', '%' . trim((string) $request->employee_id) . '%');
@@ -987,7 +988,10 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('gender')) {
-            $query->where('gender', (string) $request->gender);
+            $query->whereHas('basicInfo', function ($q) use ($request) {
+                $sexId = HrSex::where('name', (string) $request->gender)->value('id');
+                $q->where('sex_id', $sexId);
+            });
         }
 
         if ($request->filled('employee_status')) {
@@ -1016,32 +1020,28 @@ class HrReportController extends Controller
 
     private function employeeReportOptions(): array
     {
-        $genderOptions = User::query()
-            ->filterByType('employee')
-            ->whereNotNull('gender')
-            ->pluck('gender')
-            ->map(fn ($value) => trim((string) $value))
-            ->filter()
-            ->unique(fn ($value) => strtolower($value))
-            ->values();
+        $genderOptions = HrSex::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->pluck('name');
 
         return [
-            'classifications' => Classification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'departments' => Department::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'sections' => Section::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'subSections' => SubSection::orderBy('name')->get(['id', 'name', 'department_id', 'section_id', 'salary_type', 'approve_man_power']),
-            'lines' => FloorLine::query()->where('status', 'active')->orderBy('line_name')->get()->map(static function ($line) {
+            'classifications' => HrClassification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'departments' => HrDepartment::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'sections' => HrSection::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'subSections' => HrSubSection::orderBy('name')->get(['id', 'name', 'department_id', 'section_id', 'salary_type', 'approve_man_power']),
+            'lines' => HrFloorLine::query()->where('status', 'active')->orderBy('line_name')->get()->map(static function ($line) {
                 return (object) [
                     'id' => $line->id,
                     'name' => $line->line_name,
                     'slug' => $line->line_name,
                 ];
             }),
-            'designations' => Schema::hasTable((new Designation())->getTable())
-                ? Designation::query()->orderBy('name')->get(['id', 'name'])
+            'designations' => Schema::hasTable((new HrDesignation())->getTable())
+                ? HrDesignation::query()->orderBy('name')->get(['id', 'name'])
                 : collect(),
-            'workingPlaces' => WorkingPlace::orderBy('name')->get(['id', 'name']),
-            'shifts' => Shift::orderBy('name')->get(['id', 'name']),
+            'workingPlaces' => HrWorkingPlace::orderBy('name')->get(['id', 'name']),
+            'shifts' => HrShift::orderBy('name')->get(['id', 'name']),
             'gender' => $genderOptions,
             'employeeStatuses' => collect([
                 ['id' => 'regular', 'name' => 'Regular'],
@@ -1074,7 +1074,7 @@ class HrReportController extends Controller
         $grandGrossSalary = 0;
 
         $employees
-            ->groupBy(function (User $employee) {
+            ->groupBy(function (HrEmployee $employee) {
                 // sub_section_id is stored in other_information['profile'], not a direct column
                 $other = is_array($employee->other_information)
                     ? $employee->other_information
@@ -1088,7 +1088,7 @@ class HrReportController extends Controller
                 ]);
             })
             ->each(function ($subSectionGroup) use (&$rows, &$serial, &$grandApprove, &$grandRecruited, &$grandGrossSalary, $departmentMap, $sectionMap, $subSectionMap, $designationMap) {
-                /** @var User $subSectionFirst */
+                /** @var HrEmployee $subSectionFirst */
                 $subSectionFirst = $subSectionGroup->first();
 
                 // Resolve sub_section_id from profile (not a direct column)
@@ -1105,10 +1105,10 @@ class HrReportController extends Controller
                 $subSectionGroup
                     ->groupBy('designation_id')
                     ->each(function ($designationGroup) use (&$rows, &$serial, &$subSectionRecruited, &$subSectionGrossSalary, $departmentMap, $sectionMap, $subSection, $designationMap, $subSectionFirst, $subSectionApprove) {
-                        /** @var User $first */
+                        /** @var HrEmployee $first */
                         $first = $designationGroup->first();
                         $recruited = $designationGroup->count();
-                        $totalGrossSalary = $designationGroup->sum(function (User $employee) {
+                        $totalGrossSalary = $designationGroup->sum(function (HrEmployee $employee) {
                             return (float) ($employee->gross_salary ?? 0);
                         });
 
@@ -1166,7 +1166,7 @@ class HrReportController extends Controller
 
     private function personalFileReportScreen(Request $request, string $report)
     {
-        $query = User::query()->filterByType('employee');
+        $query = HrEmployee::query()->filterByType('employee');
 
         // ID card should skip placeholder IDs but must not hide valid employees
         // just because designation/department is missing.
@@ -1252,12 +1252,12 @@ class HrReportController extends Controller
         $employees = $query->with(['designation', 'department'])->orderBy('name')->get();
 
         $options = [
-            'classifications' => Classification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'departments' => Department::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'sections' => Section::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'subsections' => SubSection::orderBy('name')->get(['id', 'name']),
-            'shifts' => Shift::orderBy('name')->get(['id', 'name']),
-            'workingPlaces' => WorkingPlace::orderBy('name')->get(['id', 'name']),
+            'classifications' => HrClassification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'departments' => HrDepartment::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'sections' => HrSection::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'subsections' => HrSubSection::orderBy('name')->get(['id', 'name']),
+            'shifts' => HrShift::orderBy('name')->get(['id', 'name']),
+            'workingPlaces' => HrWorkingPlace::orderBy('name')->get(['id', 'name']),
         ];
 
         $reportTypes = [
@@ -1309,7 +1309,7 @@ class HrReportController extends Controller
     private function latestIncrements($employees): array
     {
         $map = [];
-        $table = (new EmployeeIncrement())->getTable();
+        $table = (new HrEmployeeSalaryIncrement())->getTable();
         if (!Schema::hasTable($table)) {
             return $map;
         }
@@ -1327,7 +1327,7 @@ class HrReportController extends Controller
             return $map;
         }
 
-        $rows = EmployeeIncrement::query()
+        $rows = HrEmployeeSalaryIncrement::query()
             ->where(function ($query) use ($hasUserId, $hasEmployeeId, $userIds, $employeeCodes) {
                 if ($hasUserId && $userIds->isNotEmpty()) {
                     $query->orWhereIn('user_id', $userIds->all());
@@ -1360,12 +1360,12 @@ class HrReportController extends Controller
 
     private function employeeReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->with(['designation', 'department'])
             ->orderBy('name')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (HrEmployee $user) {
                 return [
                     'employee_id' => $user->employee_id,
                     'name' => $user->name,
@@ -1381,7 +1381,7 @@ class HrReportController extends Controller
 
     private function monthlyReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->selectRaw("DATE_FORMAT(join_date, '%Y-%m') as month")
             ->selectRaw('count(*) as total_employee')
@@ -1395,23 +1395,23 @@ class HrReportController extends Controller
 
     private function machineIdReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->orderBy('employee_id')
             ->get(['employee_id', 'name', 'mobile', 'status'])
-            ->map(fn (User $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'mobile' => $user->mobile, 'status' => $user->status]);
+            ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'mobile' => $user->mobile, 'status' => $user->status]);
 
         return [['employee_id', 'name', 'mobile', 'status'], $rows];
     }
 
     private function jobCardReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->with(['designation', 'department'])
             ->orderBy('name')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (HrEmployee $user) {
                 return [
                     'employee_id' => $user->employee_id,
                     'name' => $user->name,
@@ -1427,11 +1427,11 @@ class HrReportController extends Controller
 
     private function personalFileReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->orderBy('name')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (HrEmployee $user) {
                 return [
                     'employee_id' => $user->employee_id,
                     'name' => $user->name,
@@ -1464,12 +1464,12 @@ class HrReportController extends Controller
 
     private function attendanceReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->with(['designation', 'department'])
             ->orderBy('name')
             ->get()
-            ->map(function (User $user) {
+            ->map(function (HrEmployee $user) {
                 return [
                     'employee_id' => $user->employee_id,
                     'name' => $user->name,
@@ -1485,10 +1485,10 @@ class HrReportController extends Controller
 
     private function mealAllowanceReport(): array
     {
-        $rows = Designation::query()
+        $rows = HrDesignation::query()
             ->orderBy('name')
             ->get()
-            ->map(function (Designation $designation) {
+            ->map(function (HrDesignation $designation) {
                 return [
                     'designation' => $designation->name,
                     'tiffin_allowance' => $designation->tiffin_allowance,
@@ -1503,20 +1503,20 @@ class HrReportController extends Controller
 
     private function productionJobCardReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->whereNotNull('floor_line_id')
             ->orderBy('floor_line_id')
             ->orderBy('name')
             ->get()
-            ->map(fn (User $user) => ['line_number' => $user->floor_line_id, 'employee_id' => $user->employee_id, 'name' => $user->name, 'salary_type' => $user->salary_type]);
+            ->map(fn (HrEmployee $user) => ['line_number' => $user->floor_line_id, 'employee_id' => $user->employee_id, 'name' => $user->name, 'salary_type' => $user->salary_type]);
 
         return [['line_number', 'employee_id', 'name', 'salary_type'], $rows];
     }
 
     private function bonusSalaryFixedReport(): array
     {
-        $rows = BonusPolicy::query()
+        $rows = HrBonusPolicy::query()
             ->where('type', 'fixed')
             ->orderBy('policy_name')
             ->get()
@@ -1527,7 +1527,7 @@ class HrReportController extends Controller
 
     private function bonusSalaryProductionReport(): array
     {
-        $rows = ProductionBonus::query()
+        $rows = HrProductionBonus::query()
             ->orderBy('name')
             ->get()
             ->map(fn (ProductionBonus $bonus) => ['name' => $bonus->name, 'percentage' => $bonus->percentage, 'effective_from' => $bonus->effective_from, 'effective_to' => $bonus->effective_to]);
@@ -1537,7 +1537,7 @@ class HrReportController extends Controller
 
     private function salaryFixedReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->where(function ($builder) {
                 $builder->where('salary_type', 'fixed_rate')
@@ -1545,28 +1545,28 @@ class HrReportController extends Controller
             })
             ->orderBy('name')
             ->get()
-            ->map(fn (User $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'gross_salary' => $user->gross_salary, 'basic_salary' => $user->basic_salary]);
+            ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'gross_salary' => $user->gross_salary, 'basic_salary' => $user->basic_salary]);
 
         return [['employee_id', 'name', 'gross_salary', 'basic_salary'], $rows];
     }
 
     private function salaryProductionReport(): array
     {
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->where('salary_type', 'price_rate')
             ->orderBy('name')
             ->get()
-            ->map(fn (User $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'gross_salary' => $user->gross_salary, 'basic_salary' => $user->basic_salary]);
+            ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'gross_salary' => $user->gross_salary, 'basic_salary' => $user->basic_salary]);
 
         return [['employee_id', 'name', 'gross_salary', 'basic_salary'], $rows];
     }
 
     private function salarySummaryReport(): array
     {
-        $employeeTable = (new User())->getTable();
+        $employeeTable = (new HrEmployee())->getTable();
 
-        $rows = User::query()
+        $rows = HrEmployee::query()
             ->filterByType('employee')
             ->leftJoin('hr_departments as departments', 'departments.id', '=', $employeeTable . '.department_id')
             ->select('departments.name as department')
@@ -1636,7 +1636,7 @@ class HrReportController extends Controller
             $lineMap = collect($options['lines'])->mapWithKeys(fn ($r) => [
                 $r->id => trim(($r->name ?? '') . (filled($r->slug ?? null) ? ' - ' . $r->slug : '')),
             ]);
-            $shiftMap = Shift::query()->pluck('name', 'id');
+            $shiftMap = HrShift::query()->pluck('name', 'id');
 
             return view('hr::reports.job-card-report-print', compact(
                 'request', 'employees', 'attendanceMap', 'dates',
@@ -1717,7 +1717,7 @@ class HrReportController extends Controller
 
             // Build per-employee summary over the date range
             $attendanceByEmployee = $employees->mapWithKeys(function ($employee) use ($from, $to) {
-                $pack    = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
+                $pack    = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
                 $summary = $pack['summary'] ?? [];
 
                 $presentStatuses = ['present', 'late', 'early_exit', 'punch_missing', 'late_and_early_exit', 'late_and_punch_missing'];
@@ -1766,8 +1766,8 @@ class HrReportController extends Controller
             $sectionMap     = collect($options['sections'])->pluck('name', 'id');
             $subSectionMap  = collect($options['subSections'])->pluck('name', 'id');
             // designation_id on users references hr_designations table
-            $designationMap = Designation::query()->pluck('name', 'id');
-            $shiftMap       = Shift::query()->pluck('name', 'id');
+            $designationMap = HrDesignation::query()->pluck('name', 'id');
+            $shiftMap       = HrShift::query()->pluck('name', 'id');
             $lineMap = collect($options['lines'] ?? [])->mapWithKeys(fn ($row) => [
                 $row->id => trim(($row->name ?? '') . (filled($row->slug ?? null) ? ' - ' . $row->slug : '')),
             ]);
@@ -1782,7 +1782,7 @@ class HrReportController extends Controller
 
                 if ($isSingleDay) {
                     $dailySummary = $employees->mapWithKeys(function ($employee) use ($toDate) {
-                        $pack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $toDate, $toDate);
+                        $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $toDate, $toDate);
                         $summary = $pack['summary'] ?? [];
 
                         return [$employee->id => [
@@ -1825,7 +1825,7 @@ class HrReportController extends Controller
                     $rows = collect();
 
                     foreach ($employees as $employee) {
-                        $pack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $fromDate, $toDate);
+                        $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $fromDate, $toDate);
                         $attendanceRows = collect($pack['attendance'] ?? []);
 
                         $other = is_array($employee->other_information)
@@ -1915,7 +1915,7 @@ class HrReportController extends Controller
                 }
 
                 $attendanceStatusByEmployee = $employees->mapWithKeys(function ($employee) use ($from, $to) {
-                    $pack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
+                    $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
                     $rows = collect($pack['attendance'] ?? []);
 
                     $statusByDate = [];
@@ -2005,12 +2005,12 @@ class HrReportController extends Controller
             $englishRequest->merge([
                 'language' => 'en',
             ]);
-            $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee(null, $englishRequest, null, null, null, null); 
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee(null, $englishRequest, null, null, null, null); 
 
             $rows = $employees->map(function ($employee) use ($request, $attendanceByUser, $employeeDataFn, $sectionMap, $designationMap, $reportDate) {
                 $att = $attendanceByUser->get($employee->id);
 
-                $pack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                     $employee->id,
                     $reportDate,
                     $reportDate
@@ -2072,13 +2072,13 @@ class HrReportController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
-            $shiftMap = Shift::query()->get(['id', 'name', 'start_time', 'late_allow_time'])->keyBy('id');
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
+            $shiftMap = HrShift::query()->get(['id', 'name', 'start_time', 'late_allow_time'])->keyBy('id');
 
             $lateByEmployee = collect();
 
             foreach ($employees as $employee) {
-                $pack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
+                $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
                 $attendanceRows = collect($pack['attendance'] ?? []);
 
                 $employeeData = $employeeDataFn($employee, $request ?? null, null, null, null, null);
@@ -2213,14 +2213,14 @@ class HrReportController extends Controller
                 $absent = 0;
 
                 foreach ($sectionEmployees as $employee) {
-                    $gender = strtolower(trim((string) ($employee->gender ?? $employee->sex ?? '')));
+                    $gender = strtolower(trim((string) ($employee->sex ?? '')));
                     if (in_array($gender, ['female', 'f'], true)) {
                         $female++;
                     } else {
                         $male++;
                     }
 
-                    $pack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                    $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                         $employee->id,
                         $reportDate,
                         $reportDate
@@ -2318,11 +2318,11 @@ class HrReportController extends Controller
             $sectionMap     = collect($options['sections'])->pluck('name', 'id');
             $subSectionMap  = collect($options['subSections'])->pluck('name', 'id');
             $designationMap = collect($options['designations'])->pluck('name', 'id');
-            $shiftMap       = Shift::query()->pluck('name', 'id');
-            $designationInfoMap = Designation::query()->get()->keyBy('id');
+            $shiftMap       = HrShift::query()->pluck('name', 'id');
+            $designationInfoMap = HrDesignation::query()->get()->keyBy('id');
 
             // Meal eligibility: check shift meal options
-            $shifts = Shift::query()->get()->keyBy('id');
+            $shifts = HrShift::query()->get()->keyBy('id');
 
             return view('hr::reports.meal-report-print', compact(
                 'request', 'employees', 'attendanceMap', 'date',
@@ -2352,7 +2352,7 @@ class HrReportController extends Controller
     {
         // 1. Options and Static Data
         $options = $this->employeeReportOptions();
-        $bonusTitles = BonusTitle::where('status', 'active')
+        $bonusTitles = HrBonusTitle::where('status', 'active')
             ->orderBy('title')
             ->get(['id', 'title', 'bn_title']);
 
@@ -2400,16 +2400,16 @@ class HrReportController extends Controller
         $bonusTitle   = null;
         $policies     = collect();
         if (filled($bonusTitleId)) {
-            $bonusTitle = BonusTitle::find($bonusTitleId);
+            $bonusTitle = HrBonusTitle::find($bonusTitleId);
             abort_unless($bonusTitle, 404, 'Bonus title not found');
 
-            $policies = BonusPolicy::query()
+            $policies = HrBonusPolicy::query()
                 ->where('bonus_title_id', $bonusTitle->id)
                 ->where('status', 'active')
                 ->get();
 
             if ($policies->isEmpty()) {
-                $policies = BonusPolicy::query()
+                $policies = HrBonusPolicy::query()
                     ->where('bonus_title_id', $bonusTitle->id)
                     ->get();
             }
@@ -2429,7 +2429,7 @@ class HrReportController extends Controller
         $departmentMap  = collect($options['departments'])->pluck('name', 'id');
         $sectionMap     = collect($options['sections'])->pluck('name', 'id');
         $subSectionMap  = collect($options['subSections'])->pluck('name', 'id');
-        $designationMap = Designation::query()->pluck('name', 'id');
+        $designationMap = HrDesignation::query()->pluck('name', 'id');
         $lineMap = collect($options['lines'])->mapWithKeys(fn ($row) => [
             $row->id => trim(($row->name ?? '') . (filled($row->slug ?? null) ? ' - ' . $row->slug : '')),
         ]);
@@ -2567,14 +2567,14 @@ class HrReportController extends Controller
     private function salaryReportScreen(Request $request, string $report)
     {
         $options = $this->employeeReportOptions();
-        $bonusTitles = BonusTitle::where('status', 'active')->orderBy('title')->get(['id', 'title']);
+        $bonusTitles = HrBonusTitle::where('status', 'active')->orderBy('title')->get(['id', 'title']);
         $reportTypes = [
             'fixed'                  => 'Fixed Salary',
             'production'             => 'Production Salary',
             'bonus'                  => 'Bonus Salary',
             'wages-salary-summary'   => 'Wages & Salary Summary',
         ];
-        $paymentModes = User::query()
+        $paymentModes = HrEmployee::query()
             ->filterByType('employee')
             ->whereNotNull('salary_type')
             ->distinct()
@@ -2628,7 +2628,7 @@ class HrReportController extends Controller
         $departmentMap = collect($options['departments'])->pluck('name', 'id');
         $sectionMap = collect($options['sections'])->pluck('name', 'id');
         $subSectionMap = collect($options['subSections'])->pluck('name', 'id');
-        $designationMap = Designation::query()->pluck('name', 'id');
+        $designationMap = HrDesignation::query()->pluck('name', 'id');
         $lineMap = collect($options['lines'])->mapWithKeys(fn ($r) => [
             $r->id => trim(($r->name ?? '') . (filled($r->slug ?? null) ? ' - ' . $r->slug : '')),
         ]);

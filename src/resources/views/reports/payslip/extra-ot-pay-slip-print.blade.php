@@ -7,9 +7,9 @@
 {{-- Extra OT Pay Slip (per employee) --}}
 @foreach($employees as $employee)
     @php
-        $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+        $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
         $employeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
-        $attendancePack = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+        $attendancePack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
             $employee->id,
             $from,
             $to

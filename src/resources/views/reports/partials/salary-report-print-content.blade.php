@@ -77,7 +77,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	$address = general()->address_one ?? '';
 	$fmt = fn($v) => number_format((float) $v, 2);
 	$byDept = $employees->groupBy('department_id');
-	$employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+	$employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
 	$isWagesSummary = ($salaryPrintMode ?? '') === 'wages';
 	$isBonus        = ($salaryPrintMode ?? '') === 'bonus';
 
@@ -181,7 +181,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 		};
 	}
 
-	$hrOptions = \App\Services\HrOptionsService::getOptions();
+	$hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
 	$departmentMap = collect($hrOptions['departments'])->pluck('name', 'id');
 	$sectionMap = collect($hrOptions['sections'])->pluck('name', 'id');
 	$subSectionMap = collect($hrOptions['subSections'])->pluck('name', 'id');
@@ -226,7 +226,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					'present' => 0, 'absent' => 0,
 				];
 				foreach ($secEmps as $emp) {
-					$sd = \App\Services\SalaryReportService::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
+					$sd = \ME\Hr\Services\SalaryReportService::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
 					$row['basic'] += $sd['basic'];
 					$row['house_rent'] += $sd['house_rent'];
 					$row['medical'] += $sd['medical'];
@@ -665,7 +665,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				$secTotals = $grandBase; // same shape, reset to zero
 
 				foreach ($secEmps as $emp) {
-					$sd = \App\Services\SalaryReportService::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
+					$sd = \ME\Hr\Services\SalaryReportService::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
 
 					$salaryTotal = $sd['basic'] + $sd['house_rent'] + $sd['medical'] + $sd['transport'] + $sd['food_allow'];
 					$otRate = (float) ($sd['ot_rate'] ?? 0);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace ME\Hr\Services;
 
 use Carbon\Carbon;
 use ME\Hr\Models\HrEmployee as User;
@@ -103,7 +103,7 @@ class EmployeeAttendanceService
         $from = Carbon::parse($fromDate);
         $to = Carbon::parse($toDate);
         $factoryNo = hr_factory('factory_no');
-        $holidays = \App\Services\HrOptionsService::getOptions()['holidays'] ?? collect();
+        $holidays = \ME\Hr\Services\HrOptionsService::getOptions()['holidays'] ?? collect();
 
         $attendanceMap = \ME\Hr\Models\HrAttendance::query()
             ->where('employee_id', $employeeId)

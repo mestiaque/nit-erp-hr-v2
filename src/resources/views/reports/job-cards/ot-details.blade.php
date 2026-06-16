@@ -19,7 +19,7 @@
 
         @php
             $firstEmp = $sectionEmps->first();
-            $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
 
             $employeeData = $employeeDataFn($firstEmp);
             $section = $employeeData['section'] ?? '';
@@ -58,7 +58,7 @@
                 @foreach($sectionEmps as $employee)
 
                     @php
-                        $data = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                        $data = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                             $employee->id,
                             $from,
                             $to

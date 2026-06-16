@@ -14,7 +14,7 @@
     @forelse($bySection as $sectionId => $sectionEmps)
         @php
             $firstEmp = $sectionEmps->first();
-            $employeeDataFn = \App\Services\HrOptionsService::getOptionsForEmployee();
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
             $employeeData = $employeeDataFn($firstEmp, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
             $companyName = $employeeData['company_name'] ?? $t('প্রযোজ্য নয়', 'N/A');
             $companyAddress = $employeeData['company_address'] ?? $t('প্রযোজ্য নয়', 'N/A');
@@ -74,7 +74,7 @@
 
                 @foreach($sectionEmps as $employee)
                     @php
-                        $data = \App\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                        $data = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                             $employee->id,
                             $from,
                             $to
