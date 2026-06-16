@@ -131,7 +131,7 @@ class HrEmployeeController extends Controller
             'request' => $request,
             'options' => $options,
             'basicInfoOptions' => $basicInfoOptions,
-            'newEmployee' => new User(),
+            'newEmployee' => new HrEmployee(),
         ]);
     }
      
@@ -161,7 +161,7 @@ class HrEmployeeController extends Controller
         $payload['status'] = $this->normalizeUserStatus((string) $payload['status']);
         $payload = $this->mapLegacyEmployeePayloadToHrColumns($payload);
 
-        $employee = new User();
+        $employee = new HrEmployee();
         $employee->fill($payload);
         $this->applyExtendedProfileFields($employee, $payload);
         $this->syncDesignationSalaryToEmployee($employee, $payload, true);
@@ -172,7 +172,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Employee created successfully.');
     }
 
-    public function updateProfile(Request $request, User $employee): RedirectResponse
+    public function updateProfile(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -214,7 +214,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Employee profile updated.');
     }
 
-    public function updateSalary(Request $request, User $employee): RedirectResponse
+    public function updateSalary(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -239,7 +239,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Salary info updated.');
     }
 
-    public function updateAddress(Request $request, User $employee): RedirectResponse
+    public function updateAddress(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -264,7 +264,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Address info updated.');
     }
 
-    public function updateBasicInfo(Request $request, User $employee): RedirectResponse
+    public function updateBasicInfo(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -410,7 +410,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Basic info updated.');
     }
 
-    public function updateNominee(Request $request, User $employee): RedirectResponse
+    public function updateNominee(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -456,7 +456,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Nominee info updated.');
     }
 
-    public function updateAgeVerification(Request $request, User $employee): RedirectResponse
+    public function updateAgeVerification(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -474,7 +474,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Age verification info updated.');
     }
 
-    public function updateResign(Request $request, User $employee): RedirectResponse
+    public function updateResign(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -495,7 +495,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Lefty/Resign info updated.');
     }
 
-    public function updateFinalSettlement(Request $request, User $employee)
+    public function updateFinalSettlement(Request $request, HrEmployee $employee)
     {
         $this->ensureEmployee($employee);
 
@@ -516,7 +516,7 @@ class HrEmployeeController extends Controller
             $designationEn = null;
 
             if (!empty($employee->designation_id)) {
-                if (Schema::hasTable((new Designation())->getTable())) {
+                if (Schema::hasTable((new HrDesignation())->getTable())) {
                     $designationRow = HrDesignation::query()->find($employee->designation_id);
                     $designationBn = data_get($designationRow, 'bn_name');
                     $designationEn = data_get($designationRow, 'name');
@@ -534,12 +534,12 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Final settlement info updated.');
     }
 
-    public function incrementsPage(User $employee)
+    public function incrementsPage(HrEmployee $employee)
     {
         $this->ensureEmployee($employee);
 
         $rows = collect();
-        $table = (new EmployeeIncrement())->getTable();
+        $table = (new HrEmployeeSalaryIncrement())->getTable();
         if (Schema::hasTable($table)) {
             $query = HrEmployeeSalaryIncrement::query();
             if (Schema::hasColumn($table, 'user_id')) {
@@ -587,7 +587,7 @@ class HrEmployeeController extends Controller
         return view('hr::employees.pages.increments', compact('employee', 'rows', 'employeeMeta'));
     }
 
-    public function incrementsStore(Request $request, User $employee): RedirectResponse
+    public function incrementsStore(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
         $payload = $request->validate([
@@ -620,17 +620,15 @@ class HrEmployeeController extends Controller
             'previous_salary_comp_2' => $prev_comp_2,
             'new_salary_comp_2' => $new_comp_2,
         ]);
-        $employee->gross_salary = $new_salary;
         $this->upsertSalaryInfo($employee, [
             'gross_salary' => $new_salary,
             'gross_salary_comp_1' => $new_comp_1,
             'gross_salary_comp_2' => $new_comp_2,
         ]);
-        $employee->save();
         return redirect()->route('hr-center.employees.increments.page', $employee->id)->with('success', 'Increment added.');
     }
 
-    public function incrementsUpdate(Request $request, User $employee): RedirectResponse
+    public function incrementsUpdate(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -676,14 +674,13 @@ class HrEmployeeController extends Controller
             'gross_salary_comp_1' => $new_comp_1,
             'gross_salary_comp_2' => $new_comp_2,
         ]);
-        $employee->save();
 
         return redirect()->route('hr-center.employees.increments.page', $employee->id)
                         ->with('success', 'Increment updated successfully.');
     }
 
 
-    public function earningsDeductionsPage(User $employee)
+    public function earningsDeductionsPage(HrEmployee $employee)
     {
         $this->ensureEmployee($employee);
 
@@ -725,7 +722,7 @@ class HrEmployeeController extends Controller
         return view('hr::employees.pages.earnings-deductions', compact('employee', 'rows', 'employeeMeta'));
     }
 
-    public function earningsDeductionsStore(Request $request, User $employee): RedirectResponse
+    public function earningsDeductionsStore(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -755,7 +752,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.earnings.page', $employee->id)->with('success', 'Earnings & deductions entry added.');
     }
 
-    public function earningsDeductionsUpdate(Request $request, User $employee): RedirectResponse
+    public function earningsDeductionsUpdate(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -788,7 +785,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.earnings.page', $employee->id)->with('success', 'Earnings & deductions entry updated.');
     }
 
-    public function earningsDeductionsDelete(Request $request, User $employee): RedirectResponse
+    public function earningsDeductionsDelete(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -805,7 +802,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.earnings.page', $employee->id)->with('success', 'Earnings & deductions entry deleted.');
     }
 
-    public function leavesPage(User $employee)
+    public function leavesPage(HrEmployee $employee)
     {
         $this->ensureEmployee($employee);
 
@@ -835,7 +832,7 @@ class HrEmployeeController extends Controller
                 ];
             });
 
-        $leaveTypes = Schema::hasTable((new LeaveInfo())->getTable())
+        $leaveTypes = Schema::hasTable((new HrLeaveInfo())->getTable())
             ? HrLeaveInfo::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'code', 'days'])
             : collect();
 
@@ -868,7 +865,7 @@ class HrEmployeeController extends Controller
         return view('hr::employees.pages.leaves', compact('employee', 'rows', 'leaveTypes', 'leaveSummary', 'employeeMeta'));
     }
 
-    public function leavesStore(Request $request, User $employee): RedirectResponse
+    public function leavesStore(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
         $payload = $request->validate([
@@ -899,7 +896,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave added.');
     }
 
-    public function leavesUpdate(Request $request, User $employee): RedirectResponse
+    public function leavesUpdate(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -932,7 +929,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave updated.');
     }
 
-    public function leavesDelete(Request $request, User $employee): RedirectResponse
+    public function leavesDelete(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
 
@@ -949,7 +946,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave deleted.');
     }
 
-    public function printSection(User $employee, string $section)
+    public function printSection(HrEmployee $employee, string $section)
     {
         $this->ensureEmployee($employee);
 
@@ -974,7 +971,7 @@ class HrEmployeeController extends Controller
             ->get(['id', 'name', 'bn_name', 'code']);
 
         $paymentMethodColumns = ['id', 'name', 'code'];
-        if (Schema::hasColumn((new PaymentMethod())->getTable(), 'bn_name')) {
+        if (Schema::hasColumn((new HrPaymentMethod())->getTable(), 'bn_name')) {
             $paymentMethodColumns[] = 'bn_name';
         }
 
@@ -983,7 +980,7 @@ class HrEmployeeController extends Controller
             ->get($paymentMethodColumns);
 
         $countryColumns = ['id', 'name'];
-        if (Schema::hasColumn((new GeoLocation())->getTable(), 'bn_name')) {
+        if (Schema::hasColumn((new HrGeoLocation())->getTable(), 'bn_name')) {
             $countryColumns[] = 'bn_name';
         }
 
@@ -1027,7 +1024,7 @@ class HrEmployeeController extends Controller
 
     private function resolveLeaveType(string $leaveCode): ?LeaveInfo
     {
-        $table = (new LeaveInfo())->getTable();
+        $table = (new HrLeaveInfo())->getTable();
         if (!Schema::hasTable($table)) {
             return null;
         }
@@ -1038,7 +1035,7 @@ class HrEmployeeController extends Controller
             ->first(['id', 'name', 'code', 'days']);
     }
 
-    public function destroy(User $employee): RedirectResponse
+    public function destroy(HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
         $employee->delete();
@@ -1046,7 +1043,7 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Employee deleted successfully.');
     }
 
-    private function ensureEmployee(User $employee): void
+    private function ensureEmployee(HrEmployee $employee): void
     {
         // dd($employee, HrEmployee::query()->filterByType('employee')->whereKey($employee->id)->exists());
         abort_unless(
@@ -1089,7 +1086,7 @@ class HrEmployeeController extends Controller
         }
     }
 
-    private function otherInfo(User $employee): array
+    private function otherInfo(HrEmployee $employee): array
     {
         $si  = $employee->salaryInfo;
         $nom = $employee->nomineeRecord;
@@ -1131,7 +1128,7 @@ class HrEmployeeController extends Controller
         ];
     }
 
-    private function upsertNomineeInfo(User $employee, array $payload, ?string $imagePath = null): void
+    private function upsertNomineeInfo(HrEmployee $employee, array $payload, ?string $imagePath = null): void
     {
         $nominee = HrEmployeeNominee::firstOrNew(['employee_id' => $employee->id]);
         $nominee->employee_id = $employee->id;
@@ -1161,7 +1158,7 @@ class HrEmployeeController extends Controller
         $nominee->save();
     }
 
-    private function upsertAgeVerification(User $employee, array $payload): void
+    private function upsertAgeVerification(HrEmployee $employee, array $payload): void
     {
         $av = HrEmployeeAgeVerification::firstOrNew(['employee_id' => $employee->id]);
         $av->employee_id = $employee->id;
@@ -1173,7 +1170,7 @@ class HrEmployeeController extends Controller
         $av->save();
     }
 
-    private function upsertSeparation(User $employee, array $payload, bool $withPaid = false): void
+    private function upsertSeparation(HrEmployee $employee, array $payload, bool $withPaid = false): void
     {
         $sep = HrEmployeeSeparation::firstOrNew(['employee_id' => $employee->id]);
         $sep->employee_id = $employee->id;
@@ -1185,7 +1182,7 @@ class HrEmployeeController extends Controller
         $sep->save();
     }
 
-    private function upsertFinalSettlement(User $employee, array $payload): void
+    private function upsertFinalSettlement(HrEmployee $employee, array $payload): void
     {
         $fs = HrEmployeeFinalSettlement::firstOrNew(['employee_id' => $employee->id]);
         $fs->employee_id = $employee->id;
@@ -1261,7 +1258,7 @@ class HrEmployeeController extends Controller
         return $map;
     }
 
-    private function applyExtendedProfileFields(User $employee, array $payload): void
+    private function applyExtendedProfileFields(HrEmployee $employee, array $payload): void
     {
         if (Schema::hasColumn($this->employeeTable(), 'sub_section_id')) {
             $employee->sub_section_id = $payload['sub_section_id'] ?? null;
@@ -1289,7 +1286,7 @@ class HrEmployeeController extends Controller
         }
     }
 
-    private function syncDesignationSalaryToEmployee(User $employee, array $payload, bool $force = false): void
+    private function syncDesignationSalaryToEmployee(HrEmployee $employee, array $payload, bool $force = false): void
     {
         $designationId = (int) ($payload['designation_id'] ?? $employee->designation_id ?? 0);
         if ($designationId <= 0) {
@@ -1378,9 +1375,9 @@ class HrEmployeeController extends Controller
         ]);
     }
 
-    private function upsertSalaryInfo(User $employee, array $payload): void
+    private function upsertSalaryInfo(HrEmployee $employee, array $payload): void
     {
-        $existing = $employee->salaryInfo ?: new EmployeeSalaryInfo();
+        $existing = $employee->salaryInfo ?: new HrEmployeeSalaryInfo();
         $existing->employee_id = $employee->id;
         $existing->gross_salary = $payload['gross_salary'] ?? $existing->gross_salary ?? null;
         $existing->gross_salary_comp1 = $payload['gross_salary_comp_1'] ?? $existing->gross_salary_comp1 ?? null;
@@ -1401,9 +1398,9 @@ class HrEmployeeController extends Controller
         $existing->save();
     }
 
-    private function upsertBasicInfo(User $employee, array $payload): void
+    private function upsertBasicInfo(HrEmployee $employee, array $payload): void
     {
-        $basicInfo = $employee->basicInfo ?: new EmployeeBasicInfo();
+        $basicInfo = $employee->basicInfo ?: new HrEmployeeBasicInfo();
         $basicInfo->employee_id = $employee->id;
         $basicInfo->father_name = $payload['father_name'] ?? $basicInfo->father_name ?? null;
         $basicInfo->bn_father_name = $payload['father_name_bn'] ?? $basicInfo->bn_father_name ?? null;
@@ -1446,7 +1443,7 @@ class HrEmployeeController extends Controller
         $basicInfo->save();
     }
 
-    private function upsertAddressInfo(User $employee, array $payload): void
+    private function upsertAddressInfo(HrEmployee $employee, array $payload): void
     {
         $this->upsertSingleAddress($employee, 'permanent', [
             'district' => $payload['permanent_district'] ?? null,
@@ -1467,7 +1464,7 @@ class HrEmployeeController extends Controller
         ]);
     }
 
-    private function upsertSingleAddress(User $employee, string $type, array $payload): void
+    private function upsertSingleAddress(HrEmployee $employee, string $type, array $payload): void
     {
         $address = HrEmployeeAddress::firstOrNew([
             'employee_id' => $employee->id,
@@ -1531,7 +1528,7 @@ class HrEmployeeController extends Controller
 
     private function employeeTable(): string
     {
-        return (new User())->getTable();
+        return (new HrEmployee())->getTable();
     }
 
     private function mapLegacyEmployeePayloadToHrColumns(array $payload): array

@@ -68,9 +68,9 @@ class HrDashboardController extends Controller
 
             // Employment status breakdown
             $statusBreakdown = HrEmployee::query()
-                ->selectRaw("COALESCE(NULLIF(employment_status,''), 'regular') as status, COUNT(*) as total")
+                ->selectRaw("IFNULL(NULLIF(employment_status, ''), 'regular') as status, COUNT(*) as total")
                 ->whereNull('exited_at')
-                ->groupBy('status')
+                ->groupBy('employment_status')
                 ->pluck('total', 'status');
 
             // Recent joiners

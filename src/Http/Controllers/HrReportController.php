@@ -956,16 +956,16 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('sub_section')) {
-            $subSectionCol = Schema::hasColumn((new User())->getTable(), 'sub_section_id') ? 'sub_section_id'
-                : (Schema::hasColumn((new User())->getTable(), 'hr_sub_section_id') ? 'hr_sub_section_id' : null);
+            $subSectionCol = Schema::hasColumn((new HrEmployee())->getTable(), 'sub_section_id') ? 'sub_section_id'
+                : (Schema::hasColumn((new HrEmployee())->getTable(), 'hr_sub_section_id') ? 'hr_sub_section_id' : null);
             if ($subSectionCol) {
                 $query->where($subSectionCol, (int) $request->sub_section);
             }
         }
 
         if ($request->filled('working_place')) {
-            $wpCol = Schema::hasColumn((new User())->getTable(), 'working_place_id') ? 'working_place_id'
-                : (Schema::hasColumn((new User())->getTable(), 'hr_working_place_id') ? 'hr_working_place_id' : null);
+            $wpCol = Schema::hasColumn((new HrEmployee())->getTable(), 'working_place_id') ? 'working_place_id'
+                : (Schema::hasColumn((new HrEmployee())->getTable(), 'hr_working_place_id') ? 'hr_working_place_id' : null);
             if ($wpCol) {
                 $query->where($wpCol, (int) $request->working_place);
             }
@@ -1208,7 +1208,7 @@ class HrReportController extends Controller
             $query->where('section_id', $request->section);
         }
 
-        if ($request->filled('subsection') && Schema::hasColumn((new User())->getTable(), 'sub_section_id')) {
+        if ($request->filled('subsection') && Schema::hasColumn((new HrEmployee())->getTable(), 'sub_section_id')) {
             $query->where('sub_section_id', $request->subsection);
         }
 
@@ -1219,10 +1219,10 @@ class HrReportController extends Controller
         if ($request->filled('working_place')) {
             $workingPlace = trim((string) $request->working_place);
             $query->where(function ($builder) use ($workingPlace) {
-                if (Schema::hasColumn((new User())->getTable(), 'working_place_id')) {
+                if (Schema::hasColumn((new HrEmployee())->getTable(), 'working_place_id')) {
                     $builder->orWhere('working_place_id', $workingPlace);
                 }
-                if (Schema::hasColumn((new User())->getTable(), 'location')) {
+                if (Schema::hasColumn((new HrEmployee())->getTable(), 'location')) {
                     $builder->orWhere('location', 'like', '%' . $workingPlace . '%');
                 }
             });
