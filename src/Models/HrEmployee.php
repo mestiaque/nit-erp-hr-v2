@@ -2,7 +2,6 @@
 
 namespace ME\Hr\Models;
 
-use App\Models\Media;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,17 +13,18 @@ class HrEmployee extends BaseHrModel
 
     public function imageFile(): HasOne
     {
-        return $this->hasOne(Media::class, 'src_id')->where('src_type', 6)->where('use_Of_file', 1);
+        $mediaClass = class_exists(\App\Models\Media::class) ? \App\Models\Media::class : self::class;
+        return $this->hasOne($mediaClass, 'src_id')->where('src_type', 6)->where('use_Of_file', 1);
     }
 
     public function image($type = null): string
     {
-        if ($this->imageFile) {
+        if (class_exists(\App\Models\Media::class) && $this->imageFile) {
             return match ($type) {
-                'sm'    => $this->imageFile->file_url_sm,
-                'md'    => $this->imageFile->file_url_md,
-                'lg'    => $this->imageFile->file_url_lg,
-                default => $this->imageFile->file_url,
+                'sm'    => $this->imageFile->file_url_sm ?? 'medies/profile.png',
+                'md'    => $this->imageFile->file_url_md ?? 'medies/profile.png',
+                'lg'    => $this->imageFile->file_url_lg ?? 'medies/profile.png',
+                default => $this->imageFile->file_url   ?? 'medies/profile.png',
             };
         }
         return 'medies/profile.png';

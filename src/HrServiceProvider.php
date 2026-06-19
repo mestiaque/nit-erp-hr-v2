@@ -1,12 +1,16 @@
 <?php
 namespace ME\Hr;
 
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use ME\Hr\Http\Middleware\HrMachineTokenMiddleware;
 
 class HrServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(Router $router)
     {
+        $router->aliasMiddleware('hr.machine', HrMachineTokenMiddleware::class);
+
         if (file_exists(__DIR__ . '/routes/web.php')) {
             $this->loadRoutesFrom(__DIR__ . '/routes/web.php');
         }

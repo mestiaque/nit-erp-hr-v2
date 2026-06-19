@@ -11,6 +11,7 @@ use ME\Hr\Http\Controllers\HrReportController;
 use ME\Hr\Http\Controllers\ProductionRateController;
 use ME\Hr\Http\Controllers\RosterController;
 use ME\Hr\Http\Controllers\RegularToWeekendController;
+use ME\Hr\Http\Controllers\AttendanceMachineController;
 
 $route = config('hr.route');
 
@@ -97,8 +98,21 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::post('/production-rate/{id}/assign-progress', [ProductionRateController::class, 'assignProgress'])->name('production-rate.assign-progress');
 
 			// Roster Management
-	Route::get('/rosters', [RosterController::class, 'index'])->name('rosters.index');
-	Route::get('/rosters/create', [RosterController::class, 'create'])->name('rosters.create');
-	Route::post('/rosters', [RosterController::class, 'store'])->name('rosters.store');
-	Route::delete('/rosters/{id}', [RosterController::class, 'destroy'])->name('rosters.destroy');
+		Route::get('/rosters', [RosterController::class, 'index'])->name('rosters.index');
+		Route::get('/rosters/create', [RosterController::class, 'create'])->name('rosters.create');
+		Route::post('/rosters', [RosterController::class, 'store'])->name('rosters.store');
+		Route::delete('/rosters/{id}', [RosterController::class, 'destroy'])->name('rosters.destroy');
+
+
+		Route::get('/zkteco-data-import',[AttendanceMachineController::class,'import'])->name('importZkteco');
+		Route::post('/import-zkteco-data',[AttendanceMachineController::class,'importAction'])->name('importZktecoAction');
 	});
+
+// Machine API — token-protected, no session middleware
+Route::middleware(['api', 'hr.machine'])
+    ->prefix('api/hr-machine')
+    ->name('hr.machine.')
+    ->group(function () {
+        Route::post('/data', [AttendanceMachineController::class, 'receiveData'])->name('data');
+        Route::post('/bulk', [AttendanceMachineController::class, 'receiveBulkData'])->name('bulk');
+    });

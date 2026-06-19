@@ -27,6 +27,13 @@ return [
         'as' => 'hr-center.',
         'middleware' => ['web', 'auth', 'redirectUser'],
     ],
+
+    /*
+     | Token for ZKTeco / attendance machine API endpoints.
+     | Set HR_MACHINE_API_TOKEN in your .env file.
+     | Leave null to disable the machine API endpoints.
+     */
+    'machine_api_token' => env('HR_MACHINE_API_TOKEN'),
     'legacy_links' => [
         [
             'title' => 'Employee Type',

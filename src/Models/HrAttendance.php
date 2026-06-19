@@ -15,4 +15,19 @@ class HrAttendance extends BaseHrModel
     {
         return $this->total_ot_minute;
     }
+
+    public function setOvertimeMinutesAttribute($value): void
+    {
+        $this->attributes['total_ot_minute'] = $value;
+    }
+
+    public function getInMinutesAttribute(): ?int
+    {
+        return $this->total_working_minute;
+    }
+
+    public function setInMinutesAttribute($value): void
+    {
+        $this->attributes['total_working_minute'] = $value;
+    }
 }

@@ -221,108 +221,94 @@ return [
                 ],
                 [
                     'title'      => 'Reports',
-                    'icon'       => 'fa-solid fa-arrow-right',
-                    'icon_color' => 'text-warning',
+                    'icon'       => 'fa-solid fa-chart-bar',
+                    'icon_color' => 'text-info',
                     'permission' => '',
                     'children'   => [
+
+                        // ── Employee ──────────────────────────────────────
                         [
                             'title'      => 'Employee',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/employee',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_employee_report',
-                        ],
-                        [
-                            'title'      => 'Monthly',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/monthly',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_monthly_report',
-                        ],
-                        [
-                            'title'      => 'Personal File',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/personal-file',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_personal_file_report',
-                        ],
-                        // [
-                        //     'title'      => 'Attendance',
-                        //     'icon'       => 'fa-solid fa-arrow-right',
-                        //     'route'      => '/admin/hr-center/reports/attendance',
-                        //     'icon_color' => 'text-warning',
-                        //     'permission' => 'hr_attendance_report',
-                        // ],
-                        [
-                            'title'      => 'Job Card Report',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/job-card-report',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_job_card_report',
-                        ],
-                        [
-                            'title'      => 'Attendance Report',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/attendance-report',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_attendance_report',
-                        ],
-                        [
-                            'title'      => 'Attendance Report With OT',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/attendance-with-ot',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_attendance_with_ot_report',
-                        ],
-                        [
-                            'title'      => 'Monthly Late Report',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/monthly-late-report',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_monthly_late_report',
-                        ],
-                        [
-                            'title'      => 'Daily Manpower Report',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/daily-manpower-report',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_daily_manpower_report',
-                        ],
-                        [
-                            'title'      => 'Tiffin / Diner / Night',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/meal-report',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_meal_report',
-                        ],
-                        [
-                            'title'      => 'Bonus Sheet',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'icon_color' => 'text-success',
+                            'icon'       => 'fa-solid fa-users',
+                            'icon_color' => 'text-primary',
                             'permission' => '',
                             'children'   => [
                                 [
-                                    'title'      => 'Fixed',
+                                    'title'      => 'Employee List',
                                     'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=fixed',
+                                    'route'      => '/admin/hr-center/reports/employee',
                                     'icon_color' => 'text-warning',
-                                    'permission' => 'hr_bonus_sheet_fixed',
+                                    'permission' => 'hr_employee_report',
                                 ],
                                 [
-                                    'title'      => 'Production',
+                                    'title'      => 'Personal File',
                                     'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=production',
+                                    'route'      => '/admin/hr-center/reports/personal-file',
                                     'icon_color' => 'text-warning',
-                                    'permission' => 'hr_bonus_sheet_production',
+                                    'permission' => 'hr_personal_file_report',
+                                ],
+                                [
+                                    'title'      => 'Daily Manpower',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/daily-manpower-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_daily_manpower_report',
                                 ],
                             ],
                         ],
+
+                        // ── Attendance ────────────────────────────────────
                         [
-                            'title'      => 'Salary Report',
-                            'icon'       => 'fa-solid fa-arrow-right',
+                            'title'      => 'Attendance',
+                            'icon'       => 'fa-solid fa-calendar-check',
                             'icon_color' => 'text-success',
                             'permission' => '',
                             'children'   => [
+                                [
+                                    'title'      => 'Attendance Report',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/attendance-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_attendance_report',
+                                ],
+                                [
+                                    'title'      => 'Attendance With OT',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/attendance-with-ot',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_attendance_with_ot_report',
+                                ],
+                                [
+                                    'title'      => 'Monthly Late Report',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/monthly-late-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_monthly_late_report',
+                                ],
+                                [
+                                    'title'      => 'Tiffin / Diner / Night',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/meal-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_meal_report',
+                                ],
+                            ],
+                        ],
+
+                        // ── Salary & Payroll ──────────────────────────────
+                        [
+                            'title'      => 'Salary & Payroll',
+                            'icon'       => 'fa-solid fa-money-bill-wave',
+                            'icon_color' => 'text-success',
+                            'permission' => '',
+                            'children'   => [
+                                [
+                                    'title'      => 'Monthly Processing',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/monthly',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_monthly_report',
+                                ],
                                 [
                                     'title'      => 'Fixed Salary',
                                     'icon'       => 'fa-solid fa-arrow-right',
@@ -351,85 +337,145 @@ return [
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_salary_report_wage',
                                 ],
+                                [
+                                    'title'      => 'Pay Slip',
+                                    'icon'       => 'fa-solid fa-file-invoice-dollar',
+                                    'route'      => '/admin/hr-center/reports/pay-slip',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'pay_slip_report',
+                                ],
                             ],
                         ],
+
+                        // ── Job Card ──────────────────────────────────────
                         [
-                            'title'      => 'Pro. Job Card',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/reports/pro-job-card',
-                            'icon_color' => 'text-success',
-                            'permission' => 'hr_pro_job_card',
+                            'title'      => 'Job Card',
+                            'icon'       => 'fa-solid fa-id-card',
+                            'icon_color' => 'text-warning',
+                            'permission' => '',
+                            'children'   => [
+                                [
+                                    'title'      => 'Job Card Report',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/job-card-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_job_card_report',
+                                ],
+                                [
+                                    'title'      => 'Pro. Job Card',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/pro-job-card',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_pro_job_card',
+                                ],
+                            ],
                         ],
+
+                        // ── Bonus ─────────────────────────────────────────
                         [
-                            'title'       => 'Pay Slip Report',
-                            'icon'        => 'fa-solid fa-file-invoice-dollar',
-                            'route'       => '/admin/hr-center/reports/pay-slip',
-                            'icon_color'  => 'text-danger',
-                            'permission'  => 'pay_slip_report',
+                            'title'      => 'Bonus Sheet',
+                            'icon'       => 'fa-solid fa-gift',
+                            'icon_color' => 'text-danger',
+                            'permission' => '',
+                            'children'   => [
+                                [
+                                    'title'      => 'Fixed Bonus',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=fixed',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_bonus_sheet_fixed',
+                                ],
+                                [
+                                    'title'      => 'Production Bonus',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=production',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_bonus_sheet_production',
+                                ],
+                            ],
                         ],
-                    ]
+
+                    ],
                 ],
+
+
+                // [
+                //     'title'      => 'Production Rate',
+                //     'icon'       => 'fa-solid fa-arrow-right',
+                //     'icon_color' => 'text-info',
+                //     'permission' => '',
+                //     'children'   => [
+                //         [
+                //             'title'      => 'Linking',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=linking',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_linking',
+                //         ],
+                //         [
+                //             'title'      => 'Triming',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=triming',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_triming',
+                //         ],
+
+                //         [
+                //             'title'      => 'Mending',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=mending',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_mending',
+                //         ],
+                //         [
+                //             'title'      => 'Hole/Button/BarTack',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=hole-button-bartack',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_hole_button_bartack',
+                //         ],
+                //         [
+                //             'title'      => 'Sewing',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=sewing',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_sewing',
+                //         ],
+                //         [
+                //             'title'      => 'Ironing',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=ironing',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_ironing',
+                //         ],
+                //         [
+                //             'title'      => 'Zipper',
+                //             'icon'       => 'fa-solid fa-arrow-right',
+                //             'route'      => '/admin/hr-center/production-rate?process=zipper',
+                //             'icon_color' => 'text-warning',
+                //             'permission' => 'hr_production_rate_zipper',
+                //         ],
+
+                //     ]
+                // ],
 
 
                 [
-                    'title'      => 'Production Rate',
-                    'icon'       => 'fa-solid fa-arrow-right',
-                    'icon_color' => 'text-info',
+                    'title' => 'ZKTeco Integration',
+                    'icon' => 'fa-brands fa-accusoft',
                     'permission' => '',
-                    'children'   => [
+                    'children' => [
                         [
-                            'title'      => 'Linking',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=linking',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_linking',
+                            'title' => 'Data Import',
+                            'icon' => 'fa fa-file-import',
+                            'route' => 'admin/hr-center/zkteco-data-import',
+                            'permission' => '',
                         ],
-                        [
-                            'title'      => 'Triming',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=triming',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_triming',
-                        ],
-
-                        [
-                            'title'      => 'Mending',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=mending',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_mending',
-                        ],
-                        [
-                            'title'      => 'Hole/Button/BarTack',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=hole-button-bartack',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_hole_button_bartack',
-                        ],
-                        [
-                            'title'      => 'Sewing',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=sewing',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_sewing',
-                        ],
-                        [
-                            'title'      => 'Ironing',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=ironing',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_ironing',
-                        ],
-                        [
-                            'title'      => 'Zipper',
-                            'icon'       => 'fa-solid fa-arrow-right',
-                            'route'      => '/admin/hr-center/production-rate?process=zipper',
-                            'icon_color' => 'text-warning',
-                            'permission' => 'hr_production_rate_zipper',
-                        ],
-
                     ]
-                ],
+                ]
+
+
+
             ]
         ],
     ],
