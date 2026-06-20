@@ -13,6 +13,13 @@ return [
             'order'      => 10,
             'children'   => [
                 [
+                    'title'      => 'HR Dashboard',
+                    'icon'       => 'fa-solid fa-gauge-high',
+                    'icon_color' => 'text-primary',
+                    'permission' => '',
+                    'route'      => '/admin/hr-center',
+                ],
+                [
                     'title'      => 'Basic Info.',
                     'icon'       => 'fa-solid fa-gear',
                     'icon_color' => 'text-info',
@@ -461,7 +468,7 @@ return [
 
 
                 [
-                    'title' => 'ZKTeco Integration',
+                    'title' => 'Attendance Import',
                     'icon' => 'fa-brands fa-accusoft',
                     'permission' => '',
                     'children' => [

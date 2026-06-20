@@ -125,6 +125,11 @@ class HrEmployee extends BaseHrModel
         return $this->hasMany(HrEmployeeSalaryIncrement::class, 'employee_id');
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(HrEmployeeDocument::class, 'employee_id');
+    }
+
     public function otherInfo(): array
     {
         return [

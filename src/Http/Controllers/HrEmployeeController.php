@@ -33,6 +33,8 @@ use ME\Hr\Models\HrEmployeeAgeVerification;
 use ME\Hr\Models\HrEmployeeSeparation;
 use ME\Hr\Models\HrEmployeeFinalSettlement;
 use ME\Hr\Models\HrEmployeeOtherTransaction;
+use ME\Hr\Models\HrEmployeeDocument;
+use Illuminate\Support\Facades\Storage;
 
 class HrEmployeeController extends Controller
 {
@@ -1033,6 +1035,73 @@ class HrEmployeeController extends Controller
             ->where('status', 'active')
             ->where('code', $leaveCode)
             ->first(['id', 'name', 'code', 'days']);
+    }
+
+    public function documentsPage(HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        $documents = HrEmployeeDocument::where('employee_id', $employee->id)
+            ->latest()
+            ->get();
+
+        $options = $this->options();
+        $employeeMeta = [
+            'department'  => optional(collect($options['departments'] ?? [])->firstWhere('id', $employee->department_id))->name,
+            'designation' => optional(collect($options['designations'] ?? [])->firstWhere('id', $employee->designation_id))->name,
+        ];
+
+        return view('hr::employees.pages.documents', compact('employee', 'documents', 'employeeMeta'));
+    }
+
+    public function documentsStore(Request $request, HrEmployee $employee): RedirectResponse
+    {
+        $this->ensureEmployee($employee);
+
+        $request->validate([
+            'documents'           => 'required|array|min:1',
+            'documents.*.title'   => 'required|string|max:150',
+            'documents.*.files'   => 'required|array|min:1',
+            'documents.*.files.*' => 'required|file|mimes:jpg,jpeg,png,gif,pdf|max:10240',
+        ]);
+
+        $stored = 0;
+        foreach ($request->documents as $row) {
+            $title = trim($row['title']);
+            foreach ($row['files'] as $file) {
+                $ext      = strtolower($file->getClientOriginalExtension());
+                $path     = $file->store("hr/documents/{$employee->id}", 'public');
+                HrEmployeeDocument::create([
+                    'employee_id' => $employee->id,
+                    'title'       => $title,
+                    'file_path'   => $path,
+                    'file_name'   => $file->getClientOriginalName(),
+                    'file_type'   => $ext,
+                    'file_size'   => $file->getSize(),
+                ]);
+                $stored++;
+            }
+        }
+
+        return redirect()->route('hr-center.employees.documents.page', $employee->id)
+            ->with('success', "$stored টি ফাইল সফলভাবে আপলোড হয়েছে।");
+    }
+
+    public function documentsDelete(Request $request, HrEmployee $employee): RedirectResponse
+    {
+        $this->ensureEmployee($employee);
+
+        $request->validate(['document_id' => 'required|integer']);
+
+        $doc = HrEmployeeDocument::where('id', $request->document_id)
+            ->where('employee_id', $employee->id)
+            ->firstOrFail();
+
+        Storage::disk('public')->delete($doc->file_path);
+        $doc->delete();
+
+        return redirect()->route('hr-center.employees.documents.page', $employee->id)
+            ->with('success', 'Document deleted.');
     }
 
     public function destroy(HrEmployee $employee): RedirectResponse

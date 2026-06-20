@@ -50,6 +50,9 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::post('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesStore'])->name('employees.leaves.store');
 		Route::put('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesUpdate'])->name('employees.leaves.update');
 		Route::delete('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesDelete'])->name('employees.leaves.delete');
+		Route::get('/employees/{employee}/documents', [HrEmployeeController::class, 'documentsPage'])->name('employees.documents.page');
+		Route::post('/employees/{employee}/documents', [HrEmployeeController::class, 'documentsStore'])->name('employees.documents.store');
+		Route::delete('/employees/{employee}/documents', [HrEmployeeController::class, 'documentsDelete'])->name('employees.documents.delete');
 		Route::delete('/employees/{employee}', [HrEmployeeController::class, 'destroy'])->name('employees.destroy');
 		// Route::get('/employees/{employee}/print/{section}', [HrEmployeeController::class, 'printSection'])->name('employees.print.section');
 		Route::get('/reports/pro-job-card', [HrReportController::class, 'proJobCard'])->name('reports.pro-job-card');

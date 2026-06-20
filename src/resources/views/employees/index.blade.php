@@ -227,6 +227,7 @@
                                     <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn-custom" title="Salary Increment Info"><i class="fa-solid fa-arrow-trend-up"></i></a>
                                     <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn-custom" title="Earnings &amp; Deductions"><i class="fa-solid fa-scale-balanced"></i></a>
                                     <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn-custom" title="Leave Table"><i class="fa-solid fa-calendar-days"></i></a>
+                                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn-custom" title="Documents"><i class="fa-solid fa-folder-open"></i></a>
                                     <form method="post" action="{{ route('hr-center.employees.destroy', $employee->id) }}" style="display:inline" class="no-loader">@csrf @method('delete')<button type="button" class="btn-custom danger" title="Delete Employee" style="" onclick="if(confirm('Are you sure you want to delete this employee?')){if(typeof XLoader!=='undefined')XLoader.show();this.closest('form').submit();}"><i class="fa-solid fa-trash"></i></button></form>
                                 </td>
                             </tr>
