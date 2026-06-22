@@ -99,7 +99,7 @@ class HrReportController extends Controller
         DB::transaction(function () use ($rows, $payload) {
             foreach ($rows as $row) {
                 $employee = HrEmployee::query()
-                    ->filterByType('employee')
+                    
                     ->find(data_get($row, 'employee_row_id'));
                 if (!$employee) {
                     continue;
@@ -927,7 +927,7 @@ class HrReportController extends Controller
 
     private function employeeReportQuery(Request $request)
     {
-        $query = HrEmployee::query()->filterByType('employee');
+        $query = HrEmployee::query();
 
         if ($request->filled('employee_id')) {
             $query->where('employee_id', 'like', '%' . trim((string) $request->employee_id) . '%');
@@ -1166,7 +1166,7 @@ class HrReportController extends Controller
 
     private function personalFileReportScreen(Request $request, string $report)
     {
-        $query = HrEmployee::query()->filterByType('employee');
+        $query = HrEmployee::query();
 
         // ID card should skip placeholder IDs but must not hide valid employees
         // just because designation/department is missing.
@@ -1361,7 +1361,7 @@ class HrReportController extends Controller
     private function employeeReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->with(['designation', 'department'])
             ->orderBy('name')
             ->get()
@@ -1382,7 +1382,7 @@ class HrReportController extends Controller
     private function monthlyReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->selectRaw("DATE_FORMAT(join_date, '%Y-%m') as month")
             ->selectRaw('count(*) as total_employee')
             ->whereNotNull('join_date')
@@ -1396,7 +1396,7 @@ class HrReportController extends Controller
     private function machineIdReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->orderBy('employee_id')
             ->get(['employee_id', 'name', 'mobile', 'status'])
             ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'mobile' => $user->mobile, 'status' => $user->status]);
@@ -1407,7 +1407,7 @@ class HrReportController extends Controller
     private function jobCardReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->with(['designation', 'department'])
             ->orderBy('name')
             ->get()
@@ -1428,7 +1428,7 @@ class HrReportController extends Controller
     private function personalFileReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->orderBy('name')
             ->get()
             ->map(function (HrEmployee $user) {
@@ -1465,7 +1465,7 @@ class HrReportController extends Controller
     private function attendanceReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->with(['designation', 'department'])
             ->orderBy('name')
             ->get()
@@ -1504,7 +1504,7 @@ class HrReportController extends Controller
     private function productionJobCardReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->whereNotNull('floor_line_id')
             ->orderBy('floor_line_id')
             ->orderBy('name')
@@ -1538,7 +1538,7 @@ class HrReportController extends Controller
     private function salaryFixedReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->where(function ($builder) {
                 $builder->where('salary_type', 'fixed_rate')
                     ->orWhereNull('salary_type');
@@ -1553,7 +1553,7 @@ class HrReportController extends Controller
     private function salaryProductionReport(): array
     {
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->where('salary_type', 'price_rate')
             ->orderBy('name')
             ->get()
@@ -1567,7 +1567,7 @@ class HrReportController extends Controller
         $employeeTable = (new HrEmployee())->getTable();
 
         $rows = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->leftJoin('hr_departments as departments', 'departments.id', '=', $employeeTable . '.department_id')
             ->select('departments.name as department')
             ->selectRaw('count(' . $employeeTable . '.id) as total_employee')
@@ -2575,7 +2575,7 @@ class HrReportController extends Controller
             'wages-salary-summary'   => 'Wages & Salary Summary',
         ];
         $paymentModes = HrEmployee::query()
-            ->filterByType('employee')
+            
             ->whereNotNull('salary_type')
             ->distinct()
             ->pluck('salary_type')

@@ -40,7 +40,7 @@ class HrEmployeeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = HrEmployee::query()->filterByType('employee');
+        $query = HrEmployee::query();
 
         if ($request->filled('emp_id')) {
             $query->where('employee_id', 'like', '%' . trim((string) $request->emp_id) . '%');
@@ -1114,9 +1114,9 @@ class HrEmployeeController extends Controller
 
     private function ensureEmployee(HrEmployee $employee): void
     {
-        // dd($employee, HrEmployee::query()->filterByType('employee')->whereKey($employee->id)->exists());
+        // dd($employee, HrEmployee::query()->whereKey($employee->id)->exists());
         abort_unless(
-            HrEmployee::query()->filterByType('employee')->whereKey($employee->id)->exists(),
+            HrEmployee::query()->whereKey($employee->id)->exists(),
             404
         );
     }
@@ -1368,6 +1368,7 @@ class HrEmployeeController extends Controller
         }
 
         $si = $employee->salaryInfo;
+        // dd($si);
         $salaryInfo = [
             'gross_salary_comp_1'     => $si?->gross_salary_comp1,
             'gross_salary_comp_2'     => $si?->gross_salary_comp2,
