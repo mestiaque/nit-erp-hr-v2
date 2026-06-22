@@ -137,7 +137,9 @@ return [
             'model' => Country::class,
             'search' => ['name', 'bn_name'],
             'defaults' => ['type' => 'district'],
-            'index_fields' => ['name', 'bn_name'],
+            'with' => ['parent'],
+            'index_fields' => ['name', 'bn_name', 'parent_id'],
+            'index_column_labels' => ['parent_id' => 'Division'],
             'fields' => [
                 'parent_id' => ['label' => 'Division', 'type' => 'select', 'rules' => 'required|integer', 'source' => ['driver' => 'model', 'model' => Country::class, 'conditions' => ['type' => 'division'], 'label' => 'name']],
                 'name' => ['label' => 'Name', 'type' => 'text', 'rules' => 'required|string|max:250'],
@@ -149,7 +151,9 @@ return [
             'model' => Country::class,
             'search' => ['name', 'bn_name'],
             'defaults' => ['type' => 'police_station'],
-            'index_fields' => ['name', 'bn_name', 'parent_id'],
+            'with' => ['parent.parent'],
+            'index_fields' => ['name', 'bn_name', 'parent_id', 'grandparent_name'],
+            'index_column_labels' => ['parent_id' => 'District', 'grandparent_name' => 'Division'],
             'fields' => [
                 'parent_id' => ['label' => 'District', 'type' => 'select', 'rules' => 'required|integer', 'source' => ['driver' => 'model', 'model' => Country::class, 'conditions' => ['type' => 'district'], 'label' => 'name']],
                 'name' => ['label' => 'Name', 'type' => 'text', 'rules' => 'required|string|max:250'],

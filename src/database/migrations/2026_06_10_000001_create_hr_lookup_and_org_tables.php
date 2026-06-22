@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('bn_name', 150)->nullable();
             $table->unsignedInteger('parent_id')->nullable();
             $table->string('type', 50);
+            $table->integer('type_no', 5)->nullable();
             $table->tinyInteger('status')->default(1);
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();

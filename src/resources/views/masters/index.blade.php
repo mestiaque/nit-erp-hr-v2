@@ -71,7 +71,7 @@
                                 @else
                                     <th>ID</th>
                                     @foreach($entity['index_fields'] as $field)
-                                        <th>{{ ucwords(str_replace(['_', 'id'], [' ', ''], $field)) }}</th>
+                                        <th>{{ ($entity['index_column_labels'][$field] ?? null) ?: ucwords(str_replace(['_', 'id'], [' ', ''], $field)) }}</th>
                                     @endforeach
                                 @endif
                                 <th>Action</th>
@@ -92,7 +92,11 @@
                                     @else
                                         <td>{{ ($items->currentPage() - 1) * $items->perPage() + $loop->iteration }}</td>
                                         @foreach($entity['index_fields'] as $field)
-                                            <td>{{ is_scalar($item->{$field}) || is_null($item->{$field}) ? $item->{$field} : json_encode($item->{$field}) }}</td>
+                                            @if($field === 'parent_id' && $item->relationLoaded('parent'))
+                                                <td>{{ $item->parent?->name ?? '-' }}</td>
+                                            @else
+                                                <td>{{ is_scalar($item->{$field}) || is_null($item->{$field}) ? ($item->{$field} ?? '-') : '-' }}</td>
+                                            @endif
                                         @endforeach
                                     @endif
                                     <td>

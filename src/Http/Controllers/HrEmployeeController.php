@@ -166,10 +166,10 @@ class HrEmployeeController extends Controller
         $employee = new HrEmployee();
         $employee->fill($payload);
         $this->applyExtendedProfileFields($employee, $payload);
-        $this->syncDesignationSalaryToEmployee($employee, $payload, true);
         $employee->created_by = Auth::id();
         $employee->setTypes('employee');
         $employee->save();
+        $this->syncDesignationSalaryToEmployee($employee, $payload, true);
 
         return redirect()->route('hr-center.employees.index')->with('success', 'Employee created successfully.');
     }
