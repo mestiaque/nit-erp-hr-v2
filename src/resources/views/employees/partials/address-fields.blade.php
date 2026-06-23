@@ -1,6 +1,4 @@
 @php
-    $other = is_array($employee->other_information) ? $employee->other_information : json_decode($employee->other_information, true);
-    $addressInfo = data_get($other, 'address_info', []);
     $districtNames = collect($options['districts'] ?? [])->pluck('name')->map(fn ($name) => (string) $name)->all();
     $thanaNames = collect($options['thanas'] ?? [])->pluck('name')->map(fn ($name) => (string) $name)->all();
     $permanentDistrict = old('permanent_district', $employee->permanent_district);
@@ -9,10 +7,10 @@
     $presentDistrict = old('present_district', $employee->present_district);
     $presentUpazila = old('present_upazila', $employee->present_upazila);
     $presentPostOffice = old('present_post_office', $employee->present_post_office);
-    $permanentPostOfficeBn = old('permanent_post_office_bn', data_get($addressInfo, 'permanent_post_office_bn'));
-    $permanentVillageBn = old('permanent_village_bn', data_get($addressInfo, 'permanent_village_bn'));
-    $presentPostOfficeBn = old('present_post_office_bn', data_get($addressInfo, 'present_post_office_bn'));
-    $presentVillageBn = old('present_village_bn', data_get($addressInfo, 'present_village_bn'));
+    $permanentPostOfficeBn = old('permanent_post_office_bn', $employee->permanent_post_office_bn);
+    $permanentVillageBn = old('permanent_village_bn', $employee->permanent_village_bn);
+    $presentPostOfficeBn = old('present_post_office_bn', $employee->present_post_office_bn);
+    $presentVillageBn = old('present_village_bn', $employee->present_village_bn);
 
     $permanentDistrictObj = collect($options['districts'] ?? [])->firstWhere('name', $permanentDistrict);
     $permanentDistrictId = $permanentDistrictObj->id ?? null;

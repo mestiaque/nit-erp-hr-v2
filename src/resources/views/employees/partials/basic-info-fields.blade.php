@@ -47,8 +47,7 @@
     $selectedBloodGroup = strtoupper(trim((string) old('blood_group', $employee->blood_group)));
     $selectedPaymentMode = strtolower(trim((string) old('salary_type', $employee->salary_type)));
     $paymentModeOptions = $paymentModeMasterOptions;
-    $profileInfo = is_array($employee->other_information) ? data_get($employee->other_information, 'profile', []) : [];
-    $profileInfo = is_array($profileInfo) ? data_get($profileInfo, 'profile', []) : [];
+    $basicInfo = $employee->basicInfo;
 @endphp
 
 <div class="row">
@@ -96,7 +95,7 @@
             @endforeach
         </select>
     </div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Birth Date</label><input type="date" name="dob" value="{{ old('dob', optional($employee->dob)->format('Y-m-d') ?? (is_string($employee->dob) ? $employee->dob : '')) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Birth Date</label><input type="date" name="dob" value="{{ old('dob', $basicInfo?->birth_date instanceof \Carbon\Carbon ? $basicInfo->birth_date->format('Y-m-d') : (string) ($basicInfo?->birth_date ?? '')) }}" class="form-control form-control-sm"></div>
     <div class="col-md-6 mb-2">
         <label class="mb-1">Blood Group</label>
         <select name="blood_group" class="form-control form-control-sm">
@@ -120,22 +119,22 @@
     <div class="col-md-6 mb-2"><label class="mb-1">Birth Registration No.</label><input type="text" name="birth_registration" value="{{ old('birth_registration', $employee->birth_registration) }}" class="form-control form-control-sm"></div>
     <div class="col-md-6 mb-2"><label class="mb-1">Passport No.</label><input type="text" name="passport_no" value="{{ old('passport_no', $employee->passport_no) }}" class="form-control form-control-sm"></div>
     <div class="col-md-6 mb-2"><label class="mb-1">Driving License No.</label><input type="text" name="driving_license" value="{{ old('driving_license', $employee->driving_license) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Special Identification Sign</label><input type="text" name="distinguished_mark" value="{{ old('distinguished_mark', $employee->distinguished_mark) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Special Identification Sign (Bangla)</label><input type="text" name="distinguished_mark_bn" value="{{ old('distinguished_mark_bn', data_get($profileInfo, 'distinguished_mark_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Educational Experience</label><input type="text" name="education" value="{{ old('education', $employee->education) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Educational Experience (Bangla)</label><input type="text" name="education_bn" value="{{ old('education_bn', data_get($profileInfo, 'education_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Job Experience</label><input type="text" name="job_experience" value="{{ old('job_experience', data_get($profileInfo, 'job_experience')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Job Experience (Bangla)</label><input type="text" name="job_experience_bn" value="{{ old('job_experience_bn', data_get($profileInfo, 'job_experience_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Previous Organization</label><input type="text" name="prev_organization" value="{{ old('prev_organization', data_get($profileInfo, 'prev_organization')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Previous Organization (Bangla)</label><input type="text" name="prev_organization_bn" value="{{ old('prev_organization_bn', data_get($profileInfo, 'prev_organization_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Name</label><input type="text" name="reference_1" value="{{ old('reference_1', $employee->reference_1) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Name (Bangla)</label><input type="text" name="reference_1_bn" value="{{ old('reference_1_bn', data_get($profileInfo, 'reference_1_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Designation</label><input type="text" name="reference_2" value="{{ old('reference_2', $employee->reference_2) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Designation (Bangla)</label><input type="text" name="reference_2_bn" value="{{ old('reference_2_bn', data_get($profileInfo, 'reference_2_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Card No.</label><input type="text" name="reference_card_no" value="{{ old('reference_card_no', data_get($profileInfo, 'reference_card_no')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Card No. (Bangla)</label><input type="text" name="reference_card_no_bn" value="{{ old('reference_card_no_bn', data_get($profileInfo, 'reference_card_no_bn')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Mobile No.</label><input type="text" name="reference_mobile" value="{{ old('reference_mobile', data_get($profileInfo, 'reference_mobile')) }}" class="form-control form-control-sm"></div>
-    <div class="col-md-6 mb-2"><label class="mb-1">Reference Mobile No. (Bangla)</label><input type="text" name="reference_mobile_bn" value="{{ old('reference_mobile_bn', data_get($profileInfo, 'reference_mobile_bn')) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Special Identification Sign</label><input type="text" name="distinguished_mark" value="{{ old('distinguished_mark', $basicInfo?->special_id_sign) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Special Identification Sign (Bangla)</label><input type="text" name="distinguished_mark_bn" value="{{ old('distinguished_mark_bn', $basicInfo?->bn_special_id_sign) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Educational Experience</label><input type="text" name="education" value="{{ old('education', $basicInfo?->educational_experience) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Educational Experience (Bangla)</label><input type="text" name="education_bn" value="{{ old('education_bn', $basicInfo?->bn_educational_experience) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Job Experience</label><input type="text" name="job_experience" value="{{ old('job_experience', $basicInfo?->job_experience) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Job Experience (Bangla)</label><input type="text" name="job_experience_bn" value="{{ old('job_experience_bn', $basicInfo?->bn_job_experience) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Previous Organization</label><input type="text" name="prev_organization" value="{{ old('prev_organization', $basicInfo?->previous_organization) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Previous Organization (Bangla)</label><input type="text" name="prev_organization_bn" value="{{ old('prev_organization_bn', $basicInfo?->bn_previous_organization) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Name</label><input type="text" name="reference_1" value="{{ old('reference_1', $basicInfo?->reference_name) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Name (Bangla)</label><input type="text" name="reference_1_bn" value="{{ old('reference_1_bn', $basicInfo?->bn_reference_name) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Designation</label><input type="text" name="reference_2" value="{{ old('reference_2', $basicInfo?->reference_designation) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Designation (Bangla)</label><input type="text" name="reference_2_bn" value="{{ old('reference_2_bn', $basicInfo?->bn_reference_designation) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Card No.</label><input type="text" name="reference_card_no" value="{{ old('reference_card_no', $basicInfo?->reference_card_no) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Card No. (Bangla)</label><input type="text" name="reference_card_no_bn" value="{{ old('reference_card_no_bn', $basicInfo?->bn_reference_card_no) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Mobile No.</label><input type="text" name="reference_mobile" value="{{ old('reference_mobile', $basicInfo?->reference_mobile_no) }}" class="form-control form-control-sm"></div>
+    <div class="col-md-6 mb-2"><label class="mb-1">Reference Mobile No. (Bangla)</label><input type="text" name="reference_mobile_bn" value="{{ old('reference_mobile_bn', $basicInfo?->bn_reference_mobile_no) }}" class="form-control form-control-sm"></div>
 </div>
 
 

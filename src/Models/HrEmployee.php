@@ -235,7 +235,8 @@ class HrEmployee extends BaseHrModel
 
     public function getSalaryTypeAttribute(): ?string
     {
-        return $this->salaryInfo?->payment_method_id ? (string) $this->salaryInfo->payment_method_id : null;
+        $id = $this->salaryInfo?->payment_method_id;
+        return $id ? HrPaymentMethod::find($id)?->name : null;
     }
 
     public function setJoiningDateAttribute($value): void
@@ -318,5 +319,145 @@ class HrEmployee extends BaseHrModel
         return $basicInfo && $basicInfo->marital_status_id
             ? HrMaritalStatus::query()->find($basicInfo->marital_status_id)?->name
             : null;
+    }
+
+    public function getDobAttribute(): mixed
+    {
+        return $this->basicInfo?->birth_date;
+    }
+
+    public function getBloodGroupAttribute(): ?string
+    {
+        return $this->basicInfo?->blood_group;
+    }
+
+    public function getNationalityAttribute(): ?string
+    {
+        $id = $this->basicInfo?->nationality_country_id;
+        return $id ? HrGeoLocation::find($id)?->name : null;
+    }
+
+    public function getNidNumberAttribute(): ?string
+    {
+        return $this->basicInfo?->national_id_no;
+    }
+
+    public function getBirthRegistrationAttribute(): ?string
+    {
+        return $this->basicInfo?->birth_registration_no;
+    }
+
+    public function getPassportNoAttribute(): ?string
+    {
+        return $this->basicInfo?->passport_no;
+    }
+
+    public function getDrivingLicenseAttribute(): ?string
+    {
+        return $this->basicInfo?->driving_license_no;
+    }
+
+    public function getDistinguishedMarkAttribute(): ?string
+    {
+        return $this->basicInfo?->special_id_sign;
+    }
+
+    public function getEducationAttribute(): ?string
+    {
+        return $this->basicInfo?->educational_experience;
+    }
+
+    public function getReference1Attribute(): ?string
+    {
+        return $this->basicInfo?->reference_name;
+    }
+
+    public function getReference2Attribute(): ?string
+    {
+        return $this->basicInfo?->reference_designation;
+    }
+
+    public function getBoysAttribute(): ?int
+    {
+        return $this->basicInfo?->children_boys;
+    }
+
+    public function getGirlsAttribute(): ?int
+    {
+        return $this->basicInfo?->children_girls;
+    }
+
+    public function permanentAddress(): HasOne
+    {
+        return $this->hasOne(HrEmployeeAddress::class, 'employee_id')->where('type', 'permanent');
+    }
+
+    public function presentAddress(): HasOne
+    {
+        return $this->hasOne(HrEmployeeAddress::class, 'employee_id')->where('type', 'present');
+    }
+
+    public function getPermanentDistrictAttribute(): ?string
+    {
+        $id = $this->permanentAddress?->district_id;
+        return $id ? HrGeoLocation::find($id)?->name : null;
+    }
+
+    public function getPermanentUpazilaAttribute(): ?string
+    {
+        $id = $this->permanentAddress?->police_station_id;
+        return $id ? HrGeoLocation::find($id)?->name : null;
+    }
+
+    public function getPermanentPostOfficeAttribute(): ?string
+    {
+        return $this->permanentAddress?->post_office;
+    }
+
+    public function getPermanentVillageAttribute(): ?string
+    {
+        return $this->permanentAddress?->village;
+    }
+
+    public function getPermanentPostOfficeBnAttribute(): ?string
+    {
+        return $this->permanentAddress?->bn_post_office;
+    }
+
+    public function getPermanentVillageBnAttribute(): ?string
+    {
+        return $this->permanentAddress?->bn_village;
+    }
+
+    public function getPresentDistrictAttribute(): ?string
+    {
+        $id = $this->presentAddress?->district_id;
+        return $id ? HrGeoLocation::find($id)?->name : null;
+    }
+
+    public function getPresentUpazilaAttribute(): ?string
+    {
+        $id = $this->presentAddress?->police_station_id;
+        return $id ? HrGeoLocation::find($id)?->name : null;
+    }
+
+    public function getPresentPostOfficeAttribute(): ?string
+    {
+        return $this->presentAddress?->post_office;
+    }
+
+    public function getPresentVillageAttribute(): ?string
+    {
+        return $this->presentAddress?->village;
+    }
+
+    public function getPresentPostOfficeBnAttribute(): ?string
+    {
+        return $this->presentAddress?->bn_post_office;
+    }
+
+    public function getPresentVillageBnAttribute(): ?string
+    {
+        return $this->presentAddress?->bn_village;
     }
 }
