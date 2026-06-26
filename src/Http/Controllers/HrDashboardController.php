@@ -108,10 +108,15 @@ class HrDashboardController extends Controller
                 ->limit(5)
                 ->get();
 
+            $joinTrend = $monthlyTrend->map(fn ($m) => [
+                'label' => $m['label'],
+                'count' => $m['recruited'],
+            ]);
+
             return compact(
                 'totalEmployees', 'presentToday', 'lateToday', 'absentToday',
                 'newThisMonth', 'recruitedThisYear', 'terminatedThisYear',
-                'last30', 'monthlyTrend', 'departments',
+                'last30', 'monthlyTrend', 'joinTrend', 'departments',
                 'recentJoiners', 'recentSeparations'
             );
 
@@ -126,6 +131,7 @@ class HrDashboardController extends Controller
                 'terminatedThisYear'=> 0,
                 'last30'            => collect(),
                 'monthlyTrend'      => collect(),
+                'joinTrend'         => collect(),
                 'departments'       => collect(),
                 'recentJoiners'     => collect(),
                 'recentSeparations' => collect(),
