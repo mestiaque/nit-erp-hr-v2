@@ -15,7 +15,7 @@ class RosterController extends Controller
     public function index()
     {
         $rosters = HrShiftRosterEmployee::with(['employee', 'shift'])->orderBy('roster_date', 'desc')->paginate(30);
-        $employees = HrEmployee::query()->get();
+        $employees = HrEmployee::query()->naturalOrderById()->get();
         $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
         $shifts = $masterData['shifts'];
         $sections = $masterData['sections'];
@@ -26,7 +26,7 @@ class RosterController extends Controller
 
     public function create()
     {
-        $employees = HrEmployee::query()->get();
+        $employees = HrEmployee::query()->naturalOrderById()->get();
         $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
         $shifts = $masterData['shifts'];
         $sections = $masterData['sections'];

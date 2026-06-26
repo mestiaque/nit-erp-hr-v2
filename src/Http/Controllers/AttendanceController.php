@@ -31,7 +31,7 @@ class AttendanceController extends Controller
                   ;
             });
         }
-        $employees = $employees->get();
+        $employees = $employees->naturalOrderById()->get();
 
         // Determine date range
         if ($dateFrom && $dateTo) {

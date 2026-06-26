@@ -76,7 +76,7 @@ class HrReportController extends Controller
         $filterRequest = new Request($payload);
         $employees = $this->employeeReportQuery($filterRequest)
             ->with(['designation', 'department'])
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get();
 
         $options = $this->employeeReportOptions();
@@ -232,7 +232,7 @@ class HrReportController extends Controller
 
         $employees = $this->employeeReportQuery($request)
             ->with(['designation', 'department'])
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get();
 
         $incrementMap = $this->latestIncrements($employees);
@@ -773,7 +773,7 @@ class HrReportController extends Controller
     {
         $employees = $this->employeeReportQuery($request)
             ->with(['designation', 'department'])
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get();
 
         $options = $this->employeeReportOptions();
@@ -1249,7 +1249,7 @@ class HrReportController extends Controller
             });
         }
 
-        $employees = $query->with(['designation', 'department'])->orderBy('name')->get();
+        $employees = $query->with(['designation', 'department'])->naturalOrderById()->get();
 
         $options = [
             'classifications' => HrClassification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
@@ -1363,7 +1363,7 @@ class HrReportController extends Controller
         $rows = HrEmployee::query()
             
             ->with(['designation', 'department'])
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(function (HrEmployee $user) {
                 return [
@@ -1397,7 +1397,7 @@ class HrReportController extends Controller
     {
         $rows = HrEmployee::query()
             
-            ->orderBy('employee_id')
+            ->naturalOrderById()
             ->get(['employee_id', 'name', 'mobile', 'status'])
             ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'mobile' => $user->mobile, 'status' => $user->status]);
 
@@ -1409,7 +1409,7 @@ class HrReportController extends Controller
         $rows = HrEmployee::query()
             
             ->with(['designation', 'department'])
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(function (HrEmployee $user) {
                 return [
@@ -1429,7 +1429,7 @@ class HrReportController extends Controller
     {
         $rows = HrEmployee::query()
             
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(function (HrEmployee $user) {
                 return [
@@ -1467,7 +1467,7 @@ class HrReportController extends Controller
         $rows = HrEmployee::query()
             
             ->with(['designation', 'department'])
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(function (HrEmployee $user) {
                 return [
@@ -1507,7 +1507,7 @@ class HrReportController extends Controller
             
             ->whereNotNull('floor_line_id')
             ->orderBy('floor_line_id')
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(fn (HrEmployee $user) => ['line_number' => $user->floor_line_id, 'employee_id' => $user->employee_id, 'name' => $user->name, 'salary_type' => $user->salary_type]);
 
@@ -1543,7 +1543,7 @@ class HrReportController extends Controller
                 $builder->where('salary_type', 'fixed_rate')
                     ->orWhereNull('salary_type');
             })
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'gross_salary' => $user->gross_salary, 'basic_salary' => $user->basic_salary]);
 
@@ -1555,7 +1555,7 @@ class HrReportController extends Controller
         $rows = HrEmployee::query()
             
             ->where('salary_type', 'price_rate')
-            ->orderBy('name')
+            ->naturalOrderById()
             ->get()
             ->map(fn (HrEmployee $user) => ['employee_id' => $user->employee_id, 'name' => $user->name, 'gross_salary' => $user->gross_salary, 'basic_salary' => $user->basic_salary]);
 
@@ -1609,7 +1609,7 @@ class HrReportController extends Controller
             // If no filter is selected, show all employees
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
-                ->orderBy('name')
+                ->naturalOrderById()
                 ->get();
 
             // Build date range collection
@@ -1712,7 +1712,7 @@ class HrReportController extends Controller
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
-                ->orderBy('name')
+                ->naturalOrderById()
                 ->get();
 
             // Build per-employee summary over the date range

@@ -35,6 +35,13 @@ class HrEmployee extends BaseHrModel
         return $type === 'employee' ? $query : $query->whereRaw('1 = 0');
     }
 
+    public function scopeNaturalOrderById(Builder $query): Builder
+    {
+        return $query
+            ->orderByRaw("CAST(REGEXP_REPLACE(employee_id, '[^0-9]', '') AS UNSIGNED) ASC")
+            ->orderBy('employee_id', 'asc');
+    }
+
     public function classification(): BelongsTo
     {
         return $this->belongsTo(HrClassification::class, 'classification_id');

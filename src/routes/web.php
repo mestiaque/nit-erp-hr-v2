@@ -109,6 +109,7 @@ Route::middleware($route['middleware'] ?? ['web'])
 
 		Route::get('/zkteco-data-import',[AttendanceMachineController::class,'import'])->name('importZkteco');
 		Route::post('/import-zkteco-data',[AttendanceMachineController::class,'importAction'])->name('importZktecoAction');
+		Route::get('/machine-logs', [AttendanceMachineController::class, 'logs'])->name('machine-logs.index');
 	});
 
 // Machine API — token-protected, no session middleware
@@ -118,4 +119,8 @@ Route::middleware(['api', 'hr.machine'])
     ->group(function () {
         Route::post('/data', [AttendanceMachineController::class, 'receiveData'])->name('data');
         Route::post('/bulk', [AttendanceMachineController::class, 'receiveBulkData'])->name('bulk');
+        Route::post('/adms-records', [AttendanceMachineController::class, 'receiveAdmsRecords'])->name('adms-records');
+        Route::get('/fetch-employee', [AttendanceMachineController::class, 'fetchEmployees'])->name('fetch-employee');
     });
+
+

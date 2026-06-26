@@ -8,6 +8,12 @@
 
 <div class="flex-grow-1">
     <div class="card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Attendance List</h5>
+            <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-sm btn-outline-info">
+                <i class="fa fa-list-alt mr-1"></i> Machine Log
+            </a>
+        </div>
         <div class="card-body">
             <form method="GET" action="">
                 <div class="row mb-3">

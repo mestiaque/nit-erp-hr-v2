@@ -14,6 +14,24 @@ use ME\Hr\Models\HrShift;
 
 class AttendanceMachineController extends Controller
 {
+    public function fetchEmployees(): JsonResponse
+    {
+        $employees = HrEmployee::where('status', true)
+            ->whereIn('employee_id', ['A00004', 'A00005'])
+            ->naturalOrderById()
+            ->get(['id', 'employee_id', 'name'])
+            ->map(fn($e) => [
+                'uid'         => $e->employee_id,
+                'employee_id' => $e->employee_id,
+                'name'        => $e->name,
+                'privilege'   => 0,
+                'password'    => '',
+                'card'        => '',
+            ]);
+
+        return response()->json(['data' => $employees]);
+    }
+
     public function receiveData(Request $request): JsonResponse
     {
         try {
@@ -67,6 +85,226 @@ class AttendanceMachineController extends Controller
             Log::error('ZKTeco receiveBulkData error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Receive ADMS-format bulk attendance records.
+     *
+     * Expected payload:
+     * {
+     *   "records": [
+     *     { "deviceId", "employeeId", "time", "status", "verify",
+     *       "verifyMethod", "workCode", "source", "receivedAt", "id", ... }
+     *   ]
+     * }
+     *
+     * All records are written to hr_attendance_machine_logs regardless of
+     * whether the employee is found. If the employee IS found, attendance is
+     * upserted for the date with the standard in/out-time logic:
+     *   - earliest punch  → in_time
+     *   - any later punch → out_time (always keeps the latest)
+     */
+    public function logs(Request $request)
+    {
+        $query = HrAttendanceMachineLog::query()->orderByDesc('log_time');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('employee_id', 'like', "%$search%")
+                  ->orWhere('device_sn', 'like', "%$search%");
+            });
+        }
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('log_time', '>=', $dateFrom);
+        }
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('log_time', '<=', $dateTo);
+        }
+        if ($source = $request->input('source')) {
+            $query->where('source', $source);
+        }
+        if ($verifyMethod = $request->input('verify_method')) {
+            $query->where('type_name', $verifyMethod);
+        }
+
+        $logs = $query->paginate(50)->withQueryString();
+
+        // Map employee_id (device string) → hr_employees record for display
+        $employeeIds = $logs->pluck('employee_id')->unique()->filter();
+        $employees   = HrEmployee::whereIn('employee_id', $employeeIds)
+                          ->get(['id', 'employee_id', 'name'])
+                          ->keyBy('employee_id');
+
+        $sources       = HrAttendanceMachineLog::select('source')->distinct()->whereNotNull('source')->pluck('source');
+        $verifyMethods = HrAttendanceMachineLog::select('type_name')->distinct()->whereNotNull('type_name')->pluck('type_name');
+
+        return view('hr::attendances.machineLog', compact('logs', 'employees', 'sources', 'verifyMethods'));
+    }
+
+    public function receiveAdmsRecords(Request $request): JsonResponse
+    {
+        try {
+            $records = $request->input('records');
+
+            if (!is_array($records) || empty($records)) {
+                return response()->json(['status' => 'error', 'message' => 'No records provided.'], 400);
+            }
+
+            $loggedCount     = 0;
+            $attendanceCount = 0;
+            $skipped         = 0;
+
+            foreach ($records as $record) {
+                $employeeId = (string) ($record['employeeId'] ?? '');
+                $timeStr    = $record['time'] ?? null;
+
+                // Every record goes to the log regardless of validity
+                if ($employeeId && $timeStr) {
+                    $this->saveMachineLogAdms($record);
+                    $loggedCount++;
+                } else {
+                    $skipped++;
+                    continue;
+                }
+
+                // Try to process attendance if employee exists
+                if ($this->processAdmsAttendance($record)) {
+                    $attendanceCount++;
+                }
+            }
+
+            Log::info('ADMS bulk received', [
+                'total'      => count($records),
+                'logged'     => $loggedCount,
+                'attendance' => $attendanceCount,
+                'skipped'    => $skipped,
+            ]);
+
+            return response()->json([
+                'status'           => 'success',
+                'message'          => 'ADMS records processed.',
+                'total'            => count($records),
+                'logged'           => $loggedCount,
+                'attendance_synced'=> $attendanceCount,
+                'skipped'          => $skipped,
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('receiveAdmsRecords error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    private function saveMachineLogAdms(array $record): void
+    {
+        try {
+            HrAttendanceMachineLog::create([
+                'device_sn'   => $record['deviceId']     ?? null,
+                'employee_id' => $record['employeeId']   ?? null,
+                'log_time'    => $record['time']          ?? null,
+                'type_code'   => $record['status']        ?? null,
+                'type_name'   => $record['verifyMethod']  ?? null,
+                'source'      => $record['source']        ?? null,
+                'external_id' => isset($record['id']) ? (string) $record['id'] : null,
+                'work_code'   => $record['workCode']      ?? null,
+                'received_at' => isset($record['receivedAt'])
+                    ? Carbon::parse($record['receivedAt'])->toDateTimeString()
+                    : null,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('saveMachineLogAdms failed: ' . $e->getMessage(), ['record' => $record]);
+        }
+    }
+
+    private function processAdmsAttendance(array $record): bool
+    {
+        try {
+            $employeeId = (string) ($record['employeeId'] ?? '');
+            $timeStr    = $record['time'] ?? null;
+
+            if (!$employeeId || !$timeStr) {
+                return false;
+            }
+
+            $employee = HrEmployee::with('shift')->where('employee_id', $employeeId)->first();
+
+            if (!$employee) {
+                Log::info("ADMS: employee_id=$employeeId not found in users, log saved only.");
+                return false;
+            }
+
+            $time  = Carbon::parse($timeStr, 'Asia/Dhaka');
+            $shift = $employee->shift ?? null;
+
+            // Resolve active shift from roster if employee has no default shift
+            if (!$shift) {
+                $shift = $this->resolveShiftFromRoster($employee, $time->toDateString());
+            }
+
+            $attendance = HrAttendance::where('employee_id', $employee->id)
+                ->whereDate('date', $time->toDateString())
+                ->first();
+
+            if (!$attendance) {
+                $attendance              = new HrAttendance();
+                $attendance->employee_id = $employee->id;
+                $attendance->date        = $time->toDateString();
+                $attendance->device_sn   = $record['deviceId'] ?? null;
+                $attendance->via         = 'machine';
+                $attendance->verify_type = $record['verifyMethod'] ?? null;
+            }
+
+            // Earliest punch = in_time
+            $currentIn = $this->toCarbon($attendance->date, $attendance->in_time);
+            if (!$currentIn || $time->lt($currentIn)) {
+                $attendance->in_time = $time->format('H:i:s');
+                $currentIn           = $time;
+            }
+
+            // Any later punch updates out_time
+            $currentOut = $this->toCarbon($attendance->date, $attendance->out_time);
+            if ($currentIn && $time->gt($currentIn) && (!$currentOut || $time->gt($currentOut))) {
+                $attendance->out_time = $time->format('H:i:s');
+                $currentOut           = $time;
+            }
+
+            $attendance->status = $this->resolveStatus($shift, $currentIn);
+
+            if ($currentIn && $currentOut) {
+                $attendance->total_working_minute = (int) $currentIn->diffInMinutes($currentOut);
+                $attendance->total_ot_minute      = $this->resolveOvertimeMinutes($shift, $currentIn, $currentOut);
+            }
+
+            $attendance->save();
+
+            return true;
+
+        } catch (\Throwable $e) {
+            Log::error('processAdmsAttendance failed: ' . $e->getMessage(), ['record' => $record]);
+            return false;
+        }
+    }
+
+    /**
+     * Try to find the employee's shift from the shift roster for a given date.
+     * Returns null if no roster entry exists (falls back to no-shift logic).
+     */
+    private function resolveShiftFromRoster(HrEmployee $employee, string $date): ?HrShift
+    {
+        // Check if HrShiftRosterEmployee model exists
+        if (!class_exists(\ME\Hr\Models\HrShiftRosterEmployee::class)) {
+            return null;
+        }
+
+        $rosterEntry = \ME\Hr\Models\HrShiftRosterEmployee::where('employee_id', $employee->id)
+            ->whereDate('date', $date)
+            ->first();
+
+        if (!$rosterEntry || !$rosterEntry->shift_id) {
+            return null;
+        }
+
+        return HrShift::find($rosterEntry->shift_id);
     }
 
     public function import()

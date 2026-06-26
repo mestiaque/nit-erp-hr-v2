@@ -146,10 +146,10 @@
 
                     <!-- Instructions -->
                     <div class="instruction-card shadow-sm">
-                        <h6><i class="fa fa-info-circle mr-1"></i> নির্দেশাবলী:</h6>
+                        <h6><i class="fa fa-info-circle mr-1"></i> Instructions:</h6>
                         <small class="text-muted">
-                            ১. মেশিন থেকে সংগৃহীত .txt বা .dat ফাইলটি আপলোড করুন। <br>
-                            ২. ডাটা ফরম্যাট হতে হবে: ID, Date, Time, Terminal ID।
+                            1. Upload the .txt or .dat file exported from your biometric machine. <br>
+                            2. Data format must be: ID, Date, Time, Terminal ID.
                         </small>
                     </div>
 
@@ -192,6 +192,107 @@
             </div>
         </div>
 
+        <!-- ADMS API Info Card -->
+        @php
+            $machineToken = config('hr.machine_api_token', '');
+            $admsUrl      = url('api/hr-machine/adms-records');
+        @endphp
+        <div class="card shadow-sm border-0 mb-4" style="border-left: 4px solid #56d2ff !important;">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fa fa-plug mr-2 text-info"></i> ADMS Push API</h5>
+                <button class="btn btn-sm btn-outline-info" type="button" data-toggle="collapse" data-target="#admsApiInfo">
+                    <i class="fa fa-chevron-down"></i> Details
+                </button>
+            </div>
+            <div class="collapse show" id="admsApiInfo">
+                <div class="card-body">
+                    <p class="text-muted mb-3" style="font-size:.93rem;">
+                        Use the API below to push attendance directly from biometric devices.
+                        All logs are saved; attendance is created when an employee is matched.
+                    </p>
+
+                    <!-- Endpoint -->
+                    <div class="mb-3">
+                        <label class="font-weight-bold text-secondary" style="font-size:.8rem;">ENDPOINT</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge badge-success mr-2" style="font-size:.85rem;">POST</span>
+                            <code id="admsEndpoint" class="flex-grow-1 p-2 bg-light rounded" style="word-break:break-all;font-size:.92rem;">{{ $admsUrl }}</code>
+                            <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn" data-copy="admsEndpoint" title="Copy">
+                                <i class="fa fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Token -->
+                    <div class="mb-3">
+                        <label class="font-weight-bold text-secondary" style="font-size:.8rem;">AUTHORIZATION</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge badge-warning mr-2 text-dark" style="font-size:.85rem;">Bearer</span>
+                            @if($machineToken)
+                                <code id="admsToken" class="flex-grow-1 p-2 bg-light rounded" style="font-size:.92rem;filter:blur(4px);transition:.2s;" onmouseenter="this.style.filter='none'" onmouseleave="this.style.filter='blur(4px)'">{{ $machineToken }}</code>
+                                <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn" data-copy="admsToken" title="Copy Token">
+                                    <i class="fa fa-copy"></i>
+                                </button>
+                            @else
+                                <span class="text-danger small">No token configured. Set <code>machine_api_token</code> in <code>config/hr.php</code>.</span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Headers -->
+                    <div class="mb-3">
+                        <label class="font-weight-bold text-secondary" style="font-size:.8rem;">HEADERS</label>
+                        <pre class="bg-light p-2 rounded mb-0" style="font-size:.88rem;">Content-Type: application/json
+Authorization: Bearer &lt;token&gt;</pre>
+                    </div>
+
+                    <!-- Request Body -->
+                    <div class="mb-3">
+                        <label class="font-weight-bold text-secondary" style="font-size:.8rem;">REQUEST BODY (JSON)</label>
+                        <pre class="bg-dark text-light p-3 rounded mb-0" style="font-size:.83rem;overflow-x:auto;max-height:280px;">{
+  "records": [
+    {
+      "deviceId": "UDP3251601483",
+      "employeeId": "20026",
+      "time": "2026-06-23 08:02:10",
+      "status": "255",
+      "verify": "1",
+      "verifyMethod": "fingerprint",
+      "workCode": "0",
+      "source": "adms",
+      "receivedAt": "2026-06-23T02:02:10.000Z",
+      "id": 1782200000000.0000,
+      "pushedToLaravel": false,
+      "pushedAt": null
+    }
+  ]
+}</pre>
+                    </div>
+
+                    <!-- Response -->
+                    <div class="mb-1">
+                        <label class="font-weight-bold text-secondary" style="font-size:.8rem;">RESPONSE (200 OK)</label>
+                        <pre class="bg-dark text-light p-3 rounded mb-0" style="font-size:.83rem;">{
+  "status": "success",
+  "message": "ADMS records processed.",
+  "total": 8,
+  "logged": 8,
+  "attendance_synced": 6,
+  "skipped": 0
+}</pre>
+                    </div>
+
+                    <!-- Logic note -->
+                    <div class="alert alert-info mt-3 mb-0 p-2" style="font-size:.88rem;">
+                        <i class="fa fa-info-circle mr-1"></i>
+                        <strong>In/Out Logic:</strong>
+                        The <strong>first punch of the day → in_time</strong>, every subsequent punch → <strong>out_time</strong> (last one is kept).
+                        <strong>Late / Present</strong> status and OT are determined based on the employee's shift.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ZKTimeSync Tutorial Modal Trigger Button -->
         {{-- <div class="text-center my-4">
             <button type="button" class="btn btn-import btn-sm shado text-dark" data-bs-toggle="modal" data-bs-target="#zkTutorialModal" style="background: #bfc1d03b; border: 1px dashed #56d2ff;">
@@ -211,23 +312,23 @@
                         <div class="row g-4">
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>ভূমিকা</h5>
-                                    <p>ZKTimeSync হলো একটি সহজ Python ভিত্তিক টাইম অ্যান্ড অ্যাটেনডেন্স ডিভাইস ম্যানেজমেন্ট টুল। এর মূল বৈশিষ্ট্যগুলো হলো ডিভাইস অ্যাড, এডিট, রিমুভ, তারিখ অনুসারে সিঙ্ক এবং অটো সিঙ্ক।</p>
+                                    <h5>Introduction</h5>
+                                    <p>ZKTimeSync is a simple Python-based time and attendance device management tool. Key features include adding, editing, removing devices, date-based sync, and auto sync.</p>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>ইনস্টলেশন</h5>
-                                    <div class="smart-list">
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-play"></i></span> App ডাউনলোড করুন এবং এক্সিকিউট করুন <a href="{{ url('admin/download/zk-installer') }}" download class="btn btn-import btn-sm"><i class="fa fa-download"> &nbsp; Download</i></a></div>
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-cogs"></i></span> ইনস্টল করার সময় যদি “Don’t run” লেখা দেখা যায়, তাহলে “More info”-তে ক্লিক করুন এবং এরপর “Run anyway” নির্বাচন করুন। </div>
+                                    <h5>Installation</h5>
+                                    <div class=”smart-list”>
+                                        <div class=”smart-list-item”><span class=”smart-icon”><i class=”fa fa-play”></i></span> Download and run the installer <a href=”{{ url(‘admin/download/zk-installer’) }}” download class=”btn btn-import btn-sm”><i class=”fa fa-download”> &nbsp; Download</i></a></div>
+                                        <div class=”smart-list-item”><span class=”smart-icon”><i class=”fa fa-cogs”></i></span> If you see “Don’t run” during installation, click “More info” then “Run anyway”.</div>
                                     </div>
 
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>GUI বৈশিষ্ট্য</h5>
+                                    <h5>GUI Features</h5>
                                     <div class="smart-list row g-3">
                                         <div class="smart-list-item col-4"><span class="smart-icon"><i class="fa fa-plus-circle"></i></span> Add Device</div>
                                         <div class="smart-list-item col-4"><span class="smart-icon"><i class="fa fa-edit"></i></span> Edit Device</div>
@@ -240,19 +341,19 @@
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>ডিভাইস পরিচালনা</h5>
-                                    <p>নতুন ডিভাইস যোগ, সম্পাদনা ও মুছে ফেলার নিয়ম:</p>
+                                    <h5>Device Management</h5>
+                                    <p>Rules for adding, editing, and removing devices:</p>
                                     <div class="smart-list">
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-plus"></i></span> Add: ডিভাইসের নাম, IP এবং পোর্ট এবং পাসওয়ার্ড লিখুন</div>
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-edit"></i></span> Edit: ডিভাইসের তথ্য পরিবর্তন করুন</div>
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-trash"></i></span> Remove: ডিভাইস সম্পূর্ণ মুছে ফেলুন</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-plus"></i></span> Add: Enter device name, IP, port, and password</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-edit"></i></span> Edit: Modify existing device details</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-trash"></i></span> Remove: Permanently delete the device</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>তারিখ নির্বাচন</h5>
-                                    <p>Data Sync এর জন্য বিভিন্ন তারিখের অপশন:</p>
+                                    <h5>Date Selection</h5>
+                                    <p>Date range options for data sync:</p>
                                     <div class="smart-list row">
                                         <div class="smart-list-item col-3"><span class="smart-icon"><i class="fa fa-calendar"></i></span> Today</div>
                                         <div class="smart-list-item col-3"><span class="smart-icon"><i class="fa fa-calendar"></i></span> Yesterday</div>
@@ -263,8 +364,8 @@
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>অটো সিঙ্ক</h5>
-                                    <p>আপনি চাইলে ডিভাইস অটো সিঙ্ক করতে পারেন নিম্নলিখিত সময়সূচীতে:</p>
+                                    <h5>Auto Sync</h5>
+                                    <p>Set the device to sync automatically at the following intervals:</p>
                                     <div class="smart-list row">
                                         <div class="smart-list-item col-2"><span class="smart-icon"><i class="fa fa-clock"></i></span> 1h</div>
                                         <div class="smart-list-item col-2"><span class="smart-icon"><i class="fa fa-clock"></i></span> 4h</div>
@@ -277,20 +378,20 @@
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>সমস্যা হলে করণীয়</h5>
+                                    <h5>Troubleshooting</h5>
                                     <div class="smart-list">
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-wifi"></i></span> ডিভাইস ও পিসি একই নেটওয়ার্কে থাকতে হবে</div>
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-globe"></i></span> পিসিতে ইন্টারনেট সংযোগ সক্রিয় থাকতে হবে</div>
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-key"></i></span> IP, Port এবং Password সঠিকভাবে প্রদান করুন</div>
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-shield"></i></span> Permission Error → App Run as Admin করুন</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-wifi"></i></span> Device and PC must be on the same network</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-globe"></i></span> PC must have an active internet connection</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-key"></i></span> Ensure IP, Port, and Password are entered correctly</div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-shield"></i></span> Permission Error → Run the app as Administrator</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <div class="guideline-section">
-                                    <h5>সমর্থিত প্ল্যাটফর্মসমূহ:</h5>
+                                    <h5>Supported Platforms:</h5>
                                     <div class="smart-list">
-                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-desktop"></i></span> উইন্ডোজ ৮ বা তার পরের সংস্করণ </div>
+                                        <div class="smart-list-item"><span class="smart-icon"><i class="fa fa-desktop"></i></span> Windows 8 or later </div>
                                     </div>
                                 </div>
                             </div>
@@ -338,6 +439,19 @@
             fileName.textContent = this.files[0].name;
             fileInfo.style.display = 'block';
         }
+    });
+
+    // Copy button logic
+    document.querySelectorAll('.copy-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-copy');
+            const text = document.getElementById(targetId).textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const icon = this.querySelector('i');
+                icon.className = 'fa fa-check text-success';
+                setTimeout(() => { icon.className = 'fa fa-copy'; }, 1500);
+            });
+        });
     });
 
     // Form Submit with Fake Progress for UX

@@ -119,7 +119,7 @@ class HrEmployeeController extends Controller
             $query->where('status', $this->normalizeUserStatus((string) $request->is_active));
         }
 
-        $employees = $query->latest()->paginate(20)->appends($request->query());
+        $employees = $query->naturalOrderById()->paginate(20)->appends($request->query());
 
         $options = $this->options();
         $basicInfoOptions = [
