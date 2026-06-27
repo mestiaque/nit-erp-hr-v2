@@ -17,7 +17,7 @@ class AttendanceMachineController extends Controller
     public function fetchEmployees(): JsonResponse
     {
         $employees = HrEmployee::where('status', true)
-            // ->whereIn('employee_id', ['A00004', 'A00005'])
+            ->whereIn('employee_id', ['EMP-0001', 'EMP-0002', 'B00006'])
             ->naturalOrderById()
             ->get(['id', 'employee_id', 'name'])
             ->map(fn($e) => [
