@@ -24,7 +24,7 @@
         <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="mb-0"><i class="fa fa-list-alt mr-2 text-info"></i> Machine Attendance Log</h5>
             <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-sm btn-outline-primary">
-                <i class="fa fa-calendar-check-o mr-1"></i> Attendance
+                <i class="fa fa-calendar-check mr-1"></i> Attendance
             </a>
         </div>
 
@@ -105,7 +105,7 @@
                                 <td>
                                     @if($log->log_time)
                                         <span>{{ \Carbon\Carbon::parse($log->log_time)->format('d M Y') }}</span><br>
-                                        <small class="text-muted">{{ \Carbon\Carbon::parse($log->log_time)->format('H:i:s') }}</small>
+                                        <small class="text-muted">{{ \Carbon\Carbon::parse($log->log_time)->format('h:i:s A') }}</small>
                                     @else —
                                     @endif
                                 </td>
@@ -121,7 +121,7 @@
                                 <td>
                                     @php $vm = strtolower($log->type_name ?? ''); @endphp
                                     @if(str_contains($vm, 'finger'))
-                                        <span class="badge badge-finger"><i class="fa fa-hand-o-up mr-1"></i>{{ $log->type_name }}</span>
+                                        <span class="badge badge-finger"><i class="fa fa-hand-pointer mr-1"></i>{{ $log->type_name }}</span>
                                     @elseif(str_contains($vm, 'face'))
                                         <span class="badge badge-face"><i class="fa fa-user-circle mr-1"></i>{{ $log->type_name }}</span>
                                     @elseif($log->type_name)
@@ -133,7 +133,8 @@
                                 <td><small>{{ strtoupper($log->source ?? '—') }}</small></td>
                                 <td>
                                     @if($log->received_at)
-                                        <small class="text-muted">{{ \Carbon\Carbon::parse($log->received_at)->format('H:i:s') }}</small>
+                                        <small class="text-muted">{{ \Carbon\Carbon::parse($log->received_at)->format('d M Y') }}</small> <br>
+                                        <small class="text-muted">{{ \Carbon\Carbon::parse($log->received_at)->format('h:i:s A') }}</small>
                                     @else
                                         <small class="text-muted">—</small>
                                     @endif
