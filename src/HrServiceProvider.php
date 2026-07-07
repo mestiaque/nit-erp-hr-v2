@@ -55,5 +55,9 @@ class HrServiceProvider extends ServiceProvider
         if (file_exists(__DIR__ . '/Config/permission.php')) {
             $this->mergeConfigFrom(__DIR__ . '/Config/permission.php', 'hr-permission');
         }
+
+        if (file_exists(__DIR__ . '/Config/checklist.php')) {
+            $this->mergeConfigFrom(__DIR__ . '/Config/checklist.php', 'checklist');
+        }
     }
 }

@@ -16,6 +16,7 @@ use ME\Hr\Http\Controllers\AttendanceMachineController;
 $route = config('hr.route');
 
 Route::middleware(['web'])->get('/hr', [HrController::class, 'index']);
+Route::middleware(['web'])->get('/checklist', [\ME\Hr\Http\Controllers\ChecklistController::class, 'index']);
 Route::get('/thanas/by-district/{id}', [HrController::class, 'getThanasByDistrict']);
 
 Route::middleware($route['middleware'] ?? ['web'])
