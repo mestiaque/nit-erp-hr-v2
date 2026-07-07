@@ -7,14 +7,14 @@ class HrOptionsService
     public static function getOptions(): array
     {
         // Use Eloquent models directly for now; can be optimized/cached later
-        $classifications = \ME\Hr\Models\HrClassification::where('status', 1)->orderBy('name')->get(['id', 'name', 'bn_name']);
-        $departments     = \ME\Hr\Models\HrDepartment::where('status', 1)->orderBy('name')->get(['id', 'name', 'bn_name']);
-        $sections        = \ME\Hr\Models\HrSection::where('status', 1)->orderBy('name')->get(['id', 'name', 'bn_name']);
+        $classifications = \ME\Hr\Models\HrClassification::where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']);
+        $departments     = \ME\Hr\Models\HrDepartment::where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']);
+        $sections        = \ME\Hr\Models\HrSection::where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']);
         $subSections     = \ME\Hr\Models\HrSubSection::orderBy('name')->get(['id', 'name', 'department_id', 'section_id', 'salary_type', 'approve_man_power', 'bn_name']);
         $designations    = \ME\Hr\Models\HrDesignation::orderBy('name')->get(['id', 'name', 'bn_name', 'grade']);
         $shifts          = \ME\Hr\Models\HrShift::orderBy('name')->get(['id', 'name', 'bn_name']);
         $workingPlaces   = \ME\Hr\Models\HrWorkingPlace::orderBy('name')->get(['id', 'name', 'bn_name']);
-        $lines           = \ME\Hr\Models\HrFloorLine::where('status', 1)->orderBy('line_name')->get()->map(static function ($line) {
+        $lines           = \ME\Hr\Models\HrFloorLine::where('status', 'active')->orderBy('line_name')->get()->map(static function ($line) {
             return (object) [
                 'id' => $line->id,
                 'name' => $line->line_name,
@@ -358,19 +358,46 @@ class HrOptionsService
 
             // Salary report logic (aggregate salary, earnings, deductions, etc.)
             $getSalaryReport = function($from = null, $to = null) use ($employee, $getEarningsDeductionsSummary) {
-                $sal = function_exists('hr_employee_salary') ? hr_employee_salary($employee) : [];
-                $otRate = (float) ($sal['ot_rate'] ?? 0);
-                $gross = (float) ($sal['gross'] ?? $employee->gross_salary ?? 0);
-                $basic = (float) ($sal['basic'] ?? $employee->basic_salary ?? 0);
+                $sal        = function_exists('hr_employee_salary') ? hr_employee_salary($employee) : [];
+                $otRate     = (float) ($sal['ot_rate'] ?? 0);
+                $gross      = (float) ($sal['gross'] ?? $employee->gross_salary ?? 0);
+                $basic      = (float) ($sal['basic'] ?? $employee->basic_salary ?? 0);
                 $deductFrom = (string) ($sal['deduct_from'] ?? 'gross');
-                $dayBase = $deductFrom === 'basic' ? $basic : $gross;
-                $dayRate = $dayBase > 0 ? ($dayBase / 30) : 0;
-                $extras = $getEarningsDeductionsSummary($from, $to);
-                $otEarn   = $extras['otPlusHours'] * $otRate;
-                $otDeduct = $extras['otMinusHours'] * $otRate;
-                $dayEarn  = $extras['dayPlus'] * $dayRate;
-                $dayDeduct = $extras['dayMinus'] * $dayRate;
-                $extraEarningAmount = $extras['earnings'] + $extras['advanceIou'] + $otEarn + $dayEarn;
+                $dayBase    = $deductFrom === 'basic' ? $basic : $gross;
+                $dayRate    = $dayBase > 0 ? ($dayBase / 30) : 0;
+                $extras     = $getEarningsDeductionsSummary($from, $to);
+                $otEarn     = $extras['otPlusHours']  * $otRate;
+                $otDeduct   = $extras['otMinusHours'] * $otRate;
+                $dayEarn    = $extras['dayPlus']   * $dayRate;
+                $dayDeduct  = $extras['dayMinus']  * $dayRate;
+
+                // Attendance bonus from designation / employee salary_info
+                $factoryNo    = (int) (function_exists('hr_factory') ? (hr_factory('factory_no') ?? 0) : 0);
+                $si           = $employee->salaryInfo;
+                $designation  = $employee->designation
+                    ?? ($employee->designation_id ? \ME\Hr\Models\HrDesignation::find($employee->designation_id) : null);
+                $attBonusBase = ($factoryNo === 1 || $factoryNo === 2)
+                    ? (float) ($sal['attendance_bonus_com'] ?? $si?->attendance_bonus_com ?? data_get($designation, 'attendance_bonus_com', 0))
+                    : (float) ($sal['attendance_bonus']     ?? $si?->attendance_bonus     ?? data_get($designation, 'attendance_bonus',     0));
+
+                // Eligibility: no absent, no leave in the period; also collect meal allowances
+                $attBonus  = 0.0;
+                $mealTotal = 0.0;
+                if ($from && $to) {
+                    $attendancePack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                        $employee->id, $from, $to
+                    );
+                    $summ   = $attendancePack['summary'] ?? [];
+                    $absent = (int) ($summ['totalAbsent'] ?? 0);
+                    $leave  = (int) ($summ['totalLeave']  ?? 0);
+                    if ($attBonusBase > 0 && $absent === 0 && $leave === 0) {
+                        $attBonus = $attBonusBase;
+                    }
+                    $meal      = $attendancePack['meal'] ?? [];
+                    $mealTotal = (float) ($meal['meal_total'] ?? 0);
+                }
+
+                $extraEarningAmount  = $extras['earnings'] + $extras['advanceIou'] + $otEarn + $dayEarn + $attBonus + ($mealTotal ?? 0.0);
                 $extraDeductionAmount = $extras['deductions'] + $otDeduct + $dayDeduct;
                 $totalEarn   = $extraEarningAmount;
                 $totalDeduct = $extraDeductionAmount;
@@ -382,6 +409,8 @@ class HrOptionsService
                     'total_deduct' => $totalDeduct,
                     'net'          => $net,
                     'ot'           => $otEarn - $otDeduct,
+                    'attendance_bonus' => $attBonus,
+                    'meal_total'   => $mealTotal ?? 0.0,
                 ];
             };
 

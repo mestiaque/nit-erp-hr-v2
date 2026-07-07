@@ -19,6 +19,7 @@ use ME\Hr\Models\HrEmployeeSalaryIncrement;
 use ME\Hr\Models\HrEmployeeSalaryInfo;
 use ME\Hr\Models\HrFloorLine;
 use ME\Hr\Models\HrGeoLocation;
+use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrLeaveInfo;
 use ME\Hr\Models\HrMaritalStatus;
 use ME\Hr\Models\HrPaymentMethod;
@@ -162,6 +163,10 @@ class HrEmployeeController extends Controller
         ]);
         $payload['status'] = $this->normalizeUserStatus((string) $payload['status']);
         $payload = $this->mapLegacyEmployeePayloadToHrColumns($payload);
+
+        if (!empty($payload['designation_id'])) {
+            $this->validateApprovedManpower((int) $payload['designation_id']);
+        }
 
         $employee = new HrEmployee();
         $employee->fill($payload);
@@ -1104,6 +1109,118 @@ class HrEmployeeController extends Controller
             ->with('success', 'Document deleted.');
     }
 
+    public function show(Request $request, HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        $employee->load([
+            'basicInfo', 'salaryInfo', 'nomineeRecord', 'ageVerification',
+            'separation', 'finalSettlement', 'permanentAddress', 'presentAddress',
+            'classification', 'department', 'section', 'subSection',
+            'designation', 'shift', 'workingPlace', 'floorLine',
+        ]);
+
+        // Leaves
+        $leaves = HrEmployeeLeave::where('employee_id', $employee->id)
+            ->with('leaveType')
+            ->latest()
+            ->get()
+            ->map(function ($row) {
+                $leaveType = optional($row->leaveType);
+                return [
+                    'leave_code'       => $leaveType->code,
+                    'leave_type'       => $leaveType->name,
+                    'leave_type_id'    => $row->leave_type_id,
+                    'application_date' => $row->application_date,
+                    'leave_from'       => $row->start_date,
+                    'leave_to'         => $row->end_date,
+                    'total_days'       => $row->total_days ?? $this->calculateTotalDays($row->start_date, $row->end_date),
+                    'purpose'          => $row->reason,
+                    'status'           => $row->status,
+                ];
+            });
+
+        $leaveTypes = Schema::hasTable((new HrLeaveInfo())->getTable())
+            ? HrLeaveInfo::where('status', 'active')->orderBy('name')->get(['id', 'name', 'code', 'days'])
+            : collect();
+
+        $takenByTypeId = $leaves->groupBy('leave_type_id')
+            ->map(fn ($g) => (int) round($g->sum(fn ($r) => (float) ($r['total_days'] ?? 0))));
+
+        $leaveSummary = $leaveTypes->map(function ($lt) use ($takenByTypeId) {
+            $total = (int) ($lt->days ?? 0);
+            $taken = (int) ($takenByTypeId->get($lt->id, 0));
+            return [
+                'code'           => $lt->code,
+                'name'           => $lt->name,
+                'remaining_days' => $total,
+                'taken_days'     => $taken,
+                'available_days' => max($total - $taken, 0),
+            ];
+        });
+
+        // Salary increments
+        $increments = collect();
+        $incTable = (new HrEmployeeSalaryIncrement())->getTable();
+        if (Schema::hasTable($incTable)) {
+            $q = HrEmployeeSalaryIncrement::query();
+            if (Schema::hasColumn($incTable, 'employee_id')) {
+                $q->where('employee_id', $employee->id);
+            } elseif (Schema::hasColumn($incTable, 'user_id')) {
+                $q->where('user_id', $employee->id);
+            }
+            $increments = $q->latest('increment_date')->get();
+        }
+
+        // Other transactions (advance/earnings/deductions)
+        $transactions = HrEmployeeOtherTransaction::where('employee_id', $employee->id)
+            ->latest('txn_date')
+            ->get();
+
+        // Documents
+        $documents = HrEmployeeDocument::where('employee_id', $employee->id)->latest()->get();
+
+        // Attendance — last 60 days
+        $attendanceDateFrom = now()->subDays(59)->toDateString();
+        $attendanceDateTo   = now()->toDateString();
+
+        $monthFilter = $request->filled('att_month') ? $request->att_month : null;
+        if ($monthFilter) {
+            $attStart = \Carbon\Carbon::parse($monthFilter . '-01');
+            $attendanceDateFrom = $attStart->toDateString();
+            $attendanceDateTo   = $attStart->copy()->endOfMonth()->toDateString();
+        }
+
+        $attendances = HrAttendance::where('employee_id', $employee->id)
+            ->whereBetween('date', [$attendanceDateFrom, $attendanceDateTo])
+            ->orderBy('date', 'desc')
+            ->get();
+
+        // Transaction totals
+        $txnTotalAdvance    = (float) $transactions->sum('advance_iou');
+        $txnTotalEarnings   = (float) $transactions->sum('earnings');
+        $txnTotalDeductions = (float) $transactions->sum('deductions');
+        $txnTotalOt         = (float) $transactions->sum('ot_adjust');
+
+        // Attendance totals
+        $attPresent = $attendances->where('status', 'Present')->count();
+        $attAbsent  = $attendances->where('status', 'Absent')->count();
+        $attLate    = $attendances->where('status', 'Late')->count();
+        $attTotal   = $attendances->count();
+        $totalOtMin = (int) $attendances->sum('total_ot_minute');
+        $totalWkMin = (int) $attendances->sum('total_working_minute');
+
+        $options = $this->options();
+
+        return view('hr::employees.show', compact(
+            'employee', 'leaves', 'leaveSummary', 'increments',
+            'transactions', 'documents', 'attendances',
+            'attendanceDateFrom', 'attendanceDateTo', 'options',
+            'txnTotalAdvance', 'txnTotalEarnings', 'txnTotalDeductions', 'txnTotalOt',
+            'attPresent', 'attAbsent', 'attLate', 'attTotal', 'totalOtMin', 'totalWkMin'
+        ));
+    }
+
     public function destroy(HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
@@ -1353,6 +1470,30 @@ class HrEmployeeController extends Controller
             $workingPlace = HrWorkingPlace::query()->find($payload['working_place_id']);
             $employee->location = $workingPlace?->name;
         }
+
+        if (Schema::hasColumn($this->employeeTable(), 'grade') && !empty($payload['designation_id'])) {
+            $desig = HrDesignation::query()->find($payload['designation_id']);
+            if ($desig && !empty($desig->grade)) {
+                $employee->grade = $desig->grade;
+            }
+        }
+    }
+
+    private function validateApprovedManpower(int $designationId): void
+    {
+        $designation = HrDesignation::query()->find($designationId);
+        if (!$designation || empty($designation->approved_manpower)) {
+            return;
+        }
+
+        $current = HrEmployee::query()
+            ->where('designation_id', $designationId)
+            ->where('status', 'active')
+            ->count();
+
+        if ($current >= (int) $designation->approved_manpower) {
+            abort(422, 'Approved manpower limit of ' . $designation->approved_manpower . ' for "' . $designation->name . '" has been reached. Cannot create a new employee under this designation.');
+        }
     }
 
     private function syncDesignationSalaryToEmployee(HrEmployee $employee, array $payload, bool $force = false): void
@@ -1368,7 +1509,6 @@ class HrEmployeeController extends Controller
         }
 
         $si = $employee->salaryInfo;
-        // dd($si);
         $salaryInfo = [
             'gross_salary_comp_1'     => $si?->gross_salary_comp1,
             'gross_salary_comp_2'     => $si?->gross_salary_comp2,
@@ -1433,15 +1573,26 @@ class HrEmployeeController extends Controller
         $salaryInfo['holiday_allowance'] = $setIfEmpty(data_get($salaryInfo, 'holiday_allowance'), data_get($designation, 'holiday_allowance'));
 
         $this->upsertSalaryInfo($employee, [
-            'gross_salary' => $setIfEmpty(data_get($employee->salaryInfo, 'gross_salary'), data_get($designation, 'gross_salary')),
-            'gross_salary_comp_1' => data_get($salaryInfo, 'gross_salary_comp_1'),
-            'gross_salary_comp_2' => data_get($salaryInfo, 'gross_salary_comp_2'),
-            'car_fuel' => data_get($salaryInfo, 'car_fuel'),
-            'phone_internet' => data_get($salaryInfo, 'phone_internet'),
-            'extra_facility' => data_get($salaryInfo, 'extra_facility'),
-            'salary_type' => data_get($salaryInfo, 'salary_type'),
-            'tax' => data_get($salaryInfo, 'tax'),
-            'tax_calculate_by' => data_get($salaryInfo, 'tax_calculate_by'),
+            'gross_salary'            => $setIfEmpty(data_get($employee->salaryInfo, 'gross_salary'), data_get($designation, 'gross_salary')),
+            'gross_salary_comp_1'     => data_get($salaryInfo, 'gross_salary_comp_1'),
+            'gross_salary_comp_2'     => data_get($salaryInfo, 'gross_salary_comp_2'),
+            'car_fuel'                => data_get($salaryInfo, 'car_fuel'),
+            'phone_internet'          => data_get($salaryInfo, 'phone_internet'),
+            'extra_facility'          => data_get($salaryInfo, 'extra_facility'),
+            'salary_type'             => data_get($salaryInfo, 'salary_type'),
+            'tax'                     => data_get($salaryInfo, 'tax'),
+            'tax_calculate_by'        => data_get($salaryInfo, 'tax_calculate_by'),
+            'attendance_bonus'        => data_get($salaryInfo, 'attendance_bonus'),
+            'attendance_bonus_com'    => data_get($salaryInfo, 'attendance_bonus_com'),
+            'tiffin_allowance'        => data_get($salaryInfo, 'tiffin_allowance'),
+            'min_tiffin_hour'         => data_get($salaryInfo, 'minimum_tiffin_hour'),
+            'night_allowance'         => data_get($salaryInfo, 'night_allowance'),
+            'min_night_hour'          => data_get($salaryInfo, 'minimum_night_hour'),
+            'dinner_allowance'        => data_get($salaryInfo, 'dinner_allowance'),
+            'min_dinner_hour'         => data_get($salaryInfo, 'minimum_dinner_hour'),
+            'payment_way'             => data_get($salaryInfo, 'meal_payment_way'),
+            'weekend_allowance_count' => data_get($salaryInfo, 'weekend_allowance_count'),
+            'holiday_allowance'       => data_get($salaryInfo, 'holiday_allowance'),
         ]);
     }
 
@@ -1463,6 +1614,42 @@ class HrEmployeeController extends Controller
         if (array_key_exists('salary_type', $payload)) {
             $existing->payment_method_id = $this->resolveLookupId(HrPaymentMethod::class, $payload['salary_type'] ?? null);
         }
+
+        // Designation-effectiveness fields — only written when key is present in payload
+        if (array_key_exists('attendance_bonus', $payload)) {
+            $existing->attendance_bonus = $payload['attendance_bonus'];
+        }
+        if (array_key_exists('attendance_bonus_com', $payload)) {
+            $existing->attendance_bonus_com = $payload['attendance_bonus_com'];
+        }
+        if (array_key_exists('tiffin_allowance', $payload)) {
+            $existing->tiffin_allowance = $payload['tiffin_allowance'];
+        }
+        if (array_key_exists('min_tiffin_hour', $payload)) {
+            $existing->min_tiffin_hour = $payload['min_tiffin_hour'];
+        }
+        if (array_key_exists('night_allowance', $payload)) {
+            $existing->night_allowance = $payload['night_allowance'];
+        }
+        if (array_key_exists('min_night_hour', $payload)) {
+            $existing->min_night_hour = $payload['min_night_hour'];
+        }
+        if (array_key_exists('dinner_allowance', $payload)) {
+            $existing->dinner_allowance = $payload['dinner_allowance'];
+        }
+        if (array_key_exists('min_dinner_hour', $payload)) {
+            $existing->min_dinner_hour = $payload['min_dinner_hour'];
+        }
+        if (array_key_exists('payment_way', $payload)) {
+            $existing->payment_way = $payload['payment_way'];
+        }
+        if (array_key_exists('weekend_allowance_count', $payload)) {
+            $existing->weekend_allowance_count = $payload['weekend_allowance_count'];
+        }
+        if (array_key_exists('holiday_allowance', $payload)) {
+            $existing->holiday_allowance = $payload['holiday_allowance'];
+        }
+
         $existing->created_by = $existing->created_by ?? Auth::id();
         $existing->updated_by = Auth::id();
         $existing->save();

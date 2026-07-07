@@ -216,6 +216,7 @@
                                 <td>{{ ucfirst($employmentStatus) }}</td>
                                 <td>{{ $isActive ? 'Active' : 'Inactive' }}</td>
                                 <td >
+                                    <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn-custom" title="View Full Profile"><i class="fa-solid fa-eye"></i></a>
                                     <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit Profile"><i class="fa-solid fa-pen"></i></a>
                                     <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}" title="Basic Info"><i class="fa-solid fa-circle-info"></i></a>
                                     <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}" title="Salary Info"><i class="fa-solid fa-money-bill-wave"></i></a>

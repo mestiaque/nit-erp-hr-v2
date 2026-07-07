@@ -99,11 +99,37 @@ class EmployeeAttendanceService
 
     public static function getEmployeeAttendanceByDate($employeeId, $fromDate, $toDate)
     {
-           $employee = \ME\Hr\Models\HrEmployee::findOrFail($employeeId);
-        $from = Carbon::parse($fromDate);
-        $to = Carbon::parse($toDate);
+        $employee  = \ME\Hr\Models\HrEmployee::findOrFail($employeeId);
+        $from      = Carbon::parse($fromDate);
+        $to        = Carbon::parse($toDate);
         $factoryNo = hr_factory('factory_no');
-        $holidays = \ME\Hr\Services\HrOptionsService::getOptions()['holidays'] ?? collect();
+        $holidays  = \ME\Hr\Services\HrOptionsService::getOptions()['holidays'] ?? collect();
+
+        // ── Designation effectiveness: OT flags & meal allowances ──────────
+        $designation = $employee->designation
+            ?? \ME\Hr\Models\HrDesignation::find($employee->designation_id);
+
+        $isOtBasisWphp    = (bool) data_get($designation, 'is_ot_basis_wphp',     false);
+        $isOtBasisMain    = (bool) data_get($designation, 'is_ot_basis_main',     true);
+        $isOtBasisOthers1 = (bool) data_get($designation, 'is_ot_basis_others_1', true);
+        $isOtBasisOthers2 = (bool) data_get($designation, 'is_ot_basis_others_2', true);
+
+        $otEnabled = match (true) {
+            ($factoryNo == 1) => $isOtBasisOthers1,
+            ($factoryNo == 2) => $isOtBasisOthers2,
+            default            => $isOtBasisMain,
+        };
+
+        // Employee-level salary_info overrides designation; fall back to designation
+        $si             = $employee->salaryInfo;
+        $tiffinAmount   = (float) ($si?->tiffin_allowance  ?? data_get($designation, 'tiffin_allowance',  0));
+        $minTiffinHour  = (float) ($si?->min_tiffin_hour   ?? data_get($designation, 'min_tiffin_hour',   0));
+        $nightAmount    = (float) ($si?->night_allowance    ?? data_get($designation, 'night_allowance',   0));
+        $minNightHour   = (float) ($si?->min_night_hour     ?? data_get($designation, 'min_night_hour',    0));
+        $dinnerAmount   = (float) ($si?->dinner_allowance   ?? data_get($designation, 'dinner_allowance',  0));
+        $minDinnerHour  = (float) ($si?->min_dinner_hour    ?? data_get($designation, 'min_dinner_hour',   0));
+        $paymentWay     = strtolower($si?->payment_way ?? data_get($designation, 'payment_way', 'daily'));
+        // ───────────────────────────────────────────────────────────────────
 
         $attendanceMap = \ME\Hr\Models\HrAttendance::query()
             ->where('employee_id', $employeeId)
@@ -119,13 +145,13 @@ class EmployeeAttendanceService
         }
 
         $leaveSummary = [
-            'casual' => 0,
-            'sick' => 0,
-            'earned' => 0,
-            'weekly' => 0,
+            'casual'   => 0,
+            'sick'     => 0,
+            'earned'   => 0,
+            'weekly'   => 0,
             'festival' => 0,
-            'general' => 0,
-            'maternity' => 0,
+            'general'  => 0,
+            'maternity'=> 0,
         ];
 
         $leaves = Leave::with('leaveType')
@@ -137,30 +163,27 @@ class EmployeeAttendanceService
         $leaveByDate = [];
         foreach ($leaves as $leave) {
             $leaveFrom = Carbon::parse($leave->leave_from)->max($from)->startOfDay();
-            $leaveTo = Carbon::parse($leave->leave_to)->min($to)->startOfDay();
-
+            $leaveTo   = Carbon::parse($leave->leave_to)->min($to)->startOfDay();
             for ($leaveDate = $leaveFrom->copy(); $leaveDate->lte($leaveTo); $leaveDate->addDay()) {
                 $leaveByDate[$leaveDate->format('Y-m-d')] = $leave;
             }
         }
 
-        $weekendToRegularDays = 0;
+        $weekendToRegularDays      = 0;
         $weekendToRegularOtMinutes = 0;
 
         if (!$attendanceMap) $attendanceMap = collect();
-        if (!$holidays) $holidays = collect();
+        if (!$holidays)      $holidays      = collect();
 
         $allowOtHour = hr_factory('allow_ot_hour') ?? 2;
-        $allowOtMin = $allowOtHour * 60;
-
-        $empWeekend = strtolower($employee->otherInfo()['profile']['weekend'] ?? 'friday');
+        $allowOtMin  = $allowOtHour * 60;
+        $empWeekend  = strtolower($employee->otherInfo()['profile']['weekend'] ?? 'friday');
 
         $result = [];
 
         foreach ($dates as $d) {
             $dateStr = $d->format('Y-m-d');
-            // $att = ($attendanceMap->get($employee->id . '_' . $dateStr) ?? collect())->first();
-            $att = $attendanceMap[$employee->id . '_' . $dateStr] ?? null;
+            $att     = $attendanceMap[$employee->id . '_' . $dateStr] ?? null;
 
             // Leave
             $leave = $leaveByDate[$dateStr] ?? null;
@@ -170,88 +193,88 @@ class EmployeeAttendanceService
             }
 
             // Holiday
-            $isHoliday = $holidays->contains(function ($h) use ($dateStr) {
-                return ($dateStr >= $h->from_date && $dateStr <= $h->to_date);
-            });
+            $isHoliday = $holidays->contains(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);
 
-            // Weekend / Regular To Weekend / Weekend To Regular
-            $dayOfWeek = strtolower($d->format('l'));
+            // Weekend / Regular-To-Weekend / Weekend-To-Regular
+            $dayOfWeek          = strtolower($d->format('l'));
             $isRegularToWeekend = RegularToWeekend::where('section_id', $employee->section_id)
-                ->where('date', $dateStr)
-                ->where('type', 'weekend')
-                ->where('status', 1)
-                ->exists();
+                ->where('date', $dateStr)->where('type', 'weekend')->where('status', 1)->exists();
             $isWeekendToRegular = RegularToWeekend::where('section_id', $employee->section_id)
-                ->where('date', $dateStr)
-                ->where('type', 'half_day')
-                ->where('status', 1)
-                ->exists();
+                ->where('date', $dateStr)->where('type', 'half_day')->where('status', 1)->exists();
 
-            // Determine isWeekend, isWeekendForCompliance
-            $isWeekend = false;
+            $isWeekend            = false;
             $isWeekendForCompliance = false;
             if ($dayOfWeek === $empWeekend && $isWeekendToRegular) {
-                // Normally weekend, but set to regular ONLy for factoryNo 0/null
-                $isWeekend = false;
+                $isWeekend              = false;
                 $isWeekendForCompliance = ($factoryNo == 1 || $factoryNo == 2);
             } elseif ($isRegularToWeekend || ($dayOfWeek === $empWeekend && !$isWeekendToRegular) || ($att && !empty($att->regular_to_weekend))) {
-                $isWeekend = true;
+                $isWeekend              = true;
                 $isWeekendForCompliance = true;
             }
 
-            // Decide status string
+            // Status string
             if ($leave) {
-                $status = 'leave';
-                $status_display = 'Leave';
-            }elseif (($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance) {
-                $status = 'weekend';
-                $status_display = 'Weekend';
+                $status = 'leave'; $status_display = 'Leave';
+            } elseif (($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance) {
+                $status = 'weekend'; $status_display = 'Weekend';
             } elseif ($isHoliday) {
-                $status = 'holiday';
-                $status_display = 'Holiday';
+                $status = 'holiday'; $status_display = 'Holiday';
             } elseif ($isWeekend) {
-                $status = 'weekend';
-                $status_display = 'Weekend';
+                $status = 'weekend'; $status_display = 'Weekend';
             } elseif ($att) {
-                if (!empty($att->status)) {
-                    $status = str_replace(' ', '_', strtolower($att->status));
-                    $status_display = ucwords(str_replace('_', ' ', $status));
-                } else {
-                    $status = 'present';
-                    $status_display = 'Present';
-                }
+                $status         = !empty($att->status) ? str_replace(' ', '_', strtolower($att->status)) : 'present';
+                $status_display = ucwords(str_replace('_', ' ', $status));
             } else {
-                $status = 'absent';
-                $status_display = 'Absent';
+                $status = 'absent'; $status_display = 'Absent';
             }
 
-            // For Factory 1/2: If this day is weekend for compliance, then **do not count OT or in/out**
-            if (($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance) {
-                $inTime = null;
+            // In/Out visibility
+            $isWeekendBlockedForInOut = ($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance && !$isOtBasisWphp;
+            if ($isWeekendBlockedForInOut) {
+                $inTime  = null;
                 $outTime = null;
-                $complianceOt = 0;
-                $extraOt = ($factoryNo == 2) ? 0 : null;
             } else {
-                // Show real time values
-                $inTime = $att && $att->in_time ? $att->in_time : null;
+                $inTime  = $att && $att->in_time  ? $att->in_time  : null;
                 $outTime = $att && $att->out_time ? $att->out_time : null;
             }
 
-            // OT calculations
-            $otMinRaw = $att ? (int)($att->overtime_minutes ?? 0) : 0;
-            $actualOt = round($otMinRaw / 60, 2); // True OT (not capped)
-            // Compliance and extra OT logic
-            if ($factoryNo == 1) {
-                $complianceOt = ($isWeekendForCompliance) ? 0 : round(min($otMinRaw, $allowOtMin) / 60, 2);
-                $extraOt = null;
-            } elseif ($factoryNo == 2) {
-                $complianceOt = ($isWeekendForCompliance) ? 0 : round(min($otMinRaw, $allowOtMin) / 60, 2);
-                $extraOt = ($isWeekendForCompliance) ? 0 : ($otMinRaw > $allowOtMin ? round(($otMinRaw - $allowOtMin) / 60, 2) : 0);
-            } else {
-                // Factory 0/null
-                $complianceOt = $actualOt;
-                $extraOt = null;
+            // ── OT calculation with designation flags ─────────────────────
+            $isOnWeekend = $isWeekend || $isWeekendForCompliance;
+            $otMinRaw    = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
+
+            // WPHP: weekend full working time → OT when flag is ON
+            if ($isOtBasisWphp && $isOnWeekend && $att && $att->in_time) {
+                $otMinRaw = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
             }
+
+            // Zero out OT when not enabled for this factory / designation
+            if (!$otEnabled) {
+                $otMinRaw = 0;
+            }
+
+            $actualOt = round($otMinRaw / 60, 2);
+
+            if ($factoryNo == 1) {
+                $weekendBlocksOt = $isWeekendForCompliance && !$isOtBasisWphp;
+                $complianceOt    = $weekendBlocksOt ? 0 : round(min($otMinRaw, $allowOtMin) / 60, 2);
+                $extraOt         = null;
+            } elseif ($factoryNo == 2) {
+                $weekendBlocksOt = $isWeekendForCompliance && !$isOtBasisWphp;
+                $complianceOt    = $weekendBlocksOt ? 0 : round(min($otMinRaw, $allowOtMin) / 60, 2);
+                $extraOt         = $weekendBlocksOt ? 0 : ($otMinRaw > $allowOtMin ? round(($otMinRaw - $allowOtMin) / 60, 2) : 0);
+            } else {
+                // Factory null/0: weekend OT only when WPHP is ON
+                $complianceOt = ($isOnWeekend && !$isOtBasisWphp) ? 0 : $actualOt;
+                $extraOt      = null;
+            }
+            // ─────────────────────────────────────────────────────────────
+
+            // ── Meal allowance eligibility ────────────────────────────────
+            $workedHours    = $att ? round((int) ($att->total_working_minute ?? 0) / 60, 2) : 0;
+            $tiffinEligible = $minTiffinHour > 0 && $workedHours >= $minTiffinHour && !$leave && !$isHoliday;
+            $nightEligible  = $minNightHour  > 0 && $workedHours >= $minNightHour  && !$leave && !$isHoliday;
+            $dinnerEligible = $minDinnerHour > 0 && $workedHours >= $minDinnerHour && !$leave && !$isHoliday;
+            // ─────────────────────────────────────────────────────────────
 
             if ($isWeekendToRegular && $att && ($att->in_time || $att->out_time || $otMinRaw > 0)) {
                 $weekendToRegularDays++;
@@ -259,111 +282,130 @@ class EmployeeAttendanceService
             }
 
             $result[] = [
-                'date' => $d->format('d-m-Y'),
-                'day' => $d->format('l'),
-                'shift' => $att && isset($att->shift->name) ? $att->shift->name : null,
-                'in_time' => $inTime ?? '-',
-                'out_time' => $outTime ?? '-',
-                'status_key' => $status,
-                'status' => $status_display,
-                'compliance_ot' => $complianceOt,
-                'extra_ot' => $extraOt,
-                'remarks' => $att->remarks ?? '',
+                'date'            => $d->format('d-m-Y'),
+                'day'             => $d->format('l'),
+                'shift'           => $att && isset($att->shift->name) ? $att->shift->name : null,
+                'in_time'         => $inTime  ?? '-',
+                'out_time'        => $outTime ?? '-',
+                'status_key'      => $status,
+                'status'          => $status_display,
+                'actual_ot'       => $actualOt,
+                'compliance_ot'   => $complianceOt,
+                'extra_ot'        => $extraOt,
+                'worked_hours'    => $workedHours,
+                'tiffin_eligible' => $tiffinEligible,
+                'night_eligible'  => $nightEligible,
+                'dinner_eligible' => $dinnerEligible,
+                'remarks'         => $att->remarks ?? '',
             ];
         }
 
-
+        // ── Totals ────────────────────────────────────────────────────────
         $totals = [
-            'totalDays' => count($dates),
-            'totalGovHolidays' => 0,
-            'totalWeekendDays' => 0,
-            'totalWorkingDays' => 0,
-            'totalAbsent' => 0,
-            'totalLeave' => 0,
-            'totalPresent' => 0,
-            'totalPresentAll' => 0, // including holidays/weekends with in_time
-            'totalLate' => 0,
-            'totalPM' => 0,
-            'totalEO' => 0,
-            'totalLEO' => 0,
-            'totalLPM' => 0,
-            'totalAttendance' => 0,
-            'totalOt' => 0,
+            'totalDays'         => count($dates),
+            'totalGovHolidays'  => 0,
+            'totalWeekendDays'  => 0,
+            'totalWorkingDays'  => 0,
+            'totalAbsent'       => 0,
+            'totalLeave'        => 0,
+            'totalPresent'      => 0,
+            'totalPresentAll'   => 0,
+            'totalLate'         => 0,
+            'totalPM'           => 0,
+            'totalEO'           => 0,
+            'totalLEO'          => 0,
+            'totalLPM'          => 0,
+            'totalAttendance'   => 0,
+            'totalOt'           => 0,
             'totalComplianceOt' => 0,
-            'totalExtraOt' => 0,
+            'totalExtraOt'      => 0,
         ];
-        // Weekend info
-        $empWeekend = strtolower($employee->otherInfo()['profile']['weekend'] ?? 'friday');
+
+        $tiffinEligibleDays = 0;
+        $nightEligibleDays  = 0;
+        $dinnerEligibleDays = 0;
 
         foreach ($dates as $idx => $d) {
-            $row = $result[$idx]; // assuming you fill $result[] as above
-
+            $row     = $result[$idx];
             $dateStr = $d->format('Y-m-d');
-            $att = $attendanceMap->get($employee->id . '_' . $dateStr);
 
-            $totals['totalOt'] += $att ? round(($att->overtime_minutes ?? 0) / 60, 2) : 0;
+            // OT totals from per-row values (already designation-flag-adjusted)
+            // totalOt  = actual (uncapped) OT after designation flags; totalComplianceOt = capped compliance OT
+            $totals['totalOt']           += $row['actual_ot']    ?? 0;
             $totals['totalComplianceOt'] += $row['compliance_ot'] ?? 0;
-            $totals['totalExtraOt'] += $row['extra_ot'] ?? 0;
+            $totals['totalExtraOt']      += $row['extra_ot']      ?? 0;
 
-            $dayOfWeek = strtolower($d->format('l'));
-            $isHoliday = $holidays->contains(function ($h) use ($dateStr) {
-                return ($dateStr >= $h->from_date && $dateStr <= $h->to_date);
-            });
-            $isWeekend = ($dayOfWeek === $empWeekend);
+            // Use per-row status_key (already accounts for RegularToWeekend swaps)
+            $sk = $row['status_key'];
+            if ($sk === 'holiday')       $totals['totalGovHolidays']++;
+            elseif ($sk === 'weekend')   $totals['totalWeekendDays']++;
+            else                         $totals['totalWorkingDays']++;
 
-            if ($isHoliday) $totals['totalGovHolidays']++;
-            elseif ($isWeekend) $totals['totalWeekendDays']++;
-            else $totals['totalWorkingDays']++;
+            if ($sk === 'leave')                                              $totals['totalLeave']++;
+            if ($sk === 'absent')                                             $totals['totalAbsent']++;
+            if ($sk === 'present')                                            $totals['totalPresent']++;
+            if ($sk === 'late')                                               $totals['totalLate']++;
+            if (in_array($sk, ['punch_missing', 'pm']))                       $totals['totalPM']++;
+            if (in_array($sk, ['early_exit', 'eo']))                          $totals['totalEO']++;
+            if (in_array($sk, ['late_and_early_exit', 'leo']))                $totals['totalLEO']++;
+            if (in_array($sk, ['late_and_punch_missing', 'lpm']))             $totals['totalLPM']++;
 
-            if ($row['status_key'] === 'leave') $totals['totalLeave']++;
-            if ($row['status_key'] === 'absent') $totals['totalAbsent']++;
-            if ($row['status_key'] === 'present') $totals['totalPresent']++;
-            if ($row['status_key'] === 'late') $totals['totalLate']++;
-            if ($row['status_key'] === 'punch_missing') $totals['totalPM']++;
-            if ($row['status_key'] === 'early_exit') $totals['totalEO']++;
-            if ($row['status_key'] === 'late_and_early_exit') $totals['totalLEO']++;
-            if ($row['status_key'] === 'late_and_punch_missing') $totals['totalLPM']++;
+            $isOnWeekendOrHoliday = in_array($sk, ['weekend', 'holiday']);
+            if ($row['in_time'] && $row['in_time'] !== '-' && !$isOnWeekendOrHoliday) $totals['totalAttendance']++;
+            if ($row['in_time'] && $row['in_time'] !== '-')                            $totals['totalPresentAll']++;
 
-            // Mark attendance (in_time present and not holiday or weekend)
-            if ($row['in_time'] && $row['in_time'] !== '-' && !$isHoliday && !$isWeekend) $totals['totalAttendance']++;
-            if ($row['in_time'] && $row['in_time'] !== '-') $totals['totalPresentAll']++;
-
-
-            // Status details from att record (if available)
-            if ($att) {
-                $st = strtoupper($att->status ?? '');
-                // dd("Date: $dateStr, Status: $st");
-                // if ($st === 'LATE') $totals['totalLate']++;
-                if ($st === 'PM' || $st == 'PUNCH MISSING') $totals['totalPM']++;
-                if ($st === 'EO' || $st == 'EARLY EXIT') $totals['totalEO']++;
-                if ($st === 'LEO' || $st == 'LATE AND EARLY EXIT') $totals['totalLEO']++;
-                if ($st === 'LPM' || $st == 'LATE AND PUNCH MISSING') $totals['totalLPM']++;
-            }
+            // Meal eligible day counting
+            if ($row['tiffin_eligible']) $tiffinEligibleDays++;
+            if ($row['night_eligible'])  $nightEligibleDays++;
+            if ($row['dinner_eligible']) $dinnerEligibleDays++;
         }
 
-        // Payslip requirement: weekly leave should reflect monthly weekends,
-        // and festival leave should reflect factory holidays in the range.
-        $leaveSummary['weekly'] = (int) ($totals['totalWeekendDays'] ?? 0);
-        $leaveSummary['festival'] = (int) ($totals['totalGovHolidays'] ?? 0);
+        $leaveSummary['weekly']   = (int) ($totals['totalWeekendDays']  ?? 0);
+        $leaveSummary['festival'] = (int) ($totals['totalGovHolidays']  ?? 0);
+
+        // ── Meal totals (daily vs monthly payment way) ────────────────────
+        if ($paymentWay === 'monthly') {
+            $tiffinTotal = $tiffinEligibleDays > 0 ? $tiffinAmount : 0.0;
+            $nightTotal  = $nightEligibleDays  > 0 ? $nightAmount  : 0.0;
+            $dinnerTotal = $dinnerEligibleDays > 0 ? $dinnerAmount  : 0.0;
+        } else {
+            $tiffinTotal = $tiffinEligibleDays * $tiffinAmount;
+            $nightTotal  = $nightEligibleDays  * $nightAmount;
+            $dinnerTotal = $dinnerEligibleDays * $dinnerAmount;
+        }
+
+        $meal = [
+            'tiffin_eligible_days' => $tiffinEligibleDays,
+            'night_eligible_days'  => $nightEligibleDays,
+            'dinner_eligible_days' => $dinnerEligibleDays,
+            'tiffin_amount'        => $tiffinAmount,
+            'night_amount'         => $nightAmount,
+            'dinner_amount'        => $dinnerAmount,
+            'tiffin_total'         => round($tiffinTotal, 2),
+            'night_total'          => round($nightTotal,  2),
+            'dinner_total'         => round($dinnerTotal, 2),
+            'meal_total'           => round($tiffinTotal + $nightTotal + $dinnerTotal, 2),
+            'payment_way'          => $paymentWay,
+        ];
+        // ─────────────────────────────────────────────────────────────────
 
         $weekendToRegular = self::calculateWeekendToRegularAllowance($employee, [
-            'weekend_to_regular_days' => $weekendToRegularDays,
+            'weekend_to_regular_days'       => $weekendToRegularDays,
             'weekend_to_regular_ot_minutes' => $weekendToRegularOtMinutes,
-            'working_days' => $totals['totalWorkingDays'] ?? 0,
+            'working_days'                  => $totals['totalWorkingDays'] ?? 0,
         ]);
 
-        $totals['totalWeekendToRegularDays'] = $weekendToRegularDays;
+        $totals['totalWeekendToRegularDays']    = $weekendToRegularDays;
         $totals['totalWeekendToRegularOtHours'] = round($weekendToRegularOtMinutes / 60, 2);
-        $totals['totalWeekendToRegularAmount'] = $weekendToRegular['amount'] ?? 0;
+        $totals['totalWeekendToRegularAmount']  = $weekendToRegular['amount'] ?? 0;
 
         return [
-            'attendance' => $result,
-            'summary' => $totals,
-            'leave' => $leaveSummary,
+            'attendance'       => $result,
+            'summary'          => $totals,
+            'leave'            => $leaveSummary,
             'weekend_to_regular' => $weekendToRegular,
+            'meal'             => $meal,
         ];
-
-        // return $result;
     }
 
     public static function getSectionWiseAttendance($employeeIds, $fromDate, $toDate)

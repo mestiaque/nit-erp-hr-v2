@@ -26,8 +26,10 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/attendances', [\ME\Hr\Http\Controllers\AttendanceController::class, 'index'])->name('attendances.index');
 		Route::get('/attendances/{user}/{date}/edit', [\ME\Hr\Http\Controllers\AttendanceController::class, 'edit'])->name('attendances.edit');
 		Route::post('/attendances/{user}/{date}', [\ME\Hr\Http\Controllers\AttendanceController::class, 'update'])->name('attendances.update');
+		Route::post('/attendances/{employee}/bulk', [\ME\Hr\Http\Controllers\AttendanceController::class, 'bulkUpdate'])->name('attendances.bulk-update');
 		Route::get('/', [HrDashboardController::class, 'index'])->name('dashboard');
 		Route::get('/employees', [HrEmployeeController::class, 'index'])->name('employees.index');
+		Route::get('/employees/{employee}/view', [HrEmployeeController::class, 'show'])->name('employees.show');
 		Route::post('/employees', [HrEmployeeController::class, 'store'])->name('employees.store');
 		Route::put('/employees/{employee}/profile', [HrEmployeeController::class, 'updateProfile'])->name('employees.profile.update');
 		Route::put('/employees/{employee}/salary', [HrEmployeeController::class, 'updateSalary'])->name('employees.salary.update');

@@ -50,9 +50,17 @@ class SalaryReportService
 
         $leaveDays          = (int) ($summary['totalLeave'] ?? 0);
         $hasNoAbsentOrLeave = $absent === 0 && $leaveDays === 0;
+
+        // Attendance bonus: host-app salary → employee salary_info (designation-synced) → designation → 0
+        $empSi = $emp->salaryInfo;
+        $designation = $emp->designation ?? ($emp->designation_id ? Designation::find($emp->designation_id) : null);
         $attendanceBonusBase = ($factoryNo === 1 || $factoryNo === 2)
-            ? (float) ($sal['attendance_bonus_com'] ?? 0)
-            : (float) ($sal['attendance_bonus'] ?? 0);
+            ? (float) ($sal['attendance_bonus_com']
+                ?? $empSi?->attendance_bonus_com
+                ?? data_get($designation, 'attendance_bonus_com', 0))
+            : (float) ($sal['attendance_bonus']
+                ?? $empSi?->attendance_bonus
+                ?? data_get($designation, 'attendance_bonus', 0));
 
         $attBonus = (float) (
             $salaryReport['attendance_bonus']
@@ -119,37 +127,51 @@ class SalaryReportService
             $extraFacility = (float) ($designationCache[$emp->designation_id]->extra_facility ?? 0);
         }
 
+        // Meal allowances (tiffin / night / dinner) from attendance pack
+        $meal        = $attendancePack['meal'] ?? [];
+        $tiffinTotal = (float) ($meal['tiffin_total'] ?? 0);
+        $nightTotal  = (float) ($meal['night_total']  ?? 0);
+        $dinnerTotal = (float) ($meal['dinner_total']  ?? 0);
+        $mealTotal   = $tiffinTotal + $nightTotal + $dinnerTotal;
+
         return [
-            'gross'          => (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0),
-            'basic'          => (float) ($salaryReport['basic'] ?? $sal['basic'] ?? 0),
-            'house_rent'     => (float) ($sal['house'] ?? 0),
-            'medical'        => (float) ($sal['medical'] ?? 0),
-            'transport'      => (float) ($sal['transport'] ?? 0),
-            'food_allow'     => (float) ($sal['food'] ?? 0),
-            'total_earn'     => (float) ($salaryReport['total_earn'] ?? 0) + $otAdjustment,
-            'total_deduct'   => (float) ($salaryReport['total_deduct'] ?? 0),
-            'net'            => (float) ($salaryReport['net'] ?? 0) + $otAdjustment,
-            'ot'             => $otAmount,
-            'ot_hours'       => $otHours,
-            'ot_rate'        => $otRate,
-            'present'        => $present,
-            'absent'         => $absent,
-            'wh'             => (int) ($leave['weekly']   ?? 0),
-            'fh'             => (int) ($leave['festival'] ?? 0),
-            'leaves_by_code' => $leavesByCode,
-            'att_bonus'      => $attBonus,
-            'allow_other'    => $allowOther,
-            'arrear'         => $arrear,
-            'deduct_absent'  => $deductAbsent,
-            'deduct_other'   => $deductOther,
-            'loan'           => $loan,
-            'deduct_food'    => $deductFood,
-            'mobile'         => $mobile,
-            'jr'             => $jr,
-            'stamp'          => $stamp,
-            'wph_days'       => (int)   ($summary['totalWeekendToRegularDays']   ?? 0),
-            'wph_amount'     => (float) ($summary['totalWeekendToRegularAmount'] ?? 0),
-            'extra_facility' => $extraFacility,
+            'gross'                => (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0),
+            'basic'                => (float) ($salaryReport['basic'] ?? $sal['basic'] ?? 0),
+            'house_rent'           => (float) ($sal['house'] ?? 0),
+            'medical'              => (float) ($sal['medical'] ?? 0),
+            'transport'            => (float) ($sal['transport'] ?? 0),
+            'food_allow'           => (float) ($sal['food'] ?? 0),
+            'total_earn'           => (float) ($salaryReport['total_earn'] ?? 0) + $otAdjustment,
+            'total_deduct'         => (float) ($salaryReport['total_deduct'] ?? 0),
+            'net'                  => (float) ($salaryReport['net'] ?? 0) + $otAdjustment,
+            'ot'                   => $otAmount,
+            'ot_hours'             => $otHours,
+            'ot_rate'              => $otRate,
+            'present'              => $present,
+            'absent'               => $absent,
+            'wh'                   => (int) ($leave['weekly']   ?? 0),
+            'fh'                   => (int) ($leave['festival'] ?? 0),
+            'leaves_by_code'       => $leavesByCode,
+            'att_bonus'            => $attBonus,
+            'allow_other'          => $allowOther,
+            'arrear'               => $arrear,
+            'deduct_absent'        => $deductAbsent,
+            'deduct_other'         => $deductOther,
+            'loan'                 => $loan,
+            'deduct_food'          => $deductFood,
+            'mobile'               => $mobile,
+            'jr'                   => $jr,
+            'stamp'                => $stamp,
+            'wph_days'             => (int)   ($summary['totalWeekendToRegularDays']   ?? 0),
+            'wph_amount'           => (float) ($summary['totalWeekendToRegularAmount'] ?? 0),
+            'extra_facility'       => $extraFacility,
+            'tiffin_total'         => $tiffinTotal,
+            'night_total'          => $nightTotal,
+            'dinner_total'         => $dinnerTotal,
+            'meal_total'           => round($mealTotal, 2),
+            'tiffin_eligible_days' => (int) ($meal['tiffin_eligible_days'] ?? 0),
+            'night_eligible_days'  => (int) ($meal['night_eligible_days']  ?? 0),
+            'dinner_eligible_days' => (int) ($meal['dinner_eligible_days']  ?? 0),
         ];
     }
 }

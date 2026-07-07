@@ -225,9 +225,9 @@
         }
     };
     // Fetch latest active factory
-    $factory = \ME\Hr\Models\HrFactory::where('status', 1)->latest('id')->first();
+    $factory = \ME\Hr\Models\HrFactory::where('status', 'active')->latest('id')->first();
     // Fetch latest active salary key
-    $salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 1)->latest('id')->first();
+    $salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
 @endphp
 
 @forelse($employees as $employee)

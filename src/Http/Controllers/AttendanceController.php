@@ -136,6 +136,40 @@ class AttendanceController extends Controller
         return redirect()->route('hr-center.attendances.index', $query)->with('success', 'Attendance updated successfully.');
     }
 
+    public function bulkUpdate(Request $request, $employeeId)
+    {
+        $employee = HrEmployee::findOrFail($employeeId);
+        $shift    = HrShift::find($employee->shift_id);
+        $rows     = $request->input('rows', []);
+
+        foreach ($rows as $row) {
+            $attendance = HrAttendance::firstOrNew(['employee_id' => $employeeId, 'date' => $row['date']]);
+            $attendance->in_time  = $row['in_time']  ?: null;
+            $attendance->out_time = $row['out_time'] ?: null;
+            $attendance->remarks  = $row['remarks']  ?? null;
+            $attendance->status   = $this->calculateStatus($attendance, $shift);
+
+            if ($attendance->out_time && $shift) {
+                $outTime  = Carbon::parse($attendance->out_time);
+                $shiftEnd = Carbon::parse($shift->end_time);
+                $attendance->total_ot_minute = $outTime->gt($shiftEnd) ? $shiftEnd->diffInMinutes($outTime) : 0;
+            } else {
+                $attendance->total_ot_minute = 0;
+            }
+
+            $attendance->save();
+        }
+
+        $query = [];
+        foreach (['employee', 'status', 'date_from', 'date_to'] as $param) {
+            if ($request->filled($param)) {
+                $query[$param] = $request->input($param);
+            }
+        }
+
+        return redirect()->route('hr-center.attendances.index', $query)->with('success', 'Attendance saved for ' . $employee->name . '.');
+    }
+
     private function calculateStatus($attendance, $shift)
     {
         // If either in_time or out_time is missing

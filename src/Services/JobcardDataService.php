@@ -8,13 +8,24 @@ use ME\Hr\Models\HrEmployeeLeave as Leave;
 use ME\Hr\Models\HrRegularToWeekend as RegularToWeekend;
 
 class JobcardDataService {
-    public function getEmployeeJobcardData($employee, $dates) {
+    public function getEmployeeJobcardData($employee, $dates, $language = 'bn') {
         $rows = [];
         $allowOtHour = hr_factory('allow_ot_hour') ?? 2;
-        $allowOtMin = $allowOtHour * 60;
-        $t = fn (string $bn, string $en) => ($language ?? data_get($request ?? null, 'language', 'bn')) === 'bn' ? $bn : $en;
-        $isBangla = ($language ?? data_get($request ?? null, 'language', 'bn')) === 'bn';
-        $factoryNo = hr_factory('factory_no');
+        $allowOtMin  = $allowOtHour * 60;
+        $isBangla    = $language === 'bn';
+        $factoryNo   = (int) (hr_factory('factory_no') ?? 0);
+
+        // Load designation and OT basis flags once
+        $designation      = $employee->designation ?? ($employee->designation_id ? \ME\Hr\Models\HrDesignation::find($employee->designation_id) : null);
+        $isOtBasisWphp    = (bool) data_get($designation, 'is_ot_basis_wphp',     false);
+        $isOtBasisMain    = (bool) data_get($designation, 'is_ot_basis_main',     true);
+        $isOtBasisOthers1 = (bool) data_get($designation, 'is_ot_basis_others_1', true);
+        $isOtBasisOthers2 = (bool) data_get($designation, 'is_ot_basis_others_2', true);
+        $otEnabled = match (true) {
+            ($factoryNo === 1) => $isOtBasisOthers1,
+            ($factoryNo === 2) => $isOtBasisOthers2,
+            default             => $isOtBasisMain,
+        };
 
         // Use these for translations if needed
         $dayNamesBn = [
@@ -56,26 +67,23 @@ class JobcardDataService {
         $fmtTime = function($t) { return $t ? Carbon::parse($t)->format('h:i A') : '-'; };
         $fmtOT   = function($min) { return $min > 0 ? number_format($min / 60, 2) : '0.00'; };
 
-        // Helper to get attendance for date
+        // Build attendance map once for the full range, keyed by date string
+        $dateStrings      = collect($dates)->map(fn($d) => $d instanceof Carbon ? $d->toDateString() : (string)$d);
+        $attendanceByDate = \ME\Hr\Models\HrAttendance::query()
+            ->where('employee_id', $employee->id)
+            ->whereBetween('date', [$dateStrings->first(), $dateStrings->last()])
+            ->get()
+            ->keyBy(fn($a) => $a->date instanceof Carbon ? $a->date->toDateString() : substr((string)$a->date, 0, 10));
+        $getAtt = fn($uid, $dateStr) => $attendanceByDate->get($dateStr);
 
+        // Fetch holidays and shift once
+        $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
+        $holidays  = collect($hrOptions['holidays'] ?? []);
+        $shift     = $employee->shift ?? null;
 
         foreach($dates as $date) {
-            $attendanceMap = \ME\Hr\Models\HrAttendance::query()
-                ->where('employee_id', $employee->id)
-                ->whereDate('date', $date)
-                ->get()
-                ->keyBy('employee_id');
-            $getAtt = function($uid, $dateStr) use ($attendanceMap) {
-                /** @var Collection $attendanceMap */
-                return ($attendanceMap->get($uid . '_' . $dateStr) ?? collect())->first();
-            };
             $dStr = $date instanceof Carbon ? $date->toDateString() : $date;
-            $att = $getAtt($employee->id, $dStr);
-            // Fetch holidays from HrOptionsService
-            $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
-            $holidays = collect($hrOptions['holidays'] ?? []);
-            // Fetch shift from employee
-            $shift = $employee->shift ?? null;
+            $att  = $attendanceByDate->get($dStr);
 
             // ----- STATUS -----
             $statusCode = $this->getStatusForDay($employee, $date, $holidays, $getAtt);
@@ -103,27 +111,35 @@ class JobcardDataService {
                     } else {
                         $displayOut = $actualOut;
                     }
-                } elseif ($factoryNo == 2) {
-                    $displayOut = $actualOut; // always actual
-                } elseif ($factoryNo === null || $factoryNo == 0) {
-                    $displayOut = $actualOut; // for null/0, just show actual (regular logic)
                 } else {
                     $displayOut = $actualOut;
                 }
             }
             $outtime = $displayOut ? ($isBangla ? bn_time($displayOut) : $fmtTime($displayOut)) : ($att && $att->out_time ? ($isBangla ? bn_time($att->out_time) : $fmtTime($att->out_time)) : '-');
 
-            // ----- OT -------
-            $otMinRaw = $att ? (int)($att->total_ot_minute ?? 0) : 0;
-            $rawOtMin = $otMinRaw;
-            $cappedOtMin = ($factoryNo == 1 || $factoryNo == 2) ? min($rawOtMin, $allowOtMin) : $rawOtMin;
-            $extraOtMin = ($factoryNo == 2 && $rawOtMin > $allowOtMin) ? ($rawOtMin - $allowOtMin) : 0;
+            // ----- OT with designation basis flags -----
+            $isOnWeekend = $statusCode === 'WO';
+            $otMinRaw    = $att ? (int)($att->overtime_minutes ?? 0) : 0;
 
-            // For factory null/0 -- punch in to punch out is all actual ot
-            // For 1/2 -- compliance ot is capped OT (capped at allowOtMin), actual_ot is att->overtime_minutes, extra_ot for 2 if any
-            $actualOt = $fmtOT($rawOtMin);
+            // WPHP: full working time on weekends counts as OT
+            if ($isOtBasisWphp && $isOnWeekend && $att && $att->in_time) {
+                $otMinRaw = max($otMinRaw, (int)($att->in_minutes ?? 0));
+            }
+            // Zero out when the designation OT flag is off
+            if (!$otEnabled) {
+                $otMinRaw = 0;
+            }
+            // Factory 0: weekend OT = 0 unless WPHP is ON
+            if ($factoryNo === 0 && $isOnWeekend && !$isOtBasisWphp) {
+                $otMinRaw = 0;
+            }
+
+            $rawOtMin    = $otMinRaw;
+            $cappedOtMin = ($factoryNo === 1 || $factoryNo === 2) ? min($rawOtMin, $allowOtMin) : $rawOtMin;
+            $extraOtMin  = ($factoryNo === 2 && $rawOtMin > $allowOtMin) ? ($rawOtMin - $allowOtMin) : 0;
+            $actualOt    = $fmtOT($rawOtMin);
             $complianceOt = $fmtOT($cappedOtMin);
-            $extraOt = $fmtOT($extraOtMin);
+            $extraOt     = $fmtOT($extraOtMin);
 
             // All relevant data row
             $rows[] = [
@@ -148,12 +164,11 @@ class JobcardDataService {
 
 
     // SECTION version: all employees in section, keyed by emp ID
-    public function getSectionJobcardData($employees, $dates, $attendanceMap, $holidays, $shiftMap, $factoryNo, $allowOtHour = 2, $language = 'bn')
+    public function getSectionJobcardData($employees, $dates, $language = 'bn')
     {
         $data = [];
         foreach ($employees as $employee) {
-            $shift = $shiftMap[$employee->id] ?? null;
-            $data[$employee->id] = $this->getEmployeeJobcardData($employee, $dates, $attendanceMap, $holidays, $shift, $factoryNo, $allowOtHour, $language);
+            $data[$employee->id] = $this->getEmployeeJobcardData($employee, $dates, $language);
         }
         return $data;
     }
@@ -220,47 +235,27 @@ class JobcardDataService {
             $cur->addDay();
         }
 
-        $attendanceMap = \ME\Hr\Models\HrAttendance::query()
-            ->where('employee_id', $employeeId)
-            ->whereBetween('date', [$from, $to])
-            ->get()
-            ->groupBy(fn ($a) => $a->employee_id . '_' . $a->date);
-
-        // Holidays logic (mimic old logic, adjust as needed)
-        $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
-        $holidays = collect($hrOptions['holidays'] ?? []);
-
-        // Shift logic (mimic old logic, adjust as needed)
-        $shift = $employee->shift ?? null;
-
-        $factoryNo = hr_factory('factory_no');
+        $factoryNo   = hr_factory('factory_no');
         $allowOtHour = hr_factory('allow_ot_hour') ?? 2;
+        $shift       = $employee->shift ?? null;
 
-        $infoRows = $this->getEmployeeJobcardData(
-            $employee,
-            $dates,
-            $attendanceMap,
-            $holidays,
-            $shift,
-            $factoryNo,
-            $allowOtHour,
-            $language
-        );
-        $summary = method_exists($this, 'getEmployeeSummary')
+        $infoRows = $this->getEmployeeJobcardData($employee, $dates, $language);
+        $holidays = collect(\ME\Hr\Services\HrOptionsService::getOptions()['holidays'] ?? []);
+        $summary  = method_exists($this, 'getEmployeeSummary')
             ? $this->getEmployeeSummary($infoRows, $dates, $holidays, $employee, $shift, $factoryNo, $allowOtHour, $language)
             : [];
 
         // Also return employeeData for Blade info table
         $employeeData = [
-            'company_name' => $employee->company_name ?? '',
+            'company_name'  => $employee->company_name  ?? '',
             'company_address' => $employee->company_address ?? '',
-            'employee_id' => $employee->employee_id ?? '',
-            'department' => optional($employee->department)->name ?? '',
-            'employee_name' => $employee->name ?? '',
-            'section' => optional($employee->section)->name ?? '',
-            'job_type' => $employee->job_type ?? '',
-            'designation' => optional($employee->designation)->name ?? '',
-            'joining_date' => $employee->joining_date ?? '',
+            'employee_id'   => $employee->employee_id   ?? '',
+            'department'    => optional($employee->department)->name ?? '',
+            'employee_name' => $employee->name          ?? '',
+            'section'       => optional($employee->section)->name ?? '',
+            'job_type'      => $employee->job_type      ?? '',
+            'designation'   => optional($employee->designation)->name ?? '',
+            'joining_date'  => $employee->joining_date  ?? '',
         ];
 
         return compact('employee', 'employeeData', 'infoRows', 'summary', 'dates', 'factoryNo', 'allowOtHour', 'holidays', 'shift');

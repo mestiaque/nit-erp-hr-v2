@@ -90,7 +90,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			$bonusTitle   = \ME\Hr\Models\HrBonusTitle::find($bonusTitleId);
 			$bonusPolicies = \ME\Hr\Models\HrBonusPolicy::query()
 				->where('bonus_title_id', $bonusTitleId)
-				->where('status', 1)
+				->where('status', 'active')
 				->get();
 			if ($bonusPolicies->isEmpty()) {
 				$bonusPolicies = \ME\Hr\Models\HrBonusPolicy::query()
@@ -189,7 +189,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 		->mapWithKeys(fn ($d) => [$d->id => ['name' => $d->name, 'grade' => $d->grade_id]]);
 
 	// Leave types from database (admin/hr-center/masters/leave-infos)
-	$leaveInfos = \ME\Hr\Models\HrLeaveInfo::where('status', 1)->orderBy('id')->get(['id', 'name', 'code']);
+	$leaveInfos = \ME\Hr\Models\HrLeaveInfo::where('status', 'active')->orderBy('id')->get(['id', 'name', 'code']);
 @endphp
 
 <div class="rpt-header">
