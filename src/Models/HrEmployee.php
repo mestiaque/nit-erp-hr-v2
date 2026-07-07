@@ -410,10 +410,24 @@ class HrEmployee extends BaseHrModel
         return $id ? HrGeoLocation::find($id)?->name : null;
     }
 
+    public function getPermanentDistrictBnAttribute(): ?string
+    {
+        $id = $this->permanentAddress?->district_id;
+        $loc = $id ? HrGeoLocation::find($id) : null;
+        return $loc ? ($loc->bn_name ?? $loc->name) : null;
+    }
+
     public function getPermanentUpazilaAttribute(): ?string
     {
         $id = $this->permanentAddress?->police_station_id;
         return $id ? HrGeoLocation::find($id)?->name : null;
+    }
+
+    public function getPermanentUpazilaBnAttribute(): ?string
+    {
+        $id = $this->permanentAddress?->police_station_id;
+        $loc = $id ? HrGeoLocation::find($id) : null;
+        return $loc ? ($loc->bn_name ?? $loc->name) : null;
     }
 
     public function getPermanentPostOfficeAttribute(): ?string
