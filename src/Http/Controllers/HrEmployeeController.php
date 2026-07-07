@@ -29,6 +29,9 @@ use ME\Hr\Models\HrSex;
 use ME\Hr\Models\HrShift;
 use ME\Hr\Models\HrSubSection;
 use ME\Hr\Models\HrWorkingPlace;
+use ME\Hr\Models\HrFactory;
+use ME\Hr\Models\HrHoliday;
+use ME\Hr\Models\HrRegularToWeekend;
 use ME\Hr\Models\HrEmployeeNominee;
 use ME\Hr\Models\HrEmployeeAgeVerification;
 use ME\Hr\Models\HrEmployeeSeparation;
@@ -609,13 +612,13 @@ class HrEmployeeController extends Controller
         $new_salary = $previous_salary + $increment_amount;
         $increment_percentage = $previous_salary > 0 ? ($increment_amount / $previous_salary) * 100 : null;
 
-        $salaryInfo = $employee->salaryInfo;
-        $prev_comp_1 = (float) ($salaryInfo?->gross_salary_comp1 ?? 0);
-        $prev_comp_2 = (float) ($salaryInfo?->gross_salary_comp2 ?? 0);
+        // Read previous comp salaries from the last increment (not salary_info, which must not be mutated).
+        $prev_comp_1 = (float) ($oldIncrement?->new_salary_comp_1 ?? $employee->salaryInfo?->gross_salary_comp1 ?? 0);
+        $prev_comp_2 = (float) ($oldIncrement?->new_salary_comp_2 ?? $employee->salaryInfo?->gross_salary_comp2 ?? 0);
         $new_comp_1 = $prev_comp_1 + $increment_amount;
         $new_comp_2 = $prev_comp_2 + $increment_amount;
 
-        $increment = HrEmployeeSalaryIncrement::create([
+        HrEmployeeSalaryIncrement::create([
             'employee_id' => $employee->id,
             'increment_date' => $payload['increment_date'],
             'previous_salary' => $previous_salary,
@@ -627,11 +630,7 @@ class HrEmployeeController extends Controller
             'previous_salary_comp_2' => $prev_comp_2,
             'new_salary_comp_2' => $new_comp_2,
         ]);
-        $this->upsertSalaryInfo($employee, [
-            'gross_salary' => $new_salary,
-            'gross_salary_comp_1' => $new_comp_1,
-            'gross_salary_comp_2' => $new_comp_2,
-        ]);
+        // Intentionally NOT updating salary_info — effective salary is derived from increment records.
         return redirect()->route('hr-center.employees.increments.page', $employee->id)->with('success', 'Increment added.');
     }
 
@@ -649,38 +648,29 @@ class HrEmployeeController extends Controller
         $increment = HrEmployeeSalaryIncrement::findOrFail($payload['identifier']);
 
         // ২. স্যালারি রিভার্স করা (আগের ইনক্রিমেন্ট বাদ দিয়ে বেস স্যালারিতে ফিরে যাওয়া)
+        // Use the stored previous_salary from the increment record — salary_info must not be read for this.
         $old_increment_amount = $increment->increment_amount;
-        $base_salary = $employee->gross_salary - $old_increment_amount;
+        $base_salary  = (float) $increment->previous_salary;
+        $prev_comp_1  = (float) ($increment->previous_salary_comp_1 ?? 0);
+        $prev_comp_2  = (float) ($increment->previous_salary_comp_2 ?? 0);
 
-        // ৩. নতুন ক্যালকুলেশন
         $new_increment_amount = $payload['amount'];
         $new_gross_salary = $base_salary + $new_increment_amount;
-        $new_percentage = $base_salary > 0 ? ($new_increment_amount / $base_salary) * 100 : 0;
+        $new_percentage   = $base_salary > 0 ? ($new_increment_amount / $base_salary) * 100 : 0;
+        $new_comp_1       = $prev_comp_1 + $new_increment_amount;
+        $new_comp_2       = $prev_comp_2 + $new_increment_amount;
 
-        $salaryInfo = $employee->salaryInfo;
-        $prev_comp_1 = (float) ($salaryInfo?->gross_salary_comp1 ?? 0);
-        $prev_comp_2 = (float) ($salaryInfo?->gross_salary_comp2 ?? 0);
-        // Reverse old increment and add new
-        $new_comp_1 = $prev_comp_1 - $old_increment_amount + $new_increment_amount;
-        $new_comp_2 = $prev_comp_2 - $old_increment_amount + $new_increment_amount;
-
-        // ৪. ইনক্রিমেন্ট টেবিল আপডেট
         $increment->update([
-            'increment_date' => $payload['increment_date'],
-            'increment_amount' => $new_increment_amount,
-            'increment_percentage' => $new_percentage,
-            'new_salary' => $new_gross_salary,
+            'increment_date'         => $payload['increment_date'],
+            'increment_amount'       => $new_increment_amount,
+            'increment_percentage'   => $new_percentage,
+            'new_salary'             => $new_gross_salary,
             'previous_salary_comp_1' => $prev_comp_1,
-            'new_salary_comp_1' => $new_comp_1,
+            'new_salary_comp_1'      => $new_comp_1,
             'previous_salary_comp_2' => $prev_comp_2,
-            'new_salary_comp_2' => $new_comp_2,
+            'new_salary_comp_2'      => $new_comp_2,
         ]);
-
-        $this->upsertSalaryInfo($employee, [
-            'gross_salary' => $new_gross_salary,
-            'gross_salary_comp_1' => $new_comp_1,
-            'gross_salary_comp_2' => $new_comp_2,
-        ]);
+        // Intentionally NOT updating salary_info — effective salary is derived from increment records.
 
         return redirect()->route('hr-center.employees.increments.page', $employee->id)
                         ->with('success', 'Increment updated successfully.');
@@ -872,6 +862,57 @@ class HrEmployeeController extends Controller
         return view('hr::employees.pages.leaves', compact('employee', 'rows', 'leaveTypes', 'leaveSummary', 'employeeMeta'));
     }
 
+    public function leavesPrint(HrEmployee $employee, HrEmployeeLeave $leave)
+    {
+        $this->ensureEmployee($employee);
+        $options = $this->options();
+        $deptRow   = collect($options['departments']  ?? [])->firstWhere('id', $employee->department_id);
+        $sectRow   = collect($options['sections']     ?? [])->firstWhere('id', $employee->section_id);
+        $desigRow  = collect($options['designations'] ?? [])->firstWhere('id', $employee->designation_id);
+        $employeeMeta = [
+            'department'     => optional($deptRow)->name,
+            'department_bn'  => optional($deptRow)->bn_name ?: optional($deptRow)->name,
+            'section'        => optional($sectRow)->name,
+            'section_bn'     => optional($sectRow)->bn_name ?: optional($sectRow)->name,
+            'designation'    => optional($desigRow)->name,
+            'designation_bn' => optional($desigRow)->bn_name ?: optional($desigRow)->name,
+        ];
+        $leaveType = optional($leave->leaveType);
+
+        // Leave summary for HR sidebar table
+        $leaveTypes = Schema::hasTable((new HrLeaveInfo())->getTable())
+            ? HrLeaveInfo::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name', 'code', 'days'])
+            : collect();
+
+        $allLeaves = HrEmployeeLeave::query()->where('employee_id', $employee->id)->get();
+        $takenByTypeId = $allLeaves
+            ->groupBy(fn ($r) => (int) $r->leave_type_id)
+            ->map(fn ($g) => (int) round($g->sum(fn ($r) => (float) ($r->total_days ?? 0))));
+
+        $earnLeaveDays = $this->calculateYearlyEarnLeave($employee);
+        $earnCodes     = ['EL', 'AL', 'EARN'];
+
+        $leaveSummary = $leaveTypes->map(function ($lt) use ($takenByTypeId, $earnCodes, $earnLeaveDays) {
+            $code  = strtoupper(trim($lt->code ?? ''));
+            $total = in_array($code, $earnCodes)
+                ? $earnLeaveDays
+                : (int) ($lt->days ?? 0);
+            $taken = (int) ($takenByTypeId->get((int) $lt->id, 0));
+            return ['code' => $lt->code, 'name' => $lt->name, 'bn_name' => $lt->bn_name, 'total' => $total, 'taken' => $taken, 'remaining' => max($total - $taken, 0)];
+        })->values();
+
+        // Most recent leave before this one (for "সর্বশেষ ছুটির তারিখ")
+        $prevLeave = HrEmployeeLeave::query()
+            ->where('employee_id', $employee->id)
+            ->where('id', '!=', $leave->id)
+            ->orderByDesc('leave_from')
+            ->first();
+
+        $factory = HrFactory::query()->where('status', 'active')->orderBy('id')->first();
+
+        return view('hr::employees.pages.leave-print', compact('employee', 'leave', 'leaveType', 'employeeMeta', 'leaveSummary', 'prevLeave', 'factory'));
+    }
+
     public function leavesStore(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);
@@ -960,6 +1001,64 @@ class HrEmployeeController extends Controller
         dd("Print section: {$section} for employee ID: {$employee->id}");
     }
 
+    private function calculateYearlyEarnLeave(HrEmployee $employee): int
+    {
+        $year      = now()->year;
+        $yearStart = "{$year}-01-01";
+        $yearEnd   = "{$year}-12-31";
+        $today     = now()->format('Y-m-d');
+        $scanEnd   = $today < $yearEnd ? $today : $yearEnd;
+
+        $empWeekend = strtolower($employee->weekend ?? 'friday');
+
+        $holidays = HrHoliday::query()
+            ->where('status', 1)
+            ->where('from_date', '<=', $yearEnd)
+            ->where('to_date',   '>=', $yearStart)
+            ->get(['from_date', 'to_date']);
+
+        $rtwByDate = HrRegularToWeekend::query()
+            ->where('section_id', $employee->section_id)
+            ->whereBetween('date', [$yearStart, $yearEnd])
+            ->where('status', 1)
+            ->get(['date', 'type'])
+            ->keyBy(fn ($r) => (string) $r->date);
+
+        $attendedDates = array_flip(
+            HrAttendance::query()
+                ->where('employee_id', $employee->id)
+                ->whereBetween('date', [$yearStart, $scanEnd])
+                ->whereNotNull('in_time')
+                ->pluck('date')
+                ->map(fn ($d) => (string) $d)
+                ->toArray()
+        );
+
+        $attendCount = 0;
+        $current     = \Carbon\Carbon::parse($yearStart);
+        $end         = \Carbon\Carbon::parse($scanEnd);
+
+        while ($current->lte($end)) {
+            $dateStr   = $current->format('Y-m-d');
+            $dayOfWeek = strtolower($current->format('l'));
+            $swap      = $rtwByDate->get($dateStr);
+
+            $isRegularToWeekend = $swap && $swap->type === 'weekend';
+            $isWeekendToRegular = $swap && $swap->type === 'half_day';
+
+            $isWeekendDay = ($dayOfWeek === $empWeekend && !$isWeekendToRegular) || $isRegularToWeekend;
+            $isHoliday    = $holidays->contains(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);
+
+            if (!$isWeekendDay && !$isHoliday && array_key_exists($dateStr, $attendedDates)) {
+                $attendCount++;
+            }
+
+            $current->addDay();
+        }
+
+        return (int) floor(($attendCount / 18) * 30);
+    }
+
     private function options(): array
     {
         $maritalStatuses = HrMaritalStatus::query()
@@ -1003,11 +1102,11 @@ class HrEmployeeController extends Controller
 
         return [
             'classifications' => HrClassification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'departments' => HrDepartment::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
-            'sections' => HrSection::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'departments' => HrDepartment::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']),
+            'sections' => HrSection::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']),
             'subSections' => HrSubSection::orderBy('name')->get(['id', 'name']),
             'lines' => $lines,
-            'designations' => HrDesignation::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),
+            'designations' => HrDesignation::query()->where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']),
             'workingPlaces' => HrWorkingPlace::orderBy('name')->get(['id', 'name']),
             'weeks' => collect([
                 (object) ['id' => 1, 'name' => 'Sunday'],

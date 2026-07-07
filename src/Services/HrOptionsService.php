@@ -195,8 +195,9 @@ class HrOptionsService
                 ->map(fn ($v, $key) => "{$key}: {$v}")
                 ->implode(', ');
 
-            // Salary breakdown
+            // Salary breakdown — apply increment override so reports use effective salary
             $sal        = function_exists('hr_employee_salary') ? hr_employee_salary($employee, $factory ?? null, $salaryKey ?? null) : [];
+            $sal        = \ME\Hr\Models\HrEmployeeSalaryIncrement::applyIncrementOverride($sal, $employee->id);
             $gross      = $sal['gross'] ?? null;
             $basic      = $sal['basic'] ?? null;
             $house      = $sal['house'] ?? null;
@@ -359,6 +360,7 @@ class HrOptionsService
             // Salary report logic (aggregate salary, earnings, deductions, etc.)
             $getSalaryReport = function($from = null, $to = null) use ($employee, $getEarningsDeductionsSummary) {
                 $sal        = function_exists('hr_employee_salary') ? hr_employee_salary($employee) : [];
+                $sal        = \ME\Hr\Models\HrEmployeeSalaryIncrement::applyIncrementOverride($sal, $employee->id);
                 $otRate     = (float) ($sal['ot_rate'] ?? 0);
                 $gross      = (float) ($sal['gross'] ?? $employee->gross_salary ?? 0);
                 $basic      = (float) ($sal['basic'] ?? $employee->basic_salary ?? 0);

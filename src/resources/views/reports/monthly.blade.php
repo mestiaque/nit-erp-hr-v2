@@ -15,11 +15,13 @@
             <form method="get" action="{{ route('hr-center.reports.show', $reportKey) }}">
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <label class="mb-1">From</label>
-                        <input type="date" name="from" value="{{ $request->from }}" class="form-control form-control-sm">
+                        <label class="mb-1" id="fromLabel">From</label>
+                        <input type="date" name="from" id="fromInput"
+                               value="{{ $request->from }}"
+                               class="form-control form-control-sm">
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="mb-1">To</label>
+                        <label class="mb-1" id="toLabel">To</label>
                         <input type="date" name="to" value="{{ $request->to }}" class="form-control form-control-sm">
                     </div>
                     <div class="col-md-3 mb-3">
@@ -127,20 +129,22 @@
         const incrementWrap = document.getElementById('incrementPercentWrap');
         const effectiveWrap = document.getElementById('effectiveDateWrap');
         const minAbsentWrap = document.getElementById('minAbsentDaysWrap');
+        const fromLabel     = document.getElementById('fromLabel');
+        const toLabel       = document.getElementById('toLabel');
+        const fromInput     = document.getElementById('fromInput');
 
         function toggleIncrementFields() {
             const value = reportTypeEl ? reportTypeEl.value : '';
             const showIncrement = value === 'increment' || value === 'increment-summary';
             const showLongAbsent = value === 'long-absent';
-            if (incrementWrap) {
-                incrementWrap.style.display = showIncrement ? 'block' : 'none';
-            }
-            if (effectiveWrap) {
-                effectiveWrap.style.display = showIncrement ? 'block' : 'none';
-            }
-            if (minAbsentWrap) {
-                minAbsentWrap.style.display = showLongAbsent ? 'block' : 'none';
-            }
+
+            if (incrementWrap) incrementWrap.style.display = showIncrement ? 'block' : 'none';
+            if (effectiveWrap) effectiveWrap.style.display = showIncrement ? 'block' : 'none';
+            if (minAbsentWrap) minAbsentWrap.style.display = showLongAbsent ? 'block' : 'none';
+
+            // Change From/To labels to clarify join-date / increment-date filtering
+            if (fromLabel) fromLabel.textContent = showIncrement ? 'Join / Inc Date From' : 'From';
+            if (toLabel)   toLabel.textContent   = showIncrement ? 'Join / Inc Date To'   : 'To';
         }
 
         if (reportTypeEl) {

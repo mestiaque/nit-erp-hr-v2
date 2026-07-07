@@ -90,7 +90,7 @@
                 <tbody>
                     @foreach($sectionRecords as $record)
                         @php
-                            $employee = $employeeMap->get($record->user_id);
+                            $employee = $employeeMap->get($record->employee_id);
                             $inTime = $record->in_time ? substr((string)$record->in_time, 0, 5) : '-';
                             $outTime = $record->out_time ? substr((string)$record->out_time, 0, 5) : '-';
                             $punchingTime = ($inTime !== '-' ? $inTime : '') . ($inTime !== '-' && $outTime !== '-' ? ' - ' : '') . ($outTime !== '-' ? $outTime : '');

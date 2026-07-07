@@ -467,19 +467,19 @@ return [
                 // ],
 
 
-                [
-                    'title' => 'Attendance Import',
-                    'icon' => 'fa-brands fa-accusoft',
-                    'permission' => '',
-                    'children' => [
-                        [
-                            'title' => 'Data Import',
-                            'icon' => 'fa fa-file-import',
-                            'route' => 'admin/hr-center/zkteco-data-import',
-                            'permission' => '',
-                        ],
-                    ]
-                ]
+                // [
+                //     'title' => 'Attendance Import',
+                //     'icon' => 'fa-brands fa-accusoft',
+                //     'permission' => '',
+                //     'children' => [
+                //         [
+                //             'title' => 'Data Import',
+                //             'icon' => 'fa fa-file-import',
+                //             'route' => 'admin/hr-center/zkteco-data-import',
+                //             'permission' => '',
+                //         ],
+                //     ]
+                // ]
 
 
 

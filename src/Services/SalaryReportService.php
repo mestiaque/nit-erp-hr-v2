@@ -33,6 +33,7 @@ class SalaryReportService
             : [];
 
         $sal    = hr_employee_salary($emp);
+        $sal    = \ME\Hr\Models\HrEmployeeSalaryIncrement::applyIncrementOverride($sal, $emp->id);
         $otRate = (float) ($employeeData['salary']['ot_rate'] ?? $sal['ot_rate'] ?? 0);
 
         $attendancePack = EmployeeAttendanceService::getEmployeeAttendanceByDate($emp->id, $from, $to);

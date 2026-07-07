@@ -74,7 +74,10 @@ class HrReportController extends Controller
         ]);
 
         $filterRequest = new Request($payload);
-        $employees = $this->employeeReportQuery($filterRequest)
+        // Increment date filtering is done inside monthlyIncrementData (join date OR increment date).
+        // Stripping from/to here so employeeReportQuery does not pre-filter by join_date only.
+        $queryRequest = new Request(array_diff_key($payload, array_flip(['from', 'to'])));
+        $employees = $this->employeeReportQuery($queryRequest)
             ->with(['designation', 'department'])
             ->naturalOrderById()
             ->get();
@@ -230,7 +233,14 @@ class HrReportController extends Controller
         $incrementPercent = (float) $request->input('increment_percent', 0);
         $effectiveDate = $request->input('effective_date');
 
-        $employees = $this->employeeReportQuery($request)
+        // For increment report types, date filtering happens inside monthlyIncrementData
+        // (join date OR increment date in range). Don't pre-filter by join_date here.
+        $isIncrementReport = in_array($reportType, ['increment', 'increment-summary']);
+        $queryRequest = $isIncrementReport
+            ? new Request($request->except(['from', 'to']))
+            : $request;
+
+        $employees = $this->employeeReportQuery($queryRequest)
             ->with(['designation', 'department'])
             ->naturalOrderById()
             ->get();
@@ -527,8 +537,22 @@ class HrReportController extends Controller
         ]);
         $gradeMap = collect();
 
+        // Date filter: exact range the user provides.
+        // Show employees whose join date OR last increment date falls within [from, to].
+        // If only from is given: join date >= from. If neither: no date filter.
+        $filterFrom = $request->filled('from') ? \Carbon\Carbon::parse($request->from)->startOfDay() : null;
+        $filterTo   = $request->filled('to')   ? \Carbon\Carbon::parse($request->to)->endOfDay()     : null;
+
+        $inRange = function ($date) use ($filterFrom, $filterTo): bool {
+            if (blank($date)) return false;
+            $c = $date instanceof \Carbon\Carbon ? $date : \Carbon\Carbon::parse($date);
+            if ($filterFrom && $c->lt($filterFrom)) return false;
+            if ($filterTo   && $c->gt($filterTo))   return false;
+            return true;
+        };
+
         $rows = $employees
-            ->map(function (HrEmployee $employee) use ($incrementMap, $request, $withRemarks) {
+            ->map(function (HrEmployee $employee) use ($incrementMap, $withRemarks, $filterFrom, $filterTo, $inRange) {
                 $increment = $incrementMap[$employee->id] ?? null;
 
                 // increment-summary: only show employees with a saved increment record
@@ -536,18 +560,12 @@ class HrReportController extends Controller
                     return null;
                 }
 
-                $lastIncDate = data_get($increment, 'increment_date', data_get($increment, 'date'));
+                // Apply date filter only when at least one bound is given
+                if ($filterFrom || $filterTo) {
+                    $joinDate       = $employee->join_date;
+                    $lastIncDateVal = data_get($increment, 'increment_date', data_get($increment, 'date'));
 
-                if ($request->filled('from') || $request->filled('to')) {
-                    if (blank($lastIncDate)) {
-                        return null;
-                    }
-
-                    $date = \Carbon\Carbon::parse($lastIncDate);
-                    if ($request->filled('from') && $date->lt(\Carbon\Carbon::parse($request->from)->startOfDay())) {
-                        return null;
-                    }
-                    if ($request->filled('to') && $date->gt(\Carbon\Carbon::parse($request->to)->endOfDay())) {
+                    if (!$inRange($joinDate) && !$inRange($lastIncDateVal)) {
                         return null;
                     }
                 }
@@ -572,7 +590,11 @@ class HrReportController extends Controller
                 $subSectionId = $employee->sub_section_id
                     ?? data_get($profile, 'sub_section_id')
                     ?? data_get($profileNested, 'sub_section_id');
-                $grossSalary = (float) ($employee->gross_salary ?? 0);
+
+                // Use effective salary (base salary + any existing increments) as the basis
+                $sal         = function_exists('hr_employee_salary') ? hr_employee_salary($employee) : [];
+                $sal         = \ME\Hr\Models\HrEmployeeSalaryIncrement::applyIncrementOverride($sal, $employee->id);
+                $grossSalary = (float) ($sal['gross'] ?? $employee->gross_salary ?? 0);
 
                 $lastIncValue = (float) data_get($increment, 'increment_amount', data_get($increment, 'gross_increment_amount', data_get($increment, 'amount', 0)));
                 $lastIncDate = data_get($increment, 'increment_date', data_get($increment, 'date'));
@@ -645,10 +667,10 @@ class HrReportController extends Controller
                     'section' => $sectionMap->get($employee->section_id, 'N/A'),
                     'sub_section' => $subSectionMap->get($subSectionId, 'N/A'),
                     'designation' => $designationMap->get($employee->designation_id, 'N/A'),
-                    'grade' => $gradeMap->get($employee->grade_lavel, 'N/A'),
+                    'grade' => $employee->grade ?? optional($employee->designation)->grade ?? 'N/A',
                     'classification' => $classificationMap->get($employee->classification_id, 'N/A'),
                     'line_block' => $lineMap->get($employee->floor_line_id, 'N/A'),
-                    'join_date' => optional($employee->join_date)->format('d-M-Y'),
+                    'join_date' => $employee->join_date ? \Carbon\Carbon::parse($employee->join_date)->format('d-M-Y') : 'N/A',
                     'last_inc_date' => $lastIncDate ? \Carbon\Carbon::parse($lastIncDate)->format('d-M-Y') : 'N/A',
                     'last_inc_value' => $lastIncValue,
                     'gross_salary' => $grossSalary,
@@ -973,6 +995,20 @@ class HrReportController extends Controller
 
         if ($request->filled('shift')) {
             $query->where('shift_id', (int) $request->shift);
+        }
+
+        if ($request->filled('today_shifts')) {
+            $shiftIds = array_filter(array_map('intval', (array) $request->today_shifts));
+            if (!empty($shiftIds)) {
+                $query->whereIn('shift_id', $shiftIds);
+            }
+        }
+
+        if ($request->filled('lastday_shifts')) {
+            $shiftIds = array_filter(array_map('intval', (array) $request->lastday_shifts));
+            if (!empty($shiftIds)) {
+                $query->whereIn('shift_id', $shiftIds);
+            }
         }
 
         if ($request->filled('line_number')) {
@@ -1327,31 +1363,21 @@ class HrReportController extends Controller
             return $map;
         }
 
-        $rows = HrEmployeeSalaryIncrement::query()
-            ->where(function ($query) use ($hasUserId, $hasEmployeeId, $userIds, $employeeCodes) {
-                if ($hasUserId && $userIds->isNotEmpty()) {
-                    $query->orWhereIn('user_id', $userIds->all());
-                }
-
-                if ($hasEmployeeId && $userIds->isNotEmpty()) {
-                    $query->orWhereIn('employee_id', $userIds->all());
-                }
-
-                if ($hasEmployeeId && $employeeCodes->isNotEmpty()) {
-                    $query->orWhereIn('employee_id', $employeeCodes->all());
-                }
-            })
-            ->orderBy($sortCol, 'desc')
-            ->get();
+        // employee_id in hr_employee_salary_increments is the integer FK to hr_employees.id.
+        // Never compare against card numbers (employee_id on hr_employees) — those are strings.
+        $query = HrEmployeeSalaryIncrement::query()->orderBy($sortCol, 'desc');
+        if ($hasUserId && $userIds->isNotEmpty()) {
+            $query->whereIn('user_id', $userIds->all());
+        } elseif ($hasEmployeeId && $userIds->isNotEmpty()) {
+            $query->whereIn('employee_id', $userIds->all());
+        } else {
+            return $map;
+        }
+        $rows = $query->get();
 
         foreach ($employees as $employee) {
             $map[$employee->id] = $rows->first(function ($row) use ($employee) {
-                $rowUserId = data_get($row, 'user_id');
-                $rowEmployeeId = data_get($row, 'employee_id');
-
-                return (string) $rowUserId === (string) $employee->id
-                    || (string) $rowEmployeeId === (string) $employee->id
-                    || (string) $rowEmployeeId === (string) $employee->employee_id;
+                return (int) ($row->user_id ?? $row->employee_id) === (int) $employee->id;
             });
         }
 

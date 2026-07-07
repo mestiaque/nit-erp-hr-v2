@@ -92,6 +92,9 @@
                             <td>{{ data_get($row, 'leave_to') ?: '-' }}</td>
                             <td>{{ data_get($row, 'total_days') ?: 0 }}</td>
                             <td>
+                                @if(data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
+                                <a href="{{ route('hr-center.employees.leaves.print', [$employee->id, data_get($row, 'identifier')]) }}" target="_blank" class="btn-custom" style="background:#17a2b8;color:#fff;" title="Print Leave Application"><i class="fa-solid fa-print"></i></a>
+                                @endif
                                 <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditLeaveModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
                                 <form method="post" action="{{ route('hr-center.employees.leaves.delete', $employee->id) }}" style="display:inline-block" onsubmit="return confirm('Delete this leave?');">
                                     @csrf
