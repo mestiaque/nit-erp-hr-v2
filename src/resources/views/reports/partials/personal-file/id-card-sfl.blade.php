@@ -30,13 +30,33 @@
         page-break-inside: avoid;
     }
 
-    /* Header / footer SVG decoration */
-    .sfl-decor-svg {
+    /* Header / footer decoration (div-based, replaces the old SVG) */
+    .sfl-decor {
+        position: relative;
         width: 100%;
-        display: block;
-        flex-shrink: 0;
         height: 10mm;
+        flex-shrink: 0;
+        overflow: hidden;
     }
+    .sfl-decor-shape {
+        position: absolute;
+        inset: 0;
+    }
+    .sfl-decor-shape.is-navy { background: #11294a; }
+    .sfl-decor-shape.is-gold { background: #dcae3a; }
+
+
+    /* Front card */
+    .sfl-decor-fh-navy { clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%); height: 1.5rem; }
+    .sfl-decor-fh-gold { clip-path: polygon(40.5% 0%, 76% 0%, 73% 100%, 37.5% 100%); height: 1rem; }
+    .sfl-decor-ff-navy { clip-path: polygon(28.4% 0%, 66.4% 0%, 64.8% 100%, 26.8% 100%); height: 1rem; }
+    .sfl-decor-ff-gold { clip-path: polygon(66.9% 0%, 100% 0%, 100% 100%, 65.3% 100%); height: 1.5rem; }
+
+    /* Back card (colors swapped) */
+    .sfl-decor-bh-gold { clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%); height: 1rem; }
+    .sfl-decor-bh-navy { clip-path: polygon(40.5% 0%, 100% 0%, 100% 100%, 37.5% 100%); height: 1.5rem; }
+    .sfl-decor-bf-gold { clip-path: polygon(0% 0%, 38% 0%, 35% 100%, 0% 100%); height: 1.5rem; }
+    .sfl-decor-bf-navy { clip-path: polygon(38.5% 0%, 100% 0%, 100% 100%, 35.5% 100%); height: 1rem; }
 
     /* Logo row */
     .sfl-logo-area {
@@ -279,9 +299,6 @@
     }
 
     $idNumber = data_get($employee, 'employee_id', data_get($employee, 'id', $na));
-
-    // Unique key for SVG pattern IDs to avoid collisions when multiple cards are on the same page
-    $cardKey = (string) ($employee->id ?? rand(1000, 9999));
 @endphp
 
 <div class="sfl-card-sheet">
@@ -290,9 +307,9 @@
     <div class="sfl-card-side">
 
         {{-- Header decoration SVG --}}
-        <svg class="sfl-decor-svg" viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg">
+        {{-- <svg class="sfl-decor-svg" viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
-                <pattern id="sfl-gf-{{ $cardKey }}" width="15" height="15" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+                <pattern id="sfl-gf-{{ $cardKey }}" width="15" height="20" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
                     <line x1="0" y1="0" x2="0" y2="15" stroke="#b8912d" stroke-width="3"/>
                 </pattern>
                 <pattern id="sfl-bf-{{ $cardKey }}" width="16" height="16" patternUnits="userSpaceOnUse">
@@ -304,7 +321,7 @@
             <polygon points="0,0 400,0 370,100 0,100" fill="url(#sfl-bf-{{ $cardKey }})" opacity="0.55"/>
             <polygon points="405,0 760,0 730,100 375,100" fill="#dcae3a"/>
             <polygon points="405,0 760,0 730,100 375,100" fill="url(#sfl-gf-{{ $cardKey }})" opacity="0.4"/>
-        </svg>
+        </svg> --}}
 
         {{-- Logo row --}}
         <div class="sfl-logo-area">
@@ -372,39 +389,22 @@
             </div>
         </div>
 
-        {{-- Footer decoration SVG --}}
-        <svg class="sfl-decor-svg" viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern id="sfl-gff-{{ $cardKey }}" width="15" height="15" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-                    <line x1="0" y1="0" x2="0" y2="15" stroke="#b8912d" stroke-width="3"/>
-                </pattern>
-                <pattern id="sfl-bff-{{ $cardKey }}" width="16" height="16" patternUnits="userSpaceOnUse">
-                    <line x1="0" y1="0" x2="16" y2="16" stroke="#1d3e6d" stroke-width="1.5"/>
-                    <line x1="16" y1="0" x2="0" y2="16" stroke="#1d3e6d" stroke-width="1.5"/>
-                </pattern>
-            </defs>
-            <polygon points="284,0 664,0 648,100 268,100" fill="#11294a"/>
-            <polygon points="284,0 664,0 648,100 268,100" fill="url(#sfl-bff-{{ $cardKey }})" opacity="0.55"/>
-            <polygon points="669,0 1000,0 1000,100 653,100" fill="#dcae3a"/>
-            <polygon points="669,0 1000,0 1000,100 653,100" fill="url(#sfl-gff-{{ $cardKey }})" opacity="0.4"/>
-        </svg>
+        {{-- Footer decoration --}}
+        <div class="sfl-decor">
+            <div class="sfl-decor-shape is-navy sfl-decor-ff-navy"></div>
+            <div class="sfl-decor-shape is-gold sfl-decor-ff-gold"></div>
+        </div>
 
     </div>{{-- end sfl-card-side front --}}
 
     {{-- ===================== BACK ===================== --}}
     <div class="sfl-card-side">
 
-        {{-- Header decoration SVG (colors swapped) --}}
-        <svg class="sfl-decor-svg" viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern id="sfl-gb-{{ $cardKey }}" width="15" height="15" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-                    <line x1="0" y1="0" x2="0" y2="15" stroke="#b8912d" stroke-width="3"/>
-                </pattern>
-            </defs>
-            <polygon points="0,0 400,0 370,100 0,100" fill="#dcae3a"/>
-            <polygon points="0,0 400,0 370,100 0,100" fill="url(#sfl-gb-{{ $cardKey }})" opacity="0.4"/>
-            <polygon points="405,0 1000,0 1000,100 375,100" fill="#11294a"/>
-        </svg>
+        {{-- Header decoration (colors swapped) --}}
+        <div class="sfl-decor">
+            <div class="sfl-decor-shape is-gold sfl-decor-bh-gold"></div>
+            <div class="sfl-decor-shape is-navy sfl-decor-bh-navy"></div>
+        </div>
 
         {{-- Logo row --}}
         <div class="sfl-logo-area" style="padding: 0.5mm 1.5mm;">
@@ -463,17 +463,11 @@
 
         </div>{{-- end sfl-back-content --}}
 
-        {{-- Footer decoration SVG (colors swapped) --}}
-        <svg class="sfl-decor-svg" viewBox="0 0 1000 100" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern id="sfl-gbf-{{ $cardKey }}" width="15" height="15" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-                    <line x1="0" y1="0" x2="0" y2="15" stroke="#b8912d" stroke-width="3"/>
-                </pattern>
-            </defs>
-            <polygon points="0,0 380,0 350,100 0,100" fill="#dcae3a"/>
-            <polygon points="0,0 380,0 350,100 0,100" fill="url(#sfl-gbf-{{ $cardKey }})" opacity="0.4"/>
-            <polygon points="385,0 1000,0 1000,100 355,100" fill="#11294a"/>
-        </svg>
+        {{-- Footer decoration (colors swapped) --}}
+        <div class="sfl-decor">
+            <div class="sfl-decor-shape is-gold sfl-decor-bf-gold"></div>
+            <div class="sfl-decor-shape is-navy sfl-decor-bf-navy"></div>
+        </div>
 
     </div>{{-- end sfl-card-side back --}}
 

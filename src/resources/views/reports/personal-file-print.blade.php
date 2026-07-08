@@ -230,6 +230,24 @@
     $salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
 @endphp
 
+@if($reportType === 'id-card' && env('FACTORY') === 'SFL' && $employees->isNotEmpty())
+    {{-- Fronts first -- every employee, 9 per page --}}
+    <div class="sfl-front-grid">
+        @foreach($employees as $employee)
+            @include('hr::reports.partials.personal-file.id-card-sfl-front', ['employee' => $employee, 'request' => $request])
+            @if($loop->iteration % 9 === 0 && !$loop->last)
+                <div class="sfl-page-break"></div>
+            @endif
+        @endforeach
+    </div>
+
+    {{-- Then one page of identical backs (generic content, not employee-specific) --}}
+    <div class="sfl-back-grid" style="page-break-before: always;">
+        @for($i = 0; $i < min(9, $employees->count()); $i++)
+            @include('hr::reports.partials.personal-file.id-card-sfl-back', ['request' => $request])
+        @endfor
+    </div>
+@else
 @forelse($employees as $employee)
     @php
         $other = is_array($employee->other_information) ? $employee->other_information : json_decode($employee->other_information, true);
@@ -261,6 +279,7 @@
 @empty
     <p>{{ $label('প্রিন্টের জন্য কোনো কর্মচারী পাওয়া যায়নি।', 'No employee found for print.') }}</p>
 @endforelse
+@endif
 @endsection
 
 
