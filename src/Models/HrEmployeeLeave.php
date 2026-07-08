@@ -13,6 +13,11 @@ class HrEmployeeLeave extends BaseHrModel
         return $this->belongsTo(HrLeaveInfo::class, 'leave_type_id');
     }
 
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(HrEmployee::class, 'employee_id');
+    }
+
     public function getStartDateAttribute()
     {
         return $this->leave_from;

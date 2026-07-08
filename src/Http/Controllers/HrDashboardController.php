@@ -7,19 +7,17 @@ use Illuminate\Routing\Controller;
 use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrDepartment;
 use ME\Hr\Models\HrEmployee;
+use ME\Hr\Models\HrEmployeeLeave;
+use ME\Hr\Models\HrEmployeeSalaryInfo;
 use ME\Hr\Models\HrEmployeeSeparation;
+use ME\Hr\Models\HrHoliday;
 use ME\Hr\Models\HrRequisition;
 
 class HrDashboardController extends Controller
 {
     public function index()
     {
-        $entities    = config('hr.entities', []);
-        $legacyLinks = config('hr.legacy_links', []);
-        $reports     = config('hr.reports', []);
-        $stats       = $this->stats();
-
-        return view('hr::dashboard', compact('entities', 'legacyLinks', 'reports', 'stats'));
+        return view('hr::dashboard');
     }
 
     public static function stats(): array
@@ -113,11 +111,68 @@ class HrDashboardController extends Controller
                 'count' => $m['recruited'],
             ]);
 
+            // ── Employees on leave today ─────────────────────────────────────────
+            $onLeaveToday = HrEmployeeLeave::with(['employee', 'leaveType'])
+                ->where('status', 'approved')
+                ->whereDate('leave_from', '<=', $today)
+                ->whereDate('leave_to', '>=', $today)
+                ->limit(6)
+                ->get();
+
+            // ── Upcoming birthdays (next 30 days) ───────────────────────────────
+            $now = now()->startOfDay();
+            $upcomingBirthdays = HrEmployee::query()
+                ->join('hr_employee_basic_infos as bi', 'bi.employee_id', '=', 'hr_employees.id')
+                ->whereNotNull('bi.birth_date')
+                ->tap($activeScope)
+                ->get(['hr_employees.id', 'hr_employees.name', 'hr_employees.employee_id', 'bi.birth_date'])
+                ->map(function ($emp) use ($now) {
+                    $next = Carbon::parse($emp->birth_date)->year($now->year);
+                    if ($next->lt($now)) {
+                        $next->addYear();
+                    }
+                    $emp->next_birthday = $next;
+                    $emp->days_left     = $now->diffInDays($next);
+                    return $emp;
+                })
+                ->filter(fn ($emp) => $emp->days_left >= 0 && $emp->days_left <= 30)
+                ->sortBy('days_left')
+                ->take(6)
+                ->values();
+
+            // ── Upcoming holidays ────────────────────────────────────────────────
+            $upcomingHolidays = HrHoliday::where('status', 1)
+                ->where('to_date', '>=', $today)
+                ->orderBy('from_date')
+                ->limit(5)
+                ->get(['id', 'purpose', 'type', 'from_date', 'to_date']);
+
+            // ── Payroll summary (active employees) ──────────────────────────────
+            $activeEmployeeIds = HrEmployee::query()->tap($activeScope)->pluck('id');
+            $payrollTotal = HrEmployeeSalaryInfo::where('status', 1)
+                ->whereIn('employee_id', $activeEmployeeIds)
+                ->sum('gross_salary');
+            $payrollAvg = $totalEmployees > 0 ? round($payrollTotal / $totalEmployees) : 0;
+
+            // ── Leave summary ────────────────────────────────────────────────────
+            $leaveSummary = [
+                'pending'     => HrEmployeeLeave::where('status', 'pending')->count(),
+                'approved'    => HrEmployeeLeave::where('status', 'approved')
+                    ->whereMonth('leave_from', now()->month)
+                    ->whereYear('leave_from', now()->year)->count(),
+                'onLeaveToday'=> HrEmployeeLeave::where('status', 'approved')
+                    ->whereDate('leave_from', '<=', $today)
+                    ->whereDate('leave_to', '>=', $today)
+                    ->count(),
+            ];
+
             return compact(
                 'totalEmployees', 'presentToday', 'lateToday', 'absentToday',
                 'newThisMonth', 'recruitedThisYear', 'terminatedThisYear',
                 'last30', 'monthlyTrend', 'joinTrend', 'departments',
-                'recentJoiners', 'recentSeparations'
+                'recentJoiners', 'recentSeparations', 'onLeaveToday',
+                'upcomingBirthdays', 'upcomingHolidays', 'payrollTotal',
+                'payrollAvg', 'leaveSummary'
             );
 
         } catch (\Throwable $e) {
@@ -135,6 +190,12 @@ class HrDashboardController extends Controller
                 'departments'       => collect(),
                 'recentJoiners'     => collect(),
                 'recentSeparations' => collect(),
+                'onLeaveToday'      => collect(),
+                'upcomingBirthdays' => collect(),
+                'upcomingHolidays'  => collect(),
+                'payrollTotal'      => 0,
+                'payrollAvg'        => 0,
+                'leaveSummary'      => ['pending' => 0, 'approved' => 0, 'onLeaveToday' => 0],
             ];
         }
     }

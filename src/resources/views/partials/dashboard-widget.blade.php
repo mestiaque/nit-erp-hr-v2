@@ -78,7 +78,7 @@
 
 {{-- ── Stat Cards ── --}}
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#eef2ff;">
                 <i class="fa fa-users" style="color:#6366f1;"></i>
@@ -92,7 +92,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#ecfdf5;">
                 <i class="fa fa-user-check" style="color:#10b981;"></i>
@@ -107,7 +107,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#fff1f2;">
                 <i class="fa fa-user-times" style="color:#f43f5e;"></i>
@@ -122,7 +122,22 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
+        <div class="hr-stat-card">
+            <div class="hr-stat-icon" style="background:#faf5ff;">
+                <i class="fa fa-user-clock" style="color:#a855f7;"></i>
+            </div>
+            <div>
+                <div class="hr-stat-val" style="color:#a855f7;">{{ number_format($s['lateToday']) }}</div>
+                <div class="hr-stat-lbl">Late Today</div>
+                @php $lPct = $s['totalEmployees'] > 0 ? round($s['lateToday']/$s['totalEmployees']*100) : 0; @endphp
+                <div style="margin-top:6px;background:#faf5ff;border-radius:4px;height:4px;">
+                    <div style="width:{{ $lPct }}%;height:4px;border-radius:4px;background:#a855f7;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#fffbeb;">
                 <i class="fa fa-user-plus" style="color:#f59e0b;"></i>
@@ -209,6 +224,113 @@
     </div>
 </div>
 
+{{-- ── HR Insights Row ── --}}
+<div class="row g-3 mb-4">
+
+    {{-- Employees on Leave Today --}}
+    <div class="col-lg-4">
+        <div class="hr-chart-card h-100">
+            <div class="hr-section-title">On Leave Today ({{ $s['leaveSummary']['onLeaveToday'] }})</div>
+            @if($s['onLeaveToday']->isNotEmpty())
+                <div class="d-flex flex-column gap-2">
+                    @foreach($s['onLeaveToday'] as $leave)
+                    <div class="d-flex align-items-center justify-content-between" style="font-size:13px;">
+                        <span>{{ $leave->employee->name ?? ('ID: ' . $leave->employee_id) }}</span>
+                        <span class="hr-badge" style="background:#eef2ff;color:#6366f1;">{{ $leave->leaveType->name ?? '—' }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-muted text-center py-4" style="font-size:13px;">No one on leave today</div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Upcoming Birthdays --}}
+    <div class="col-lg-4">
+        <div class="hr-chart-card h-100">
+            <div class="hr-section-title">Upcoming Birthdays (30 Days)</div>
+            @if($s['upcomingBirthdays']->isNotEmpty())
+                <div class="d-flex flex-column gap-2">
+                    @foreach($s['upcomingBirthdays'] as $emp)
+                    <div class="d-flex align-items-center justify-content-between" style="font-size:13px;">
+                        <span>{{ $emp->name }} <span class="text-muted">({{ $emp->employee_id }})</span></span>
+                        <span class="hr-badge" style="background:#fdf2f8;color:#db2777;">{{ $emp->next_birthday->format('d M') }}</span>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-muted text-center py-4" style="font-size:13px;">No upcoming birthdays</div>
+            @endif
+        </div>
+    </div>
+
+    {{-- Upcoming Holidays --}}
+    <div class="col-lg-4">
+        <div class="hr-chart-card h-100">
+            <div class="hr-section-title">Upcoming Holidays</div>
+            @if($s['upcomingHolidays']->isNotEmpty())
+                <div class="d-flex flex-column gap-2">
+                    @foreach($s['upcomingHolidays'] as $holiday)
+                    <div class="d-flex align-items-center justify-content-between" style="font-size:13px;">
+                        <span>{{ $holiday->purpose }}</span>
+                        <span class="hr-badge" style="background:#eef2ff;color:#6366f1;">
+                            {{ \Carbon\Carbon::parse($holiday->from_date)->format('d M') }}
+                            @if($holiday->from_date != $holiday->to_date)
+                                – {{ \Carbon\Carbon::parse($holiday->to_date)->format('d M') }}
+                            @endif
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-muted text-center py-4" style="font-size:13px;">No upcoming holidays</div>
+            @endif
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+
+    {{-- Payroll Summary --}}
+    <div class="col-lg-6">
+        <div class="hr-chart-card h-100">
+            <div class="hr-section-title">Payroll Summary</div>
+            <div class="row g-2 text-center">
+                <div class="col-6">
+                    <div class="hr-stat-val" style="color:#10b981;font-size:20px;">{{ number_format($s['payrollTotal']) }}</div>
+                    <div class="hr-stat-lbl">Total Gross Salary</div>
+                </div>
+                <div class="col-6">
+                    <div class="hr-stat-val" style="color:#6366f1;font-size:20px;">{{ number_format($s['payrollAvg']) }}</div>
+                    <div class="hr-stat-lbl">Avg. Salary / Employee</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Leave Summary --}}
+    <div class="col-lg-6">
+        <div class="hr-chart-card h-100">
+            <div class="hr-section-title">Leave Summary</div>
+            <div class="row g-2 text-center">
+                <div class="col-4">
+                    <div class="hr-stat-val" style="color:#f59e0b;font-size:20px;">{{ $s['leaveSummary']['pending'] }}</div>
+                    <div class="hr-stat-lbl">Pending</div>
+                </div>
+                <div class="col-4">
+                    <div class="hr-stat-val" style="color:#10b981;font-size:20px;">{{ $s['leaveSummary']['approved'] }}</div>
+                    <div class="hr-stat-lbl">Approved (Month)</div>
+                </div>
+                <div class="col-4">
+                    <div class="hr-stat-val" style="color:#f43f5e;font-size:20px;">{{ $s['leaveSummary']['onLeaveToday'] }}</div>
+                    <div class="hr-stat-lbl">On Leave Today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- ── Recent Joiners ── --}}
 @if($s['recentJoiners']->isNotEmpty())
 <div class="hr-chart-card mb-4">
@@ -256,7 +378,8 @@
     var deptCounts = {!! $deptCounts !!};
     var joinLabels = {!! $joinLabels !!};
     var joinData   = {!! $joinData !!};
-    var present    = {{ $s['presentToday'] }};
+    var late       = {{ $s['lateToday'] }};
+    var present    = {{ $s['presentToday'] }} - late;
     var absent     = {{ $s['absentToday'] }};
 
     function initCharts() {
@@ -275,13 +398,13 @@
 
         // ── Today Donut ──
         new ApexCharts(document.getElementById('{{ $widgetId }}_donut'), {
-            series: [present, absent],
+            series: [present, late, absent],
             chart: { type: 'donut', height: 220 },
-            labels: ['Present', 'Absent'],
-            colors: ['#10b981', '#f43f5e'],
+            labels: ['Present', 'Late', 'Absent'],
+            colors: ['#10b981', '#a855f7', '#f43f5e'],
             legend: { position: 'bottom', fontSize: '12px' },
             dataLabels: { enabled: true, formatter: (val) => Math.round(val) + '%' },
-            plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: () => present + absent } } } } },
+            plotOptions: { pie: { donut: { size: '65%', labels: { show: true, total: { show: true, label: 'Total', formatter: () => present + late + absent } } } } },
             stroke: { width: 0 },
         }).render();
 

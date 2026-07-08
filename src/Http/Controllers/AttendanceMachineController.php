@@ -100,9 +100,7 @@ class AttendanceMachineController extends Controller
      *
      * All records are written to hr_attendance_machine_logs regardless of
      * whether the employee is found. If the employee IS found, attendance is
-     * upserted for the date with the standard in/out-time logic:
-     *   - earliest punch  → in_time
-     *   - any later punch → out_time (always keeps the latest)
+     * upserted using the employee's shift windows — see applyPunchToAttendance().
      */
     public function logs(Request $request)
     {
@@ -241,43 +239,13 @@ class AttendanceMachineController extends Controller
                 $shift = $this->resolveShiftFromRoster($employee, $time->toDateString());
             }
 
-            $attendance = HrAttendance::where('employee_id', $employee->id)
-                ->whereDate('date', $time->toDateString())
-                ->first();
-
-            if (!$attendance) {
-                $attendance              = new HrAttendance();
-                $attendance->employee_id = $employee->id;
-                $attendance->date        = $time->toDateString();
-                $attendance->device_sn   = $record['deviceId'] ?? null;
-                $attendance->via         = 'machine';
-                $attendance->verify_type = $record['verifyMethod'] ?? null;
-            }
-
-            // Earliest punch = in_time
-            $currentIn = $this->toCarbon($attendance->date, $attendance->in_time);
-            if (!$currentIn || $time->lt($currentIn)) {
-                $attendance->in_time = $time->format('H:i:s');
-                $currentIn           = $time;
-            }
-
-            // Any later punch updates out_time
-            $currentOut = $this->toCarbon($attendance->date, $attendance->out_time);
-            if ($currentIn && $time->gt($currentIn) && (!$currentOut || $time->gt($currentOut))) {
-                $attendance->out_time = $time->format('H:i:s');
-                $currentOut           = $time;
-            }
-
-            $attendance->status = $this->resolveStatus($shift, $currentIn);
-
-            if ($currentIn && $currentOut) {
-                $attendance->total_working_minute = (int) $currentIn->diffInMinutes($currentOut);
-                $attendance->total_ot_minute      = $this->resolveOvertimeMinutes($shift, $currentIn, $currentOut);
-            }
-
-            $attendance->save();
-
-            return true;
+            return $this->applyPunchToAttendance(
+                $employee,
+                $time,
+                $shift,
+                $record['deviceId'] ?? null,
+                $record['verifyMethod'] ?? null
+            );
 
         } catch (\Throwable $e) {
             Log::error('processAdmsAttendance failed: ' . $e->getMessage(), ['record' => $record]);
@@ -372,49 +340,124 @@ class AttendanceMachineController extends Controller
             $time  = Carbon::parse($timestamp, 'Asia/Dhaka');
             $shift = $employee->shift;
 
-            $attendance = HrAttendance::where('employee_id', $employee->id)
-                ->whereDate('date', $time->toDateString())
-                ->first();
-
-            if (!$attendance) {
-                $attendance                = new HrAttendance();
-                $attendance->employee_id   = $employee->id;
-                $attendance->date          = $time->toDateString();
-                $attendance->device_sn     = $sn;
-                $attendance->via           = 'machine';
-                $attendance->verify_type   = $verifyType;
-            }
-
-            // Update in_time (keep earliest punch)
-            $currentIn = $this->toCarbon($attendance->date, $attendance->in_time);
-            if (!$currentIn || $time->lt($currentIn)) {
-                $attendance->in_time = $time->format('H:i:s');
-                $currentIn = $time;
-            }
-
-            // Update out_time (keep latest punch after in_time)
-            $currentOut = $this->toCarbon($attendance->date, $attendance->out_time);
-            if ($currentIn && $time->gt($currentIn) && (!$currentOut || $time->gt($currentOut))) {
-                $attendance->out_time = $time->format('H:i:s');
-                $currentOut = $time;
-            }
-
-            // Status: Present or Late based on shift start + late_allow_time
-            $attendance->status = $this->resolveStatus($shift, $currentIn);
-
-            // Working minutes
-            if ($currentIn && $currentOut) {
-                $attendance->total_working_minute = (int) $currentIn->diffInMinutes($currentOut);
-                $attendance->total_ot_minute      = $this->resolveOvertimeMinutes($shift, $currentIn, $currentOut);
-            }
-
-            $attendance->save();
-
-            Log::info("Attendance synced: employee=$userId date={$attendance->date} status={$attendance->status}");
+            $this->applyPunchToAttendance($employee, $time, $shift, $sn, $verifyType);
 
         } catch (\Throwable $e) {
             Log::error("saveAttendance failed for $userId: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Apply a single punch to the employee's attendance record according to the shift's
+     * configured windows:
+     *   - a punch inside [start_allow_time, late_allow_time]  → in_time
+     *   - a punch inside [out_time_start, next day's start_allow_time)  → out_time
+     *     (a punch after midnight but before the next day's in-window belongs to the
+     *     previous day's attendance, so overnight shifts are handled correctly)
+     *   - a punch outside both windows is ignored entirely — it never touches in_time/out_time
+     * If the shift has any of these windows unset, falls back to the legacy
+     * earliest-punch-in / latest-punch-out behaviour for that punch's calendar date.
+     *
+     * Returns true if the punch produced an attendance change, false if it was ignored.
+     */
+    private function applyPunchToAttendance(HrEmployee $employee, Carbon $time, ?HrShift $shift, ?string $deviceSn, ?string $verifyType): bool
+    {
+        $window = $this->resolvePunchWindow($shift, $time);
+
+        if (!$window) {
+            return false;
+        }
+
+        [$type, $attendanceDate] = $window;
+
+        $attendance = HrAttendance::where('employee_id', $employee->id)
+            ->whereDate('date', $attendanceDate)
+            ->first();
+
+        if (!$attendance) {
+            $attendance              = new HrAttendance();
+            $attendance->employee_id = $employee->id;
+            $attendance->date        = $attendanceDate;
+            $attendance->device_sn   = $deviceSn;
+            $attendance->via         = 'machine';
+            $attendance->verify_type = $verifyType;
+        }
+
+        $currentIn  = $this->toCarbon($attendance->date, $attendance->in_time);
+        $currentOut = $this->toCarbon($attendance->date, $attendance->out_time);
+
+        if ($type === 'in' || $type === 'legacy') {
+            if (!$currentIn || $time->lt($currentIn)) {
+                $attendance->in_time = $time->format('H:i:s');
+                $currentIn           = $time;
+            }
+        }
+
+        if ($type === 'out' || ($type === 'legacy' && $currentIn && $time->gt($currentIn))) {
+            if (!$currentOut || $time->gt($currentOut)) {
+                $attendance->out_time = $time->format('H:i:s');
+                $currentOut           = $time;
+            }
+        }
+
+        $attendance->status = $this->resolveStatus($shift, $currentIn);
+
+        if ($currentIn && $currentOut) {
+            // out_time is only ever stored as a time-of-day; if it looks earlier than in_time
+            // it's really an overnight punch on the following calendar day.
+            $outForCalc = $currentOut->lt($currentIn) ? $currentOut->copy()->addDay() : $currentOut;
+
+            $attendance->total_working_minute = (int) $currentIn->diffInMinutes($outForCalc);
+            $attendance->total_ot_minute      = $this->resolveOvertimeMinutes($shift, $currentIn, $outForCalc);
+        }
+
+        $attendance->save();
+
+        Log::info("Attendance synced: employee={$employee->employee_id} date={$attendance->date} type=$type status={$attendance->status}");
+
+        return true;
+    }
+
+    /**
+     * Classify a punch against the shift's configured windows.
+     * Returns [type, attendanceDate] where type is 'in' | 'out' | 'legacy',
+     * or null when the punch falls outside all windows and must be ignored.
+     */
+    private function resolvePunchWindow(?HrShift $shift, Carbon $time): ?array
+    {
+        $punchDate = $time->toDateString();
+
+        $inStart  = $shift?->start_allow_time;
+        $inEnd    = $shift?->late_allow_time ?: $shift?->start_time;
+        $outStart = $shift?->out_time_start;
+
+        // Shift windows not fully configured — fall back to legacy earliest-in/latest-out behaviour.
+        if (!$shift || !$inStart || !$inEnd || !$outStart) {
+            return ['legacy', $punchDate];
+        }
+
+        $inWinStart = Carbon::parse($punchDate . ' ' . $inStart, 'Asia/Dhaka');
+        $inWinEnd   = Carbon::parse($punchDate . ' ' . $inEnd, 'Asia/Dhaka');
+
+        if ($time->between($inWinStart, $inWinEnd)) {
+            return ['in', $punchDate];
+        }
+
+        $outWinStart = Carbon::parse($punchDate . ' ' . $outStart, 'Asia/Dhaka');
+        $dayEnd      = Carbon::parse($punchDate . ' 23:59:59', 'Asia/Dhaka');
+
+        if ($time->between($outWinStart, $dayEnd)) {
+            return ['out', $punchDate];
+        }
+
+        // Early-morning continuation of the previous day's out-window, up to (but excluding)
+        // today's in-window start — belongs to yesterday's attendance record.
+        $dayStart = Carbon::parse($punchDate . ' 00:00:00', 'Asia/Dhaka');
+        if ($time->between($dayStart, $inWinStart->copy()->subSecond())) {
+            return ['out', $time->copy()->subDay()->toDateString()];
+        }
+
+        return null;
     }
 
     private function resolveStatus(?HrShift $shift, ?Carbon $inTime): string
