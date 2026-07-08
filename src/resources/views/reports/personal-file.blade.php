@@ -154,8 +154,8 @@
                                         <td>{{ $employee->employee_id }}</td>
                                         <td>{{ $employee->name }}</td>
                                         <td>{{ optional($employee->department)->name }}</td>
-                                        <td>{{ $employee->section_id }}</td>
-                                        <td>{{ $employee->shift_id }}</td>
+                                        <td>{{ optional($employee->section)->name }}</td>
+                                        <td>{{ optional($employee->shift)->name }}</td>
                                         <td>{{ ucfirst((string) ($employee->employment_status ?? 'regular')) }}</td>
                                     </tr>
                                 @empty

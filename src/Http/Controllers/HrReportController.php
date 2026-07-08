@@ -1285,7 +1285,7 @@ class HrReportController extends Controller
             });
         }
 
-        $employees = $query->with(['designation', 'department'])->naturalOrderById()->get();
+        $employees = $query->with(['designation', 'department', 'section', 'shift'])->naturalOrderById()->get();
 
         $options = [
             'classifications' => HrClassification::query()->where('status', 'active')->orderBy('name')->get(['id', 'name']),

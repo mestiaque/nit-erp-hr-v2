@@ -131,6 +131,7 @@
         text-align: center;
         flex-shrink: 0;
         margin: 0.8mm 0;
+        margin-top: -3mm; 
     }
     .sfl-photo {
         width: 21mm;
@@ -145,8 +146,8 @@
     .sfl-info {
         flex: 1;
         padding: 0 1.7mm;
-        font-size: 2.35mm;
-        line-height: 1.35;
+        font-size: 2.45mm;
+        line-height: 1.5;
         display: grid;
         grid-template-columns: auto 1mm 1fr;
         align-content: start;
@@ -201,9 +202,10 @@
         color: #fff;
         font-size: 2.9mm;
         font-weight: 700;
-        padding: 1mm 5.5mm;
+        padding: 1mm 10mm;
         margin: 1mm 0;
-        clip-path: polygon(4mm 0%, calc(100% - 4mm) 0%, 100% 50%, calc(100% - 4mm) 100%, 4mm 100%, 0% 50%);
+        /* clip-path: polygon(4mm 0%, calc(100% - 4mm) 0%, 100% 50%, calc(100% - 4mm) 100%, 4mm 100%, 0% 50%); */
+        clip-path: polygon(0% 0%, 100% 0%, calc(100% - 2.6mm) 50%, 100% 100%, 0% 100%, 2.6mm 50%); 
         text-align: center;
         letter-spacing: 0.2mm;
     }
@@ -211,7 +213,7 @@
         list-style: none;
         margin: 0.6mm 0;
         padding: 0 0.6mm;
-        font-size: 2.1mm;
+        font-size: 2.5mm;
         line-height: 1.4;
         color: #111;
         font-weight: 700;
@@ -232,15 +234,16 @@
         display: inline-block;
     }
     .sfl-found-msg {
-        font-size: 2mm;
+        font-size: 2.1mm;
         font-weight: 700;
         text-align: center;
         line-height: 1.4;
         margin: 0.6mm 0;
         color: #111;
+        margin-bottom: 3mm;
     }
     .sfl-contact {
-        font-size: 2.1mm;
+        font-size: 2.3mm;
         font-weight: 700;
         color: #111;
         align-self: stretch;
@@ -398,6 +401,7 @@
     {{-- Signature --}}
     <div class="sfl-sign-row">
         <div>
+            <img src="{{asset(general()->signature())}}" alt="{{ $t('Authority Signature', 'Authority Signature') }}" style="width: 20mm; height: auto; object-fit: contain; margin-bottom: -0.8mm;">
             <div class="sfl-sign-line"></div>
             <div class="sfl-sign-label">{{ $t('কর্তৃপক্ষের স্বাক্ষর', 'Authority Signature') }}</div>
         </div>
