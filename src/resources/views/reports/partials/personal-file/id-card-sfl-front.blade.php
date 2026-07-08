@@ -361,7 +361,7 @@
 
         <span class="sfl-info-label">{{ $t('কার্ড নং', 'Card No.') }}</span>
         <span class="sfl-info-colon">:</span>
-        <span class="sfl-info-value">{{ $idNumber }}</span>
+        <span class="sfl-info-value">{{ en2bnNumber($idNumber) }}</span>
 
         <span class="sfl-info-label">{{ $t('পদবী', 'Designation') }}</span>
         <span class="sfl-info-colon">:</span>
