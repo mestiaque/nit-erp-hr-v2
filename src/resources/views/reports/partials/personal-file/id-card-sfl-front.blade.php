@@ -38,7 +38,7 @@
     .sfl-decor {
         position: relative;
         width: 100%;
-        height: 6mm;
+        height: 5.6mm;
         flex-shrink: 0;
         overflow: hidden;
     }
@@ -50,16 +50,55 @@
     .sfl-decor-shape.is-gold { background: #dcae3a; }
 
     /* Front card */
-    .sfl-decor-fh-navy { clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%); height: 1.5rem; }
-    .sfl-decor-fh-gold { clip-path: polygon(40.5% 0%, 76% 0%, 73% 100%, 37.5% 100%); height: 1rem; }
-    .sfl-decor-ff-navy { clip-path: polygon(28.4% 0%, 66.4% 0%, 64.8% 100%, 26.8% 100%); height: 1rem; }
-    .sfl-decor-ff-gold { clip-path: polygon(66.9% 0%, 100% 0%, 100% 100%, 65.3% 100%); height: 1.5rem; }
+    .sfl-decor-fh-navy {
+        clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%);
+        height: 1.5rem;
+        z-index: 11;
+    }
+    .sfl-decor-fh-gold {
+        clip-path: polygon(39.5% 0%, 76% 0%, 73% 100%, 37.5% 100%);
+        height: 16px;
+        z-index: 1;
+    }
+    .sfl-decor-ff-navy {
+        clip-path: polygon(30.4% 0%, 68.4% 0%, 64.8% 100%, 27.8% 100%);
+        height: 16px;
+        margin-top: 5px;
+    }
+    .sfl-decor-ff-gold {
+        clip-path: polygon(66.9% 0%, 100% 0%, 100% 100%, 63.3% 100%);
+        height: 1.5rem;
+    }
 
     /* Back card (colors swapped) */
-    .sfl-decor-bh-gold { clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%); height: 1rem; }
-    .sfl-decor-bh-navy { clip-path: polygon(40.5% 0%, 100% 0%, 100% 100%, 37.5% 100%); height: 1.5rem; }
-    .sfl-decor-bf-gold { clip-path: polygon(0% 0%, 38% 0%, 35% 100%, 0% 100%); height: 1.5rem; }
-    .sfl-decor-bf-navy { clip-path: polygon(38.5% 0%, 100% 0%, 100% 100%, 35.5% 100%); height: 1rem; }
+    /*.sfl-decor-bh-gold { clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%); height: 1rem; }*/
+    /*.sfl-decor-bh-navy { clip-path: polygon(40.5% 0%, 100% 0%, 100% 100%, 37.5% 100%); height: 1.5rem; }*/
+    /*.sfl-decor-bf-gold { clip-path: polygon(0% 0%, 38% 0%, 35% 100%, 0% 100%); height: 1.5rem; }*/
+    /*.sfl-decor-bf-navy { clip-path: polygon(38.5% 0%, 100% 0%, 100% 100%, 35.5% 100%); height: 1rem; }*/
+    
+    
+    
+        .sfl-decor-bh-navy {
+        clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%);
+        height: 1.5rem;
+        z-index: 11;
+    }
+    .sfl-decor-bh-gold {
+        clip-path: polygon(39.5% 0%, 76% 0%, 73% 100%, 37.5% 100%);
+        height: 16px;
+        z-index: 1;
+    }
+    .sfl-decor-bf-navy {
+        clip-path: polygon(30.4% 0%, 68.4% 0%, 64.8% 100%, 27.8% 100%);
+        height: 16px;
+        margin-top: 5px;
+    }
+    .sfl-decor-bf-gold {
+        clip-path: polygon(66.9% 0%, 100% 0%, 100% 100%, 63.3% 100%);
+        height: 1.5rem;
+            z-index: 1;
+    }
+
 
     /* Logo row */
     .sfl-logo-area {

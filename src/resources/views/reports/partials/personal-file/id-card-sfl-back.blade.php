@@ -8,8 +8,8 @@
 
     {{-- Header decoration (colors swapped) --}}
     <div class="sfl-decor">
-        <div class="sfl-decor-shape is-gold sfl-decor-bh-gold"></div>
-        <div class="sfl-decor-shape is-navy sfl-decor-bh-navy"></div>
+        <div class="sfl-decor-shape is-navy sfl-decor-bh-gold"></div>
+        <div class="sfl-decor-shape is-gold sfl-decor-bh-navy"></div>
     </div>
 
     {{-- Logo row --}}
@@ -65,8 +65,8 @@
 
     {{-- Footer decoration (colors swapped) --}}
     <div class="sfl-decor">
-        <div class="sfl-decor-shape is-gold sfl-decor-bf-gold"></div>
-        <div class="sfl-decor-shape is-navy sfl-decor-bf-navy"></div>
+        <div class="sfl-decor-shape is-navy sfl-decor-bf-gold"></div>
+        <div class="sfl-decor-shape is-gold sfl-decor-bf-navy"></div>
     </div>
 
 </div>
