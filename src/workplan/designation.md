@@ -66,4 +66,26 @@ Is OT Basis (Others-2)
     -> eita on thakle Actual(Basic->factory->no_of_factory == 2) e ot dekhabe
 
 
-ei calculation ta sob jaygay effect korbe , all report e 
+ei calculation ta sob jaygay effect korbe , all report e bises kore salary, job card, payslip
+
+
+
+
+
+>>Earnings & Deductions effect 
+admin/hr-center/employees/315/earnings-deductions
+Date -> ei date er month te sob employee er earnings ebong deductions calculate hobe
+Advance/IOU
+    -> ei amount advance/iou hisebe deduction hobe
+OT(+/-)
+    -> ekhane + mane overtime er taka Earnings e add hobe and - mane overtime er taka deduction hobe
+        example  + 1 mane 1 ghontar overtime er taka add hobe , - 1 mane 1 ghontar overtime er taka deduction hobe
+Day(+/-)
+    -> ekhane + mane day er taka Earnings e add hobe and - mane day er taka deduction hobe
+        example  + 1 mane 1 day er taka add hobe , - 1 mane 1 day er taka deduction hobe
+Earnings
+    -> ei amount earnings hobe
+Deductions
+    -> ei amount deductions hobe
+
+ei calculation ta sob jaygay effect korbe , all report e bises kore salary, job card, payslip

@@ -758,7 +758,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
 		// Total dynamic columns for colspan calculations
 		$leaveCols = 2 + $leaveInfos->count(); // WH + FH + dynamic
-		$totalCols = 35 + $leaveInfos->count(); // all columns
+		$totalCols = ($withPicture ? 36 : 35) + $leaveInfos->count(); // all columns
 
 		$numberToWords = function ($number) use (&$numberToWords) {
 			$number = (int) $number;
@@ -848,6 +848,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			<thead>
 				<tr class="grp">
 					<th rowspan="2">S.N</th>
+					@if($withPicture)<th rowspan="2">Photo</th>@endif
 					<th rowspan="2">Emp.<br>ID</th>
 					<th rowspan="2">Name</th>
 					<th rowspan="2">Designation</th>
@@ -909,6 +910,11 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						@endphp
 						<tr>
 							<td class="tc">{{ $sl++ }}</td>
+							@if($withPicture)
+								<td class="tc photo-cell">
+									<img src="{{ asset($employee->image()) }}" alt="" style="width:32px;height:32px;object-fit:cover;">
+								</td>
+							@endif
 							<td class="tc">{{ $employee->employee_id }}</td>
 							<td>{{ $language === 'bn' && $employee->bn_name ? $employee->bn_name : $employee->name }}</td>
 							<td>{{ $desigEntry['name'] ?? 'N/A' }}</td>
@@ -960,7 +966,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					@endforeach
 
 					<tr class="sheet-sec-total">
-						<td colspan="6" class="tl">{{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
+						<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">{{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
 						<td class="tr">{{ number_format($group['totals']['gross']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['basic']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['house']) }}</td>
@@ -997,7 +1003,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				@endforeach
 
 				<tr class="sheet-grand">
-					<td colspan="6" class="tl">Grand Total Amount :</td>
+					<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">Grand Total Amount :</td>
 					<td class="tr">{{ number_format($grand['gross']) }}</td>
 					<td class="tr">{{ number_format($grand['basic']) }}</td>
 					<td class="tr">{{ number_format($grand['house']) }}</td>

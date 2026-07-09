@@ -284,7 +284,7 @@ return [
             'defaults' => ['status' => 'active'],
             'index_fields' => ['factory_no', 'name', 'bn_name', 'weekend', 'status'],
             'fields' => [
-                'factory_no' => ['label' => 'No. of Factory', 'type' => 'text', 'rules' => 'nullable|string|max:50'],
+                'factory_no' => ['label' => 'No. of Factory', 'type' => 'select', 'rules' => 'nullable|in:0,1,2', 'options' => ['0' => 'Actual', '1' => 'Comp 1', '2' => 'Comp 2']],
                 'is_running' => ['label' => 'Is A~Z Running', 'type' => 'checkbox', 'rules' => 'nullable|boolean'],
                 'name' => ['label' => 'Name', 'type' => 'text', 'rules' => 'required|string|max:200'],
                 'bn_name' => ['label' => 'Bangla Name', 'type' => 'text', 'rules' => 'nullable|string|max:200'],
@@ -348,9 +348,10 @@ return [
             'search' => ['salary_approved_person_1'],
             'defaults' => ['status' => 'active'],
             'index_fields' => ['medical', 'lunch', 'transport', 'payment_date', 'status'],
+            'index_column_labels' => ['lunch' => 'Food'],
             'fields' => [
                 'medical' => ['label' => 'Medical', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.01'],
-                'lunch' => ['label' => 'Lunch', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.01'],
+                'lunch' => ['label' => 'Food', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.01'],
                 'transport' => ['label' => 'Transport', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.01'],
                 'salary_approved_person_1' => ['label' => 'Salary Approved Person-1', 'type' => 'text', 'rules' => 'nullable|string|max:191'],
                 'salary_approved_person_2' => ['label' => 'Salary Approved Person-2', 'type' => 'text', 'rules' => 'nullable|string|max:191'],

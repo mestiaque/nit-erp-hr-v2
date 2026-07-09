@@ -123,7 +123,7 @@ class HrEmployeeController extends Controller
             $query->where('status', $this->normalizeUserStatus((string) $request->is_active));
         }
 
-        $employees = $query->naturalOrderById()->paginate(20)->appends($request->query());
+        $employees = $query->with('ageVerification')->naturalOrderById()->paginate(20)->appends($request->query());
 
         $options = $this->options();
         $basicInfoOptions = [
@@ -472,7 +472,9 @@ class HrEmployeeController extends Controller
 
         $payload = $request->validate([
             'physical_ability' => 'nullable|string|max:191',
+            'physical_ability_bn' => 'nullable|string|max:191',
             'distinguished_mark' => 'nullable|string|max:191',
+            'distinguished_mark_bn' => 'nullable|string|max:191',
             'verified_age' => 'nullable|integer|min:0',
             'age_verification_date' => 'nullable|date',
         ]);
@@ -515,6 +517,20 @@ class HrEmployeeController extends Controller
             'letter_2_date' => 'nullable|date',
             'letter_3_date' => 'nullable|date',
             'final_settlement_option' => 'nullable|in:1st Letter,2nd Letter,3rd Letter',
+            'last_basic_salary' => 'nullable|numeric|min:0',
+            'last_gross_salary' => 'nullable|numeric|min:0',
+            'service_years' => 'nullable|integer|min:0',
+            'unpaid_salary_days' => 'nullable|integer|min:0',
+            'unpaid_salary_amount' => 'nullable|numeric|min:0',
+            'leave_encashment_days' => 'nullable|integer|min:0',
+            'leave_encashment_amount' => 'nullable|numeric|min:0',
+            'gratuity_amount' => 'nullable|numeric|min:0',
+            'advance_deduction' => 'nullable|numeric|min:0',
+            'other_earnings' => 'nullable|numeric|min:0',
+            'other_deductions' => 'nullable|numeric|min:0',
+            'net_payable' => 'nullable|numeric',
+            'calculation_notes' => 'nullable|string|max:2000',
+            'settlement_status' => 'nullable|in:draft,approved,paid',
         ]);
 
         $this->upsertFinalSettlement($employee, $payload);
@@ -542,6 +558,56 @@ class HrEmployeeController extends Controller
         }
 
         return redirect()->route('hr-center.employees.index')->with('success', 'Final settlement info updated.');
+    }
+
+    /**
+     * Persist the settlement form and render the payslip-style settlement statement,
+     * separate from the disciplinary show-cause/warning/termination letters.
+     */
+    public function printFinalSettlementStatement(Request $request, HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        $payload = $request->validate([
+            'absent_date' => 'nullable|date',
+            'letter_1_date' => 'nullable|date',
+            'letter_2_date' => 'nullable|date',
+            'letter_3_date' => 'nullable|date',
+            'final_settlement_option' => 'nullable|in:1st Letter,2nd Letter,3rd Letter',
+            'last_basic_salary' => 'nullable|numeric|min:0',
+            'last_gross_salary' => 'nullable|numeric|min:0',
+            'service_years' => 'nullable|integer|min:0',
+            'unpaid_salary_days' => 'nullable|integer|min:0',
+            'unpaid_salary_amount' => 'nullable|numeric|min:0',
+            'leave_encashment_days' => 'nullable|integer|min:0',
+            'leave_encashment_amount' => 'nullable|numeric|min:0',
+            'gratuity_amount' => 'nullable|numeric|min:0',
+            'advance_deduction' => 'nullable|numeric|min:0',
+            'other_earnings' => 'nullable|numeric|min:0',
+            'other_deductions' => 'nullable|numeric|min:0',
+            'net_payable' => 'nullable|numeric',
+            'calculation_notes' => 'nullable|string|max:2000',
+            'settlement_status' => 'nullable|in:draft,approved,paid',
+        ]);
+
+        $this->upsertFinalSettlement($employee, $payload);
+        $employee->setTypes('employee');
+        $employee->save();
+
+        $designationBn = null;
+        $designationEn = null;
+        if (!empty($employee->designation_id) && Schema::hasTable((new HrDesignation())->getTable())) {
+            $designationRow = HrDesignation::query()->find($employee->designation_id);
+            $designationBn = data_get($designationRow, 'bn_name');
+            $designationEn = data_get($designationRow, 'name');
+        }
+
+        return view('hr::employees.print.final-settlement-statement', [
+            'employee' => $employee,
+            'settlement' => $employee->finalSettlement,
+            'designation_bn' => $designationBn,
+            'designation_en' => $designationEn,
+        ]);
     }
 
     public function incrementsPage(HrEmployee $employee)
@@ -1448,7 +1514,9 @@ class HrEmployeeController extends Controller
         $av = HrEmployeeAgeVerification::firstOrNew(['employee_id' => $employee->id]);
         $av->employee_id = $employee->id;
         $av->physical_ability     = $payload['physical_ability'] ?? $av->physical_ability ?? null;
+        $av->physical_ability_bn  = $payload['physical_ability_bn'] ?? $av->physical_ability_bn ?? null;
         $av->identification_mark  = $payload['distinguished_mark'] ?? $av->identification_mark ?? null;
+        $av->identification_mark_bn = $payload['distinguished_mark_bn'] ?? $av->identification_mark_bn ?? null;
         $av->age_years            = $payload['verified_age'] ?? $av->age_years ?? null;
         $av->verified_date        = $payload['age_verification_date'] ?? $av->verified_date ?? null;
         $av->status = 1;
@@ -1476,6 +1544,22 @@ class HrEmployeeController extends Controller
         $fs->second_letter_date    = $payload['letter_2_date'] ?? $fs->second_letter_date ?? null;
         $fs->third_letter_date     = $payload['letter_3_date'] ?? $fs->third_letter_date ?? null;
         $fs->selected_letter_print = $payload['final_settlement_option'] ?? $fs->selected_letter_print ?? null;
+
+        $fs->last_basic_salary        = $payload['last_basic_salary'] ?? $fs->last_basic_salary ?? null;
+        $fs->last_gross_salary        = $payload['last_gross_salary'] ?? $fs->last_gross_salary ?? null;
+        $fs->service_years            = $payload['service_years'] ?? $fs->service_years ?? null;
+        $fs->unpaid_salary_days       = $payload['unpaid_salary_days'] ?? $fs->unpaid_salary_days ?? null;
+        $fs->unpaid_salary_amount     = $payload['unpaid_salary_amount'] ?? $fs->unpaid_salary_amount ?? null;
+        $fs->leave_encashment_days    = $payload['leave_encashment_days'] ?? $fs->leave_encashment_days ?? null;
+        $fs->leave_encashment_amount  = $payload['leave_encashment_amount'] ?? $fs->leave_encashment_amount ?? null;
+        $fs->gratuity_amount          = $payload['gratuity_amount'] ?? $fs->gratuity_amount ?? null;
+        $fs->advance_deduction        = $payload['advance_deduction'] ?? $fs->advance_deduction ?? null;
+        $fs->other_earnings           = $payload['other_earnings'] ?? $fs->other_earnings ?? null;
+        $fs->other_deductions         = $payload['other_deductions'] ?? $fs->other_deductions ?? null;
+        $fs->net_payable              = $payload['net_payable'] ?? $fs->net_payable ?? null;
+        $fs->calculation_notes        = $payload['calculation_notes'] ?? $fs->calculation_notes ?? null;
+        $fs->settlement_status        = $payload['settlement_status'] ?? $fs->settlement_status ?? 'draft';
+
         $fs->status = 1;
         $fs->save();
     }

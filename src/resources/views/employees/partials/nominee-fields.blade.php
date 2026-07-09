@@ -85,13 +85,18 @@ function previewNomineeImage_{{ $employee->id ?? 'new' }}(input) {
     }
 }
 
-function loadThanas(districtIdSelector, thanaSelector) {
+// Delegated + name-scoped on purpose: this partial is included once per employee
+// row (one modal per employee), so `id="nominee_district"` is duplicated across the
+// page. jQuery's `$('#id')` always resolves to the first matching element in the
+// whole document, so ID-based binding only ever worked for the first employee's
+// modal. Delegate on document and scope to the closest form instead.
+if (!window.__hrNomineeThanaBound) {
+    window.__hrNomineeThanaBound = true;
 
-    $(districtIdSelector).on('change', function () {
-
-        let districtId = $(this).find(':selected').data('id');
-
-        let $thanaSelect = $(thanaSelector);
+    $(document).on('change', 'select[name="nominee_district"]', function () {
+        let $district = $(this);
+        let districtId = $district.find(':selected').data('id');
+        let $thanaSelect = $district.closest('form').find('select[name="nominee_po_station"]');
 
         if (!districtId) {
             $thanaSelect.html('<option value="">Select</option>');
@@ -121,10 +126,6 @@ function loadThanas(districtIdSelector, thanaSelector) {
                 $thanaSelect.html('<option value="">Error loading data</option>');
             }
         });
-
     });
 }
-
-// init
-loadThanas('#nominee_district', 'select[name="nominee_po_station"]');
 </script>
