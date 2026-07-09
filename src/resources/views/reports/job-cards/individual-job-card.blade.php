@@ -83,7 +83,7 @@
                 <tr>
                     <td class="tc">{{ $fmtNumber($i+1) }}</td>
                     <td class="tc">{{ $isBangla ? bn_date($row['date']) : $row['date'] }}</td>
-                    <td class="tc">{{ $row['shift'] ?? '-' }}</td>
+                    <td class="tc">{{ ($isBangla ? ($row['shift_bn'] ?? $row['shift']) : $row['shift']) ?? '-' }}</td>
                     <td class="tc">
                         {{ $isBangla ? $fmtDay($row['day'], true) : $row['day'] }}
                     </td>

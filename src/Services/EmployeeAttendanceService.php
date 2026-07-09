@@ -228,9 +228,12 @@ class EmployeeAttendanceService
                 $status = 'absent'; $status_display = 'Absent';
             }
 
-            // In/Out visibility
-            $isWeekendBlockedForInOut = ($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance && !$isOtBasisWphp;
-            if ($isWeekendBlockedForInOut) {
+            // In/Out visibility: an actual (unconverted) weekly holiday never shows punch
+            // times, even if the employee happened to punch in/out — only a day that's
+            // been explicitly converted to a working day (weekend-to-regular) shows
+            // attendance normally. This is independent of the WPHP flag, which only
+            // affects whether the full worked time counts as OT (see below), not visibility.
+            if ($isWeekend) {
                 $inTime  = null;
                 $outTime = null;
             } else {
@@ -239,11 +242,11 @@ class EmployeeAttendanceService
             }
 
             // ── OT calculation with designation flags ─────────────────────
-            $isOnWeekend = $isWeekend || $isWeekendForCompliance;
-            $otMinRaw    = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
+            $otMinRaw = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
 
-            // WPHP: weekend full working time → OT when flag is ON
-            if ($isOtBasisWphp && $isOnWeekend && $att && $att->in_time) {
+            // WPHP: on a converted (weekend-to-regular) working day, the full worked
+            // time counts as OT when this flag is ON.
+            if ($isOtBasisWphp && $isWeekendToRegular && $att && $att->in_time) {
                 $otMinRaw = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
             }
 
@@ -264,7 +267,7 @@ class EmployeeAttendanceService
                 $extraOt         = $weekendBlocksOt ? 0 : ($otMinRaw > $allowOtMin ? round(($otMinRaw - $allowOtMin) / 60, 2) : 0);
             } else {
                 // Factory null/0: weekend OT only when WPHP is ON
-                $complianceOt = ($isOnWeekend && !$isOtBasisWphp) ? 0 : $actualOt;
+                $complianceOt = (($isWeekend || $isWeekendForCompliance) && !$isOtBasisWphp) ? 0 : $actualOt;
                 $extraOt      = null;
             }
             // ─────────────────────────────────────────────────────────────
@@ -280,11 +283,11 @@ class EmployeeAttendanceService
                 $weekendToRegularDays++;
                 $weekendToRegularOtMinutes += max($otMinRaw, 0);
             }
-
             $result[] = [
                 'date'            => $d->format('d-m-Y'),
                 'day'             => $d->format('l'),
-                'shift'           => $att && isset($att->shift->name) ? $att->shift->name : null,
+                'shift'           => $employee->shift->name ?? null,
+                'shift_bn'        => $employee->shift->bn_name ?? ($employee->shift->name ?? null),
                 'in_time'         => $inTime  ?? '-',
                 'out_time'        => $outTime ?? '-',
                 'status_key'      => $status,

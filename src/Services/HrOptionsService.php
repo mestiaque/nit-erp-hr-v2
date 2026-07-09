@@ -399,8 +399,9 @@ class HrOptionsService
                     $mealTotal = (float) ($meal['meal_total'] ?? 0);
                 }
 
-                $extraEarningAmount  = $extras['earnings'] + $extras['advanceIou'] + $otEarn + $dayEarn + $attBonus + ($mealTotal ?? 0.0);
-                $extraDeductionAmount = $extras['deductions'] + $otDeduct + $dayDeduct;
+                // advance_iou is a deduction (an advance the employee already took), not an earning.
+                $extraEarningAmount  = $extras['earnings'] + $otEarn + $dayEarn + $attBonus + ($mealTotal ?? 0.0);
+                $extraDeductionAmount = $extras['deductions'] + $extras['advanceIou'] + $otDeduct + $dayDeduct;
                 $totalEarn   = $extraEarningAmount;
                 $totalDeduct = $extraDeductionAmount;
                 $net         = $gross + $totalEarn - $totalDeduct;

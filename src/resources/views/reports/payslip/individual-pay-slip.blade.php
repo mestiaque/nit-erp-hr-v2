@@ -35,7 +35,9 @@
         $earnDeductSummary = $employeeData['getEarningsDeductionsSummary']($from, $to);
         $salaryReport = $employeeData['getSalaryReport']($from, $to);
         $totalEarnings = $salaryReport['total_earn'] ?? 0;
-        $totalDeductions = $salaryReport['total_deduct'] - ($earnDeductSummary['advanceIou'] ?? 0) ?? 0;
+        // total_deduct already includes advance_iou (see HrOptionsService::getSalaryReport) — it's
+        // shown as its own "Advance" line below purely for a readable breakdown, not subtracted twice.
+        $totalDeductions = $salaryReport['total_deduct'] ?? 0;
         $otAmount = $otHour*$otRate ?? 0;
         $totalSalary = $salary['gross'] ?? 0;
         $leaveDays = $summary['totalLeave'] ?? 0;
@@ -143,7 +145,7 @@
             </tr>
             <tr>
                 <td class="label">মোট প্রদেয় টাকা:</td>
-                <td class="value">{{ en2bnNumber(number_format($payable - ($advance + $totalDeductions), 0)) }}</td>
+                <td class="value">{{ en2bnNumber(number_format($payable - $totalDeductions, 0)) }}</td>
                 <td class="label"></td>
                 <td class="value"></td>
                 <td class="label right-align">সাধারণ ছুটি:</td>
@@ -255,7 +257,7 @@
             </tr>
             <tr>
                 <td class="label">মোট প্রদেয় টাকা:</td>
-                <td class="value">{{ en2bnNumber(number_format($payable - ($advance + $totalDeductions), 0)) }}</td>
+                <td class="value">{{ en2bnNumber(number_format($payable - $totalDeductions, 0)) }}</td>
                 <td class="label"></td>
                 <td class="value"></td>
                 <td class="label right-align">সাধারণ ছুটি:</td>

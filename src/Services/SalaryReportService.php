@@ -40,11 +40,15 @@ class SalaryReportService
         $summary = $attendancePack['summary'] ?? [];
         $leave   = $attendancePack['leave']   ?? [];
 
-        $otHours      = ($factoryNo === 1 || $factoryNo === 2)
+        // Attendance-based OT (worked overtime hours x rate) and the manual OT(+/-)
+        // adjustment from Earnings & Deductions (a separate bonus/penalty, unrelated
+        // to attendance) are two independent things and must both apply — the manual
+        // adjustment is already folded into $salaryReport['total_earn']/['total_deduct']/['net']
+        // by getSalaryReport(), so attendance OT is simply added on top, not swapped in.
+        $otHours  = ($factoryNo === 1 || $factoryNo === 2)
             ? (float) ($summary['totalComplianceOt'] ?? 0)
             : (float) ($summary['totalOt'] ?? 0);
-        $otAmount     = round($otHours * $otRate, 2);
-        $otAdjustment = $otAmount - (float) ($salaryReport['ot'] ?? 0);
+        $otAmount = round($otHours * $otRate, 2);
 
         $present = (int) ($summary['totalPresentAll'] ?? 0);
         $absent  = (int) ($summary['totalAbsent'] ?? 0);
@@ -89,7 +93,16 @@ class SalaryReportService
         $deductFood   = (float) ($earnDeductSummary['foodDeduct'] ?? $earnDeductSummary['food_deduct'] ?? 0);
         $mobile       = (float) ($earnDeductSummary['mobile'] ?? $earnDeductSummary['mobile_deduct'] ?? 0);
         $jr           = (float) ($earnDeductSummary['jr'] ?? $earnDeductSummary['join_resign'] ?? 0);
-        $stamp        = (float) ($salaryReport['stamp'] ?? $sal['stamp_amount'] ?? 0);
+
+        // Stamp: fixed amount configured on the active factory.
+        $stamp = (float) (hr_factory('stamp_amount') ?? 0);
+
+        // Tax: employee's salary_info.tax, either a flat amount or a % of gross.
+        $taxRaw    = (float) ($empSi?->tax ?? 0);
+        $taxCalcBy = (string) ($empSi?->tax_calculate_by ?? 'amount');
+        $taxBase   = (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0);
+        $tax       = $taxCalcBy === 'percent' ? round($taxBase * ($taxRaw / 100), 2) : $taxRaw;
+
         $deductOther  = (float) (
             $earnDeductSummary['otherDeduct']
             ?? $earnDeductSummary['other_deduct']
@@ -97,7 +110,7 @@ class SalaryReportService
             ?? 0
         );
 
-        $knownDeduct = $deductAbsent + $loan + $deductFood + $mobile + $jr + $stamp;
+        $knownDeduct = $deductAbsent + $loan + $deductFood + $mobile + $jr + $stamp + $tax;
         if ($deductOther <= 0 && $knownDeduct < (float) ($salaryReport['total_deduct'] ?? 0)) {
             $deductOther = (float) ($salaryReport['total_deduct'] ?? 0) - $knownDeduct;
         }
@@ -118,15 +131,11 @@ class SalaryReportService
             $leavesByCode[$code] = ($leavesByCode[$code] ?? 0) + $days;
         }
 
-        // Extra facility from designation
-        $extraFacility = 0.0;
-        if ($emp->designation_id) {
-            static $designationCache = [];
-            if (!isset($designationCache[$emp->designation_id])) {
-                $designationCache[$emp->designation_id] = Designation::find($emp->designation_id);
-            }
-            $extraFacility = (float) ($designationCache[$emp->designation_id]->extra_facility ?? 0);
-        }
+        // Extra facility = Car & Fuel + Phone & Internet + Extra Facility, each already
+        // resolved employee-salary_info-first, falling back to designation, by hr_employee_salary().
+        $extraFacility = (float) ($sal['car_fuel'] ?? 0)
+            + (float) ($sal['phone_internet'] ?? 0)
+            + (float) ($sal['extra_facility'] ?? 0);
 
         // Meal allowances (tiffin / night / dinner) from attendance pack
         $meal        = $attendancePack['meal'] ?? [];
@@ -142,9 +151,9 @@ class SalaryReportService
             'medical'              => (float) ($sal['medical'] ?? 0),
             'transport'            => (float) ($sal['transport'] ?? 0),
             'food_allow'           => (float) ($sal['food'] ?? 0),
-            'total_earn'           => (float) ($salaryReport['total_earn'] ?? 0) + $otAdjustment,
-            'total_deduct'         => (float) ($salaryReport['total_deduct'] ?? 0),
-            'net'                  => (float) ($salaryReport['net'] ?? 0) + $otAdjustment,
+            'total_earn'           => (float) ($salaryReport['total_earn'] ?? 0) + $otAmount + $extraFacility,
+            'total_deduct'         => (float) ($salaryReport['total_deduct'] ?? 0) + $tax + $stamp,
+            'net'                  => (float) ($salaryReport['net'] ?? 0) + $otAmount + $extraFacility - $tax - $stamp,
             'ot'                   => $otAmount,
             'ot_hours'             => $otHours,
             'ot_rate'              => $otRate,
@@ -162,6 +171,7 @@ class SalaryReportService
             'deduct_food'          => $deductFood,
             'mobile'               => $mobile,
             'jr'                   => $jr,
+            'tax'                  => $tax,
             'stamp'                => $stamp,
             'wph_days'             => (int)   ($summary['totalWeekendToRegularDays']   ?? 0),
             'wph_amount'           => (float) ($summary['totalWeekendToRegularAmount'] ?? 0),

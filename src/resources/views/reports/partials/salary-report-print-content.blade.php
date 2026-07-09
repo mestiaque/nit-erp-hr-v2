@@ -673,6 +673,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					$absentDays = (int) ($sd['absent'] ?? 0);
 					$attBonus = (float) ($sd['att_bonus'] ?? 0);
 					$loan = (float) ($sd['loan'] ?? 0);
+					$tax = (float) ($sd['tax'] ?? 0);
 					$stamp = (float) ($sd['stamp'] ?? 0);
 					$deductOther = (float) ($sd['deduct_other'] ?? 0);
 					$otherEarn = (float) ($sd['allow_other'] ?? 0) + (float) ($sd['arrear'] ?? 0);
@@ -693,10 +694,10 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					$payableSalary = max(0, ($salaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);
 					$deductionTotal = (float) ($sd['total_deduct'] ?? 0);
 					if ($looksLikeNoPresentFullPay) {
-						$deductionTotal = max($deductionTotal, $deductAbsent + $loan + $stamp + $deductOther);
+						$deductionTotal = max($deductionTotal, $deductAbsent + $loan + $tax + $stamp + $deductOther);
 					}
 					$netSalary = $looksLikeNoPresentFullPay
-						? max(0, $payableSalary + $otAmount + $extraFacility - ($loan + $stamp + $deductOther))
+						? max(0, $payableSalary + $otAmount + $extraFacility - ($loan + $tax + $stamp + $deductOther))
 						: (float) ($sd['net'] ?? 0);
 
 					$row = [
@@ -715,7 +716,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						'att_bonus'      => $attBonus,
 						'deduct_absent'  => $deductAbsent,
 						'loan'           => $loan,
-						'tax'            => 0,
+						'tax'            => $tax,
 						'stamp'          => $stamp,
 						'deduct_other'   => $deductOther,
 						'wph_days'       => $sd['wph_days'],
@@ -945,7 +946,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 							<td class="tr">{{ number_format($row['att_bonus']) }}</td>
 							<td class="tr">{{ number_format($row['deduct_absent']) }}</td>
 							<td class="tr">{{ number_format($row['loan']) }}</td>
-							<td class="tr">0</td>
+							<td class="tr">{{ number_format($row['tax']) }}</td>
 							<td class="tr">{{ number_format($row['stamp']) }}</td>
 							<td class="tr">{{ number_format($row['deduct_other']) }}</td>
 
@@ -986,7 +987,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						<td class="tr">{{ number_format($group['totals']['att_bonus']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['deduct_absent']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['loan']) }}</td>
-						<td class="tr">0</td>
+						<td class="tr">{{ number_format($group['totals']['tax']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['stamp']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['deduct_other']) }}</td>
 						<td class="tc">{{ $group['totals']['wph_days'] }}</td>
@@ -1023,7 +1024,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<td class="tr">{{ number_format($grand['att_bonus']) }}</td>
 					<td class="tr">{{ number_format($grand['deduct_absent']) }}</td>
 					<td class="tr">{{ number_format($grand['loan']) }}</td>
-					<td class="tr">0</td>
+					<td class="tr">{{ number_format($grand['tax']) }}</td>
 					<td class="tr">{{ number_format($grand['stamp']) }}</td>
 					<td class="tr">{{ number_format($grand['deduct_other']) }}</td>
 					<td class="tc">{{ $grand['wph_days'] }}</td>
