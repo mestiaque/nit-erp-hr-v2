@@ -46,10 +46,12 @@ class AttendanceController extends Controller
             $dates = [$date];
         }
 
+        // NOTE: intentionally not filtering this query by $status. 'Absent' and
+        // 'Punch Missing' are derived below, not stored values — pre-filtering the raw
+        // attendance rows by status='Absent' would match zero rows and empty out the
+        // whole lookup map, making every employee (including genuinely present ones)
+        // show up as absent. The $status filter is applied after derivation instead.
         $attendanceQuery = HrAttendance::query();
-        if ($status) {
-            $attendanceQuery->where('status', $status);
-        }
         if ($dateFrom && $dateTo) {
             $attendanceQuery->whereBetween('date', [$dateFrom, $dateTo]);
         } else {
@@ -84,6 +86,16 @@ class AttendanceController extends Controller
             } elseif (!$row['attendance']->in_time || !$row['attendance']->out_time) {
                 $row['status'] = 'Punch Missing';
             }
+        }
+        unset($row);
+
+        // Apply the status filter here, against the derived status, now that every
+        // row's real Present/Late/Absent/Punch Missing value is known.
+        if ($status) {
+            $attendanceList = array_values(array_filter(
+                $attendanceList,
+                fn ($row) => $row['status'] === $status
+            ));
         }
 
         // For backward compatibility with view, we might still pass a single date variable (first date) but we'll change view to use row date.

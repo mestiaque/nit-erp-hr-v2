@@ -18,9 +18,27 @@
     $joinLabels = $s['joinTrend']->pluck('label')->toJson();
     $joinData   = $s['joinTrend']->pluck('count')->toJson();
     $widgetId   = 'hr_widget_' . uniqid();
+
+    $today = now()->toDateString();
+    $statCardLinks = [
+        'total'   => Route::has('hr-center.employees.index') ? route('hr-center.employees.index') : null,
+        'present' => Route::has('hr-center.attendances.index') ? route('hr-center.attendances.index', ['status' => 'Present', 'date' => $today]) : null,
+        'absent'  => Route::has('hr-center.attendances.index') ? route('hr-center.attendances.index', ['status' => 'Absent', 'date' => $today]) : null,
+        'late'    => Route::has('hr-center.attendances.index') ? route('hr-center.attendances.index', ['status' => 'Late', 'date' => $today]) : null,
+        'new'     => Route::has('hr-center.employees.index') ? route('hr-center.employees.index', [
+            'joining_date_from' => now()->startOfMonth()->toDateString(),
+            'joining_date_to'   => now()->endOfMonth()->toDateString(),
+        ]) : null,
+    ];
 @endphp
 
 <style>
+.hr-stat-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+}
 .hr-stat-card {
     background: #fff;
     border-radius: 12px;
@@ -79,6 +97,7 @@
 {{-- ── Stat Cards ── --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-lg">
+        @if($statCardLinks['total'])<a href="{{ $statCardLinks['total'] }}" class="hr-stat-card-link">@endif
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#eef2ff;">
                 <i class="fa fa-users" style="color:#6366f1;"></i>
@@ -91,8 +110,10 @@
                 </div>
             </div>
         </div>
+        @if($statCardLinks['total'])</a>@endif
     </div>
     <div class="col-6 col-md-4 col-lg">
+        @if($statCardLinks['present'])<a href="{{ $statCardLinks['present'] }}" class="hr-stat-card-link">@endif
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#ecfdf5;">
                 <i class="fa fa-user-check" style="color:#10b981;"></i>
@@ -106,8 +127,10 @@
                 </div>
             </div>
         </div>
+        @if($statCardLinks['present'])</a>@endif
     </div>
     <div class="col-6 col-md-4 col-lg">
+        @if($statCardLinks['absent'])<a href="{{ $statCardLinks['absent'] }}" class="hr-stat-card-link">@endif
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#fff1f2;">
                 <i class="fa fa-user-times" style="color:#f43f5e;"></i>
@@ -121,8 +144,10 @@
                 </div>
             </div>
         </div>
+        @if($statCardLinks['absent'])</a>@endif
     </div>
     <div class="col-6 col-md-4 col-lg">
+        @if($statCardLinks['late'])<a href="{{ $statCardLinks['late'] }}" class="hr-stat-card-link">@endif
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#faf5ff;">
                 <i class="fa fa-user-clock" style="color:#a855f7;"></i>
@@ -136,8 +161,10 @@
                 </div>
             </div>
         </div>
+        @if($statCardLinks['late'])</a>@endif
     </div>
     <div class="col-6 col-md-4 col-lg">
+        @if($statCardLinks['new'])<a href="{{ $statCardLinks['new'] }}" class="hr-stat-card-link">@endif
         <div class="hr-stat-card">
             <div class="hr-stat-icon" style="background:#fffbeb;">
                 <i class="fa fa-user-plus" style="color:#f59e0b;"></i>
@@ -150,6 +177,7 @@
                 </div>
             </div>
         </div>
+        @if($statCardLinks['new'])</a>@endif
     </div>
 </div>
 

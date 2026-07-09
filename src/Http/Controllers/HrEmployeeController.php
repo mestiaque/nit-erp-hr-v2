@@ -58,6 +58,14 @@ class HrEmployeeController extends Controller
             $query->whereDate('join_date', $request->joining_date);
         }
 
+        if ($request->filled('joining_date_from')) {
+            $query->whereDate('join_date', '>=', $request->joining_date_from);
+        }
+
+        if ($request->filled('joining_date_to')) {
+            $query->whereDate('join_date', '<=', $request->joining_date_to);
+        }
+
         if ($request->filled('contact')) {
             $query->where('personal_contact', 'like', '%' . trim((string) $request->contact) . '%');
         }
