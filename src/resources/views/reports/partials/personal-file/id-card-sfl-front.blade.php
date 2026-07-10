@@ -270,7 +270,8 @@
     $language = $language ?? data_get($request ?? null, 'language', 'bn');
     $isBangla = $language === 'bn';
     $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
-    $na = $t('প্রযোজ্য নয়', 'N/A');
+    // $na = $t('প্রযোজ্য নয়', 'N/A');
+    $na = $t('', '');
 
     $designationAttr = optional(\ME\Hr\Models\HrDesignation::find($employee->designation_id));
     $departmentAttr  = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
