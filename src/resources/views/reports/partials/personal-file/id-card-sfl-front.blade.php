@@ -4,14 +4,14 @@
 <style>
     @page {
         size: A4;
-        margin: 0;
+        margin: 5;
     }
 
     .sfl-front-grid,
     .sfl-back-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 1.5mm;
+        gap: 5.5mm;
     }
 
     .sfl-page-break {
@@ -22,8 +22,8 @@
     }
 
     .sfl-card-side {
-        width: 60mm;
-        height: 95mm;
+        width: 53.935mm;
+        height: 84.757mm;
         background: #fff;
         overflow: hidden;
         box-sizing: border-box;
@@ -106,6 +106,7 @@
         align-items: center;
         justify-content: center;
         padding: 1mm 1.5mm;
+        padding-top: 0.1mm;
         flex-shrink: 0;
     }
     .sfl-logo-img {
@@ -134,8 +135,8 @@
         margin-top: -3mm; 
     }
     .sfl-photo {
-        width: 21mm;
-        height: 23mm;
+        width: 20mm;
+        height: 21mm;
         object-fit: cover;
         border: 0.6mm solid #11294a;
         border-radius: 1.6mm;
@@ -146,8 +147,8 @@
     .sfl-info {
         flex: 1;
         padding: 0 1.7mm;
-        font-size: 2.45mm;
-        line-height: 1.5;
+        font-size: 2.35mm;
+        line-height: 1.3;
         display: grid;
         grid-template-columns: auto 1mm 1fr;
         align-content: start;
@@ -174,7 +175,7 @@
         display: flex;
         justify-content: flex-end;
         padding: 0 2.2mm;
-        margin-bottom: 1mm;
+        margin-bottom: 0mm;
         flex-shrink: 0;
     }
     .sfl-sign-line {
