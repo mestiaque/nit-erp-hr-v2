@@ -1,30 +1,31 @@
 @extends('admin.layouts.app')
 
 @section('title')
-<title>Assign Shift Roster</title>
+<title>Edit Shift Roster</title>
 @endsection
 
 @section('contents')
 <div class="flex-grow-1">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Assign Shift Roster</h4>
+            <h4 class="mb-0">Edit Shift Roster</h4>
             <a href="{{ route('hr-center.rosters.index') }}" class="btn btn-secondary btn-sm">Back to List</a>
         </div>
         <div class="card-body">
-            <form action="{{ route('hr-center.rosters.store') }}" method="POST">
+            <form action="{{ route('hr-center.rosters.update', $roster->id) }}" method="POST">
                 @csrf
+                @method('PUT')
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label id="dateLabel">Date</label>
-                        <input type="date" name="date" class="form-control" value="{{ old('date', $existingRule->anchor_date ?? '') }}" required>
+                        <input type="date" name="date" class="form-control" value="{{ old('date', $existingRule->anchor_date ?? $roster->roster_date) }}" required>
                     </div>
                     <div class="form-group col-md-3">
                         <label>Employee</label>
                         <select name="employee_id" class="form-control select2" required>
                             <option value="">-- Select --</option>
                             @foreach($employees as $employee)
-                                <option value="{{ $employee->id }}" @selected((string) old('employee_id', $existingRule->employee_id ?? request('employee_id')) === (string) $employee->id)>{{ $employee->employee_id }} — {{ $employee->name }}</option>
+                                <option value="{{ $employee->id }}" @selected((string) old('employee_id', $roster->employee_id) === (string) $employee->id)>{{ $employee->employee_id }} — {{ $employee->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -33,13 +34,13 @@
                         <select name="shift_id" class="form-control" required>
                             <option value="">-- Select --</option>
                             @foreach($shifts as $shift)
-                                <option value="{{ $shift->id }}" @selected((string) old('shift_id', $existingRule->primary_shift_id ?? '') === (string) $shift->id)>{{ $shift->name }}</option>
+                                <option value="{{ $shift->id }}" @selected((string) old('shift_id', $existingRule->primary_shift_id ?? $roster->shift_id) === (string) $shift->id)>{{ $shift->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="form-group col-md-3">
                         <label>Remarks</label>
-                        <input type="text" name="remarks" class="form-control" value="{{ old('remarks') }}">
+                        <input type="text" name="remarks" class="form-control" value="{{ old('remarks', $roster->remarks) }}">
                     </div>
                 </div>
 
@@ -74,7 +75,7 @@
                     When on: <strong>Shift</strong> is this employee's regular shift and <strong>Date</strong> is the start date. From the first occurrence of the selected <strong>Day</strong> on/after that date, the shift alternates every week — Alternate Shift, then regular Shift, then Alternate again — and continues indefinitely.
                 </small>
 
-                <button type="submit" class="btn btn-primary">Assign</button>
+                <button type="submit" class="btn btn-primary">Update</button>
             </form>
         </div>
     </div>

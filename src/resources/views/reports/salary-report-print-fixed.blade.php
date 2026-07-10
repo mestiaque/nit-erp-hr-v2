@@ -4,5 +4,9 @@
 
 @section('contents')
     @php($salaryPrintMode = 'fixed')
-    @include('hr::reports.partials.salary-report-print-content')
+    @if(ENV('FACTORY') === 'SFL')
+        @include('hr::reports.partials.salary-report-print-content-sfl')
+    @else
+        @include('hr::reports.partials.salary-report-print-content')
+    @endif
 @endsection

@@ -72,6 +72,47 @@ class HrEmployee extends BaseHrModel
         return $this->belongsTo(HrShift::class, 'shift_id');
     }
 
+    public function shiftRule(): HasOne
+    {
+        return $this->hasOne(HrEmployeeShiftRule::class, 'employee_id');
+    }
+
+    /**
+     * With an active Auto Roster rule, the rule's primary shift is worked every
+     * day except its chosen day_of_week, which alternates weekly between the
+     * primary and alt shift starting from anchor_date (first on/after anchor ->
+     * alt, the occurrence a week later -> primary, then alt again, and so on).
+     * Without a rule, always the employee's own default shift.
+     */
+    public function resolveShiftForDate($date): ?HrShift
+    {
+        $rule = $this->shiftRule;
+        if (!$rule || !$rule->is_active) {
+            return $this->shift;
+        }
+
+        $date = \Carbon\Carbon::parse($date)->startOfDay();
+
+        if ((int) $rule->day_of_week !== $date->dayOfWeek) {
+            return $rule->primaryShift ?: $this->shift;
+        }
+
+        $firstOccurrence = \Carbon\Carbon::parse($rule->anchor_date)->startOfDay();
+        while ($firstOccurrence->dayOfWeek !== (int) $rule->day_of_week) {
+            $firstOccurrence->addDay();
+        }
+
+        if ($date->lt($firstOccurrence)) {
+            return $rule->primaryShift ?: $this->shift;
+        }
+
+        $weeksSince = (int) $firstOccurrence->diffInWeeks($date);
+
+        return $weeksSince % 2 === 0
+            ? ($rule->altShift ?: $this->shift)
+            : ($rule->primaryShift ?: $this->shift);
+    }
+
     public function workingPlace(): BelongsTo
     {
         return $this->belongsTo(HrWorkingPlace::class, 'working_place_id');

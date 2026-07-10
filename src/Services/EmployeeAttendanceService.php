@@ -283,11 +283,12 @@ class EmployeeAttendanceService
                 $weekendToRegularDays++;
                 $weekendToRegularOtMinutes += max($otMinRaw, 0);
             }
+            $resolvedShift = $employee->resolveShiftForDate($d);
             $result[] = [
                 'date'            => $d->format('d-m-Y'),
                 'day'             => $d->format('l'),
-                'shift'           => $employee->shift->name ?? null,
-                'shift_bn'        => $employee->shift->bn_name ?? ($employee->shift->name ?? null),
+                'shift'           => $resolvedShift->name ?? null,
+                'shift_bn'        => $resolvedShift->bn_name ?? ($resolvedShift->name ?? null),
                 'in_time'         => $inTime  ?? '-',
                 'out_time'        => $outTime ?? '-',
                 'status_key'      => $status,

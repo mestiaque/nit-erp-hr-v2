@@ -16,6 +16,11 @@ class HrSubSection extends BaseHrModel
         return $this->belongsTo(HrSection::class, 'section_id');
     }
 
+    public function rosterShift()
+    {
+        return $this->belongsTo(HrShift::class, 'roster_shift_id');
+    }
+
     public function getDepartmentNameAttribute(): string
     {
         return $this->department->name ?? '-';

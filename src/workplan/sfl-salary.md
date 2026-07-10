@@ -1,0 +1,1 @@
+Sl-NO	Card no	Name	Photo	Join Date	Designation	Section	Grade	Basic	H.R	M/A	F/A	T/A	Gross Salary	Month Day	Work Day	Holy Day	E/L	S/L	C/L	 Pay Day	Absent Day	Absent TK	Att: Bonus	Other Alowance	Total Salary	OT. Hour	Rate	OT-Amount	Net Salary	Advance Paid 	Revenue	Payable 	Stamp

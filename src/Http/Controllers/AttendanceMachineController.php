@@ -224,7 +224,7 @@ class AttendanceMachineController extends Controller
                 return false;
             }
 
-            $employee = HrEmployee::with('shift')->where('employee_id', $employeeId)->first();
+            $employee = HrEmployee::with(['shift', 'shiftRule.altShift'])->where('employee_id', $employeeId)->first();
 
             if (!$employee) {
                 Log::info("ADMS: employee_id=$employeeId not found in users, log saved only.");
@@ -232,9 +232,9 @@ class AttendanceMachineController extends Controller
             }
 
             $time  = Carbon::parse($timeStr, 'Asia/Dhaka');
-            $shift = $employee->shift ?? null;
+            $shift = $employee->resolveShiftForDate($time->toDateString());
 
-            // Resolve active shift from roster if employee has no default shift
+            // Resolve active shift from roster if employee has no default/rule shift
             if (!$shift) {
                 $shift = $this->resolveShiftFromRoster($employee, $time->toDateString());
             }
@@ -265,7 +265,7 @@ class AttendanceMachineController extends Controller
         }
 
         $rosterEntry = \ME\Hr\Models\HrShiftRosterEmployee::where('employee_id', $employee->id)
-            ->whereDate('date', $date)
+            ->whereDate('roster_date', $date)
             ->first();
 
         if (!$rosterEntry || !$rosterEntry->shift_id) {

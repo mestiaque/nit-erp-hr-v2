@@ -108,7 +108,13 @@ Route::middleware($route['middleware'] ?? ['web'])
 			// Roster Management
 		Route::get('/rosters', [RosterController::class, 'index'])->name('rosters.index');
 		Route::get('/rosters/create', [RosterController::class, 'create'])->name('rosters.create');
+		// Bulk assign — hidden for now, kept for later re-enable
+		// Route::get('/rosters/assign', [RosterController::class, 'assign'])->name('rosters.assign');
+		// Route::post('/rosters/bulk-store', [RosterController::class, 'bulkStore'])->name('rosters.bulk-store');
 		Route::post('/rosters', [RosterController::class, 'store'])->name('rosters.store');
+		Route::delete('/rosters/rules/{id}', [RosterController::class, 'rulesDestroy'])->name('rosters.rules.destroy');
+		Route::get('/rosters/{id}/edit', [RosterController::class, 'edit'])->name('rosters.edit');
+		Route::put('/rosters/{id}', [RosterController::class, 'update'])->name('rosters.update');
 		Route::delete('/rosters/{id}', [RosterController::class, 'destroy'])->name('rosters.destroy');
 
 

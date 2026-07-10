@@ -10,7 +10,7 @@ class HrOptionsService
         $classifications = \ME\Hr\Models\HrClassification::where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']);
         $departments     = \ME\Hr\Models\HrDepartment::where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']);
         $sections        = \ME\Hr\Models\HrSection::where('status', 'active')->orderBy('name')->get(['id', 'name', 'bn_name']);
-        $subSections     = \ME\Hr\Models\HrSubSection::orderBy('name')->get(['id', 'name', 'department_id', 'section_id', 'salary_type', 'approve_man_power', 'bn_name']);
+        $subSections     = \ME\Hr\Models\HrSubSection::orderBy('name')->get(['id', 'name', 'department_id', 'section_id', 'salary_type', 'approve_man_power', 'bn_name', 'roster_shift_id']);
         $designations    = \ME\Hr\Models\HrDesignation::orderBy('name')->get(['id', 'name', 'bn_name', 'grade']);
         $shifts          = \ME\Hr\Models\HrShift::orderBy('name')->get(['id', 'name', 'bn_name']);
         $workingPlaces   = \ME\Hr\Models\HrWorkingPlace::orderBy('name')->get(['id', 'name', 'bn_name']);
