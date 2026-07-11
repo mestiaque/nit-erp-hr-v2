@@ -641,6 +641,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 		$otherHolidayCount = count($otherHolidayDateMap);
 		$totalWorkingDays = max(0, $totalPeriodDays - $weekendCount - $otherHolidayCount);
 		$deductionMonthDays = 30;
+		// Absent day-rate base follows factory compliance mode: Actual (0/null) -> Gross,
+		// Comp-1/Comp-2 (1/2) -> Basic.
+		$factoryNo = (int) (hr_factory('factory_no') ?? 0);
 
 		// Base grand totals — leave keys added dynamically below
 		$grandBase = [
@@ -682,14 +685,15 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					$otAmount = (float) ($sd['ot'] ?? 0);
 					$extraFacility = (float) ($sd['extra_facility'] ?? 0);
 
+					$absentBase = ($factoryNo === 1 || $factoryNo === 2) ? $sd['basic'] : $sd['gross'];
 					$deductAbsent = $absentDays > 0
-						? round(($salaryTotal / $deductionMonthDays) * $absentDays, 2)
+						? round(($absentBase / $deductionMonthDays) * $absentDays, 2)
 						: 0;
 					$looksLikeNoPresentFullPay = $presentDays === 0
 						&& $absentDays > 0
 						&& (float) ($sd['net'] ?? 0) >= (float) ($sd['gross'] ?? 0);
 					if ($looksLikeNoPresentFullPay && $deductAbsent <= 0 && $deductionMonthDays > 0) {
-						$deductAbsent = round(($salaryTotal / $deductionMonthDays) * $absentDays, 2);
+						$deductAbsent = round(($absentBase / $deductionMonthDays) * $absentDays, 2);
 					}
 
 					$payableSalary = max(0, ($salaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);

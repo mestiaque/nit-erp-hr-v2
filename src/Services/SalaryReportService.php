@@ -97,10 +97,14 @@ class SalaryReportService
         // Stamp: fixed amount configured on the active factory.
         $stamp = (float) (hr_factory('stamp_amount') ?? 0);
 
-        // Tax: employee's salary_info.tax, either a flat amount or a % of gross.
+        // Tax: employee's salary_info.tax, either a flat amount or a % of salary.
+        // The % base follows factory compliance mode: Actual (0/null) -> Gross,
+        // Comp-1/Comp-2 (1/2) -> Basic.
         $taxRaw    = (float) ($empSi?->tax ?? 0);
         $taxCalcBy = (string) ($empSi?->tax_calculate_by ?? 'amount');
-        $taxBase   = (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0);
+        $taxBase   = ($factoryNo === 1 || $factoryNo === 2)
+            ? (float) ($salaryReport['basic'] ?? $sal['basic'] ?? 0)
+            : (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0);
         $tax       = $taxCalcBy === 'percent' ? round($taxBase * ($taxRaw / 100), 2) : $taxRaw;
 
         $deductOther  = (float) (
