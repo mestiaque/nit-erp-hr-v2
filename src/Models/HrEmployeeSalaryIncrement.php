@@ -18,7 +18,10 @@ class HrEmployeeSalaryIncrement extends BaseHrModel
      */
     public static function applyIncrementOverride(array $sal, int $employeeId): array
     {
+        // Only a locked (approved) increment is ever "effective" — a draft increment
+        // must not silently override the currently-locked one in any report/calculation.
         $latest = static::where('employee_id', $employeeId)
+            ->where('is_locked', true)
             ->latest('increment_date')
             ->latest('id')
             ->first();

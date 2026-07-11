@@ -32,11 +32,13 @@
                             <th>Increment Amount</th>
                             <th>New Salary</th>
                             <th>Increment Date</th>
-                            <th>Edit</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                     @forelse($rows as $row)
+                        @php $rowIsLocked = (bool) data_get($row, 'is_locked', false); @endphp
                         <tr>
                             <td>{{ $employee->employee_id ?? '-' }}</td>
                             <td>{{ $employee->name ?? '-' }}</td>
@@ -49,13 +51,33 @@
                             <td>{{ number_format((float) data_get($row, 'new_salary', 0), 2) }}</td>
                             <td>{{ data_get($row, 'increment_date') ?: '-' }}</td>
                             <td>
-                                @if($loop->index === 0)
+                                @if($rowIsLocked)
+                                    <span class="badge badge-success">Locked</span>
+                                @else
+                                    <span class="badge badge-secondary">Draft</span>
+                                @endif
+                            </td>
+                            <td class="d-flex" style="gap:4px;">
+                                @if($loop->index === 0 && !$rowIsLocked)
                                     <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditIncrementModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
-                                @endif  
+                                @endif
+                                @if(data_get($row, 'source') === 'db')
+                                    @if($rowIsLocked)
+                                        <form method="post" action="{{ route('hr-center.employees.increments.unlock', [$employee->id, data_get($row, 'identifier')]) }}" onsubmit="return confirm('Unlock this increment? It will stop affecting reports until re-locked.')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Unlock</button>
+                                        </form>
+                                    @else
+                                        <form method="post" action="{{ route('hr-center.employees.increments.lock', [$employee->id, data_get($row, 'identifier')]) }}" onsubmit="return confirm('Lock this increment? It becomes effective in reports immediately.')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm">Lock</button>
+                                        </form>
+                                    @endif
+                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="text-center">No increment data found.</td></tr>
+                        <tr><td colspan="11" class="text-center">No increment data found.</td></tr>
                     @endforelse
                     </tbody>
                 </table>

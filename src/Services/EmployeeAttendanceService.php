@@ -200,7 +200,7 @@ class EmployeeAttendanceService
             $isRegularToWeekend = RegularToWeekend::where('section_id', $employee->section_id)
                 ->where('date', $dateStr)->where('type', 'weekend')->where('status', 1)->exists();
             $isWeekendToRegular = RegularToWeekend::where('section_id', $employee->section_id)
-                ->where('date', $dateStr)->where('type', 'half_day')->where('status', 1)->exists();
+                ->where('date', $dateStr)->where('type', 'regular')->where('status', 1)->exists();
 
             $isWeekend            = false;
             $isWeekendForCompliance = false;
@@ -215,7 +215,10 @@ class EmployeeAttendanceService
             // Status string
             if ($leave) {
                 $status = 'leave'; $status_display = 'Leave';
-            } elseif (($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance) {
+            } elseif (($factoryNo == 1 || $factoryNo == 2) && $isWeekendForCompliance && !$isWeekendToRegular) {
+                // A weekend-to-regular day must show its real attendance status (Present/
+                // Absent/etc.), not "Weekend" — $isWeekendForCompliance is also true for
+                // this case (see the branch above), so it must be excluded here explicitly.
                 $status = 'weekend'; $status_display = 'Weekend';
             } elseif ($isHoliday) {
                 $status = 'holiday'; $status_display = 'Holiday';
@@ -241,32 +244,61 @@ class EmployeeAttendanceService
                 $outTime = $att && $att->out_time ? $att->out_time : null;
             }
 
+            $resolvedShift = $employee->resolveShiftForDate($d);
+            $shiftMinutes  = 0;
+            if ($resolvedShift && $resolvedShift->start_time && $resolvedShift->end_time) {
+                $shiftStartDur = Carbon::parse($resolvedShift->start_time);
+                $shiftEndDur   = Carbon::parse($resolvedShift->end_time);
+                if ($shiftEndDur->lte($shiftStartDur)) {
+                    $shiftEndDur->addDay(); // overnight shift
+                }
+                $shiftMinutes = (int) $shiftStartDur->diffInMinutes($shiftEndDur);
+            }
+
             // ── OT calculation with designation flags ─────────────────────
             $otMinRaw = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
 
-            // WPHP: on a converted (weekend-to-regular) working day, the full worked
-            // time counts as OT when this flag is ON.
+            // WPHP full-day count is an "Actual" mode concept only: with no shift/OT
+            // distinction, Actual just counts the whole worked day as OT. Compliance
+            // modes (1/2) keep the normal shift-excess OT ($otMinRaw, unchanged) and its
+            // Allow OT Hour cap — WPHP there instead adds the shift's own hours into the
+            // OT figure (see $fullOtOnWphpDay below), since a converted weekend day has no
+            // separate "regular salaried" portion — the whole recognized day is OT.
+            $otMinRawFull = $otMinRaw;
             if ($isOtBasisWphp && $isWeekendToRegular && $att && $att->in_time) {
-                $otMinRaw = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
+                $otMinRawFull = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
             }
 
             // Zero out OT when not enabled for this factory / designation
             if (!$otEnabled) {
-                $otMinRaw = 0;
+                $otMinRaw     = 0;
+                $otMinRawFull = 0;
             }
 
-            $actualOt = round($otMinRaw / 60, 2);
+            $actualOt        = round($otMinRawFull / 60, 2);
+            $fullOtOnWphpDay = $isOtBasisWphp && $isWeekendToRegular;
 
-            if ($factoryNo == 1) {
-                $weekendBlocksOt = $isWeekendForCompliance && !$isOtBasisWphp;
-                $complianceOt    = $weekendBlocksOt ? 0 : round(min($otMinRaw, $allowOtMin) / 60, 2);
-                $extraOt         = null;
-            } elseif ($factoryNo == 2) {
-                $weekendBlocksOt = $isWeekendForCompliance && !$isOtBasisWphp;
-                $complianceOt    = $weekendBlocksOt ? 0 : round(min($otMinRaw, $allowOtMin) / 60, 2);
-                $extraOt         = $weekendBlocksOt ? 0 : ($otMinRaw > $allowOtMin ? round(($otMinRaw - $allowOtMin) / 60, 2) : 0);
+            if ($factoryNo == 1 || $factoryNo == 2) {
+                $weekendBlocksOt   = $isWeekendForCompliance && !$isOtBasisWphp;
+                $cappedExcessMin   = $weekendBlocksOt ? 0 : min($otMinRaw, $allowOtMin);
+                $shiftBonusMin     = ($weekendBlocksOt || !$fullOtOnWphpDay) ? 0 : $shiftMinutes;
+                $complianceOt      = round(($cappedExcessMin + $shiftBonusMin) / 60, 2);
+                $extraOt           = ($factoryNo == 2 && !$weekendBlocksOt && $otMinRaw > $allowOtMin)
+                    ? round(($otMinRaw - $allowOtMin) / 60, 2)
+                    : ($factoryNo == 2 ? 0 : null);
+
+                // Comp-1 shows no Extra OT column, so time worked beyond the compliance cap
+                // is instead hidden by capping the displayed Out Time itself; Comp-2 shows
+                // the real Out Time since Extra OT already accounts for the difference.
+                if ($factoryNo == 1 && $outTime && $shiftMinutes > 0 && $otMinRaw > 0) {
+                    $cappedOut = Carbon::parse($dateStr . ' ' . $resolvedShift->end_time)
+                        ->addMinutes($cappedExcessMin);
+                    $outTime = $cappedOut->format('H:i:s');
+                }
             } else {
-                // Factory null/0: weekend OT only when WPHP is ON
+                // Factory null/0 (Actual): weekend OT only when WPHP is ON; full worked
+                // time (via $actualOt / $otMinRawFull) counts, uncapped. Out Time always
+                // shows the real punch time.
                 $complianceOt = (($isWeekend || $isWeekendForCompliance) && !$isOtBasisWphp) ? 0 : $actualOt;
                 $extraOt      = null;
             }
@@ -283,7 +315,6 @@ class EmployeeAttendanceService
                 $weekendToRegularDays++;
                 $weekendToRegularOtMinutes += max($otMinRaw, 0);
             }
-            $resolvedShift = $employee->resolveShiftForDate($d);
             $result[] = [
                 'date'            => $d->format('d-m-Y'),
                 'day'             => $d->format('l'),

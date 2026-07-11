@@ -87,8 +87,8 @@
 
 @section('contents')
 @php
-    $company = general()->title ?? 'Company Name';
-    $address = general()->address_one ?? '';
+    $company = hr_factory('name') ?? 'Company Name';
+    $address = hr_factory('address') ?? '';
     $reportDateLabel = \Carbon\Carbon::parse($reportDate)->format('d-M-y');
     $dayPresentPct = ($grand['manpower_total'] ?? 0) > 0
         ? number_format((($grand['present_total'] ?? 0) * 100) / ($grand['manpower_total'] ?? 1), 2)
@@ -100,8 +100,11 @@
 
 <div class="">
 <div class="head">
-    <h3>{{ general()->title ?? 'Company Name' }}</h3>
-    <div>{{ general()->address_one ?? data_get(general(), 'address') }}</div>
+    @if(!blank(general()->logo()))
+        <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+    @endif
+    <h3>{{ hr_factory('name') ?? 'Company Name' }}</h3>
+    <div>{{ hr_factory('address') ?? '' }}</div>
 </div>
 
     <div class="title-bar">Daily Manpower Report</div>

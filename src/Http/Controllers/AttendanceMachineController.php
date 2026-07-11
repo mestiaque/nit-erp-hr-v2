@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrAttendanceMachineLog;
 use ME\Hr\Models\HrEmployee;
+use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrShift;
 
 class AttendanceMachineController extends Controller
@@ -373,6 +374,16 @@ class AttendanceMachineController extends Controller
         $attendance = HrAttendance::where('employee_id', $employee->id)
             ->whereDate('date', $attendanceDate)
             ->first();
+
+        // A locked day is immutable — a late/re-synced machine punch must not silently
+        // overwrite it either, same rule as manual edits (AttendanceController).
+        $day = Carbon::parse($attendanceDate);
+        if (($attendance && $attendance->is_locked)
+            || HrLock::isLocked('attendance', $day->year, $day->month, $employee->department_id)
+        ) {
+            Log::info("Attendance punch ignored (locked): employee={$employee->employee_id} date={$attendanceDate}");
+            return false;
+        }
 
         if (!$attendance) {
             $attendance              = new HrAttendance();

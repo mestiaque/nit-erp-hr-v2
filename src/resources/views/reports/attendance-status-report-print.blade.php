@@ -75,8 +75,8 @@
 
 @section('contents')
 @php
-    $company = general()->title ?? 'Company Name';
-    $address = general()->address_one ?? '';
+    $company = hr_factory('name') ?? 'Company Name';
+    $address = hr_factory('address') ?? '';
     $fromLabel = \Carbon\Carbon::parse($from)->format('d/m/Y');
     $toLabel = \Carbon\Carbon::parse($to)->format('d/m/Y');
     $sectionGroups = $employees->groupBy('section_id');
@@ -85,6 +85,9 @@
 <div class="report-wrap">
     <div class="head text-center">
         <div class="company">
+            @if(!blank(general()->logo()))
+                <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+            @endif
             <h2>{{ $company }}</h2>
             <p>{{ $address }}</p>
         </div>

@@ -18,6 +18,7 @@ use ME\Hr\Models\HrDesignation;
 use ME\Hr\Models\HrEmployeeSalaryIncrement;
 use ME\Hr\Models\HrFloorLine;
 use ME\Hr\Models\HrHoliday;
+use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrProductionBonus;
 use ME\Hr\Models\HrSection;
 use ME\Hr\Models\HrShift;
@@ -117,6 +118,24 @@ class HrReportController extends Controller
                     (float) data_get($row, 'final_gross', 0)
                 );
             }
+
+            // Audit trail for the Lock Management page — the per-row is_locked flag on
+            // hr_employee_salary_increments (set in upsertIncrementRecord) is what reports
+            // actually filter on; this row just records that a bulk lock action happened.
+            $effective = Carbon::parse($payload['effective_date']);
+            HrLock::updateOrCreate(
+                [
+                    'module' => 'increment',
+                    'lock_year' => $effective->year,
+                    'lock_month' => $effective->month,
+                    'department_id' => $payload['department'] ?? null,
+                ],
+                [
+                    'is_locked' => true,
+                    'locked_at' => now(),
+                    'locked_by' => Auth::id(),
+                ]
+            );
         });
 
         return back()->with('success', 'Increment locked successfully for selected employees.');
@@ -754,6 +773,11 @@ class HrReportController extends Controller
             }
             if (Schema::hasColumn($table, 'approved_by')) {
                 $row->approved_by = Auth::id();
+            }
+            if (Schema::hasColumn($table, 'is_locked')) {
+                $row->is_locked = true;
+                $row->locked_at = now();
+                $row->locked_by = Auth::id();
             }
 
             $row->save();
@@ -1690,25 +1714,18 @@ class HrReportController extends Controller
         $from = $request->input('from') ?: now()->toDateString();
         $to   = $request->input('to') ?: $from;
 
-        $employees = $this->employeeReportQuery($request)->get(['id', 'other_information']);
+        $employees = $this->employeeReportQuery($request)->get(['id']);
 
-        DB::transaction(function () use ($employees, $from, $to) {
-            foreach ($employees as $employee) {
-                $other = $employee->other_information;
-                $other = is_array($other) ? $other : [];
-                $lockKey = 'job_card_lock';
-                if (!isset($other[$lockKey])) {
-                    $other[$lockKey] = [];
-                }
-                $key = $from . '_' . $to;
-                $other[$lockKey][$key] = [
-                    'locked_at' => now()->toDateTimeString(),
-                    'locked_by' => Auth::id(),
-                ];
-                $employee->other_information = json_encode($other);
-                $employee->save();
-            }
-        });
+        // Real enforcement: flip the same hr_attendances.is_locked flag that
+        // AttendanceController/AttendanceMachineController check before any write —
+        // a locked day becomes immutable, not just cosmetically labeled. Only existing
+        // rows are locked here (a day with no row yet — a plain absence — has nothing
+        // to lock; creating an empty placeholder row would wrongly flip its derived
+        // status elsewhere from "Absent" to "Punch Missing", so that's deliberately
+        // not done here).
+        HrAttendance::whereIn('employee_id', $employees->pluck('id'))
+            ->whereBetween('date', [$from, $to])
+            ->update(['is_locked' => true, 'locked_at' => now(), 'locked_by' => Auth::id()]);
 
         return back()->with('success', 'Job card locked for selected period.');
     }

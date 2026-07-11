@@ -34,7 +34,7 @@ class RegularToWeekendController extends Controller
         $data = $request->validate([
             'section_id' => 'required',
             'date' => 'required|date',
-            'type' => 'required|in:weekend,half_day',
+            'type' => 'required|in:weekend,regular',
             'status' => 'nullable|integer|in:0,1',
         ]);
         $data['status'] = (int) ($data['status'] ?? 1);
@@ -47,7 +47,7 @@ class RegularToWeekendController extends Controller
         $data = $request->validate([
             'section_id' => 'required',
             'date' => 'required|date',
-            'type' => 'required|in:weekend,half_day',
+            'type' => 'required|in:weekend,regular',
             'status' => 'nullable|integer|in:0,1',
         ]);
         $data['status'] = (int) ($data['status'] ?? 1);

@@ -4,6 +4,8 @@ namespace ME\Hr\Services;
 
 use ME\Hr\Models\HrEmployeeLeave as Leave;
 use ME\Hr\Models\HrDesignation as Designation;
+use ME\Hr\Models\HrEmployeeSalarySnapshot;
+use ME\Hr\Models\HrLock;
 
 class SalaryReportService
 {
@@ -20,6 +22,24 @@ class SalaryReportService
         $request = null,
         ?callable $employeeDataFn = null
     ): array {
+        // A locked (salary-approved) period is frozen to whatever was true at lock
+        // time — no matter what attendance/increment/salary_info changes happen
+        // afterward, the report must keep showing the locked snapshot, not a live
+        // recalculation. Only applies when the period is a single calendar month.
+        $toDate = \Carbon\Carbon::parse($to);
+        if (\Carbon\Carbon::parse($from)->isSameMonth($toDate)) {
+            $snapshot = HrEmployeeSalarySnapshot::where('employee_id', $emp->id)
+                ->where('lock_year', $toDate->year)
+                ->where('lock_month', $toDate->month)
+                ->first();
+            if ($snapshot
+                && HrLock::isLocked('salary', $toDate->year, $toDate->month, $emp->department_id)
+                && is_array($snapshot->raw_data)
+            ) {
+                return $snapshot->raw_data;
+            }
+        }
+
         if ($employeeDataFn === null) {
             $employeeDataFn = HrOptionsService::getOptionsForEmployee();
         }

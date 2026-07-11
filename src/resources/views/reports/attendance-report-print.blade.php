@@ -22,11 +22,14 @@
 
 @section('contents')
 @php
-    $company = general()->title ?? 'Company Name';
-    $address = general()->address_one ?? '';
+    $company = hr_factory('name') ?? 'Company Name';
+    $address = hr_factory('address') ?? '';
 @endphp
 
 <div class="report-head">
+    @if(!blank(general()->logo()))
+        <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+    @endif
     <h3>{{ $company }}</h3>
     <p>{{ $address }}</p>
 </div>

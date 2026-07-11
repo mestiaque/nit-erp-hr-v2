@@ -154,7 +154,7 @@ class FinalSettlementCalculator
             $swap      = $rtwByDate->get($dateStr);
 
             $isRegularToWeekend = $swap && $swap->type === 'weekend';
-            $isWeekendToRegular = $swap && $swap->type === 'half_day';
+            $isWeekendToRegular = $swap && $swap->type === 'regular';
 
             $isWeekendDay = ($dayOfWeek === $empWeekend && !$isWeekendToRegular) || $isRegularToWeekend;
             $isHoliday    = $holidays->contains(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);

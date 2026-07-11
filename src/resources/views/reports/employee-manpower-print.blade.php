@@ -57,8 +57,11 @@
     $grandTotalEmployees = (int) data_get($manpowerRows->firstWhere('row_type', 'grand_total'), 'recruited', 0);
 @endphp
 <div class="report-head text-center">
-    <h3>{{ general()->title ?? 'Company Name' }}</h3>
-    <div>{{ general()->address_one ?? data_get(general(), 'address') }}</div>
+    @if(!blank(general()->logo()))
+        <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+    @endif
+    <h3>{{ hr_factory('name') ?? 'Company Name' }}</h3>
+    <div>{{ hr_factory('address') ?? '' }}</div>
     <strong>Employee Report - Manpower Summary</strong>
 </div>
 <div class="meta-line">

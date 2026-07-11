@@ -7,6 +7,7 @@ use Illuminate\Support\Carbon;
 
 use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrEmployee;
+use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrShift;
 
 use Illuminate\Routing\Controller;
@@ -113,11 +114,29 @@ class AttendanceController extends Controller
         return view('hr::attendances.edit', compact('attendance', 'employee', 'shift', 'date'));
     }
 
+    /**
+     * A row can be individually locked (bulk-locked period touched it), or the
+     * whole period can be locked with no row yet existing for this date — check both.
+     */
+    private function isAttendanceLocked(HrEmployee $employee, string $date, ?HrAttendance $attendance): bool
+    {
+        if ($attendance && $attendance->is_locked) {
+            return true;
+        }
+
+        $day = Carbon::parse($date);
+        return HrLock::isLocked('attendance', $day->year, $day->month, $employee->department_id);
+    }
+
     public function update(Request $request, $userId, $date)
     {
         $employee = HrEmployee::query()->findOrFail($userId);
         $shift = HrShift::find($employee->shift_id);
-        $attendance = HrAttendance::firstOrNew(['employee_id' => $userId, 'date' => $date]);
+        $existing = HrAttendance::where('employee_id', $userId)->where('date', $date)->first();
+        if ($this->isAttendanceLocked($employee, $date, $existing)) {
+            return back()->with('error', 'This date is locked — attendance cannot be edited until it is unlocked.');
+        }
+        $attendance = $existing ?? new HrAttendance(['employee_id' => $userId, 'date' => $date]);
         $attendance->in_time = $request->input('in_time');
         $attendance->out_time = $request->input('out_time');
         $attendance->remarks = $request->input('remarks');
@@ -135,7 +154,21 @@ class AttendanceController extends Controller
         } else {
             $attendance->total_ot_minute = 0;
         }
-        
+
+        // Full worked duration — this is what the WPHP (weekend-to-regular full-day-OT)
+        // rule in EmployeeAttendanceService reads; without it that feature silently no-ops
+        // for any manually-entered attendance row.
+        if ($attendance->in_time && $attendance->out_time) {
+            $inTime  = Carbon::parse($attendance->in_time);
+            $outTime = Carbon::parse($attendance->out_time);
+            if ($outTime->lt($inTime)) {
+                $outTime->addDay(); // overnight shift
+            }
+            $attendance->total_working_minute = (int) $inTime->diffInMinutes($outTime);
+        } else {
+            $attendance->total_working_minute = 0;
+        }
+
         $attendance->save();
 
         // Preserve filter parameters after update
@@ -153,9 +186,15 @@ class AttendanceController extends Controller
         $employee = HrEmployee::findOrFail($employeeId);
         $shift    = HrShift::find($employee->shift_id);
         $rows     = $request->input('rows', []);
+        $skippedLocked = 0;
 
         foreach ($rows as $row) {
-            $attendance = HrAttendance::firstOrNew(['employee_id' => $employeeId, 'date' => $row['date']]);
+            $existing = HrAttendance::where('employee_id', $employeeId)->where('date', $row['date'])->first();
+            if ($this->isAttendanceLocked($employee, $row['date'], $existing)) {
+                $skippedLocked++;
+                continue; // locked date — skip it, still save the rest of the batch
+            }
+            $attendance = $existing ?? new HrAttendance(['employee_id' => $employeeId, 'date' => $row['date']]);
             $attendance->in_time  = $row['in_time']  ?: null;
             $attendance->out_time = $row['out_time'] ?: null;
             $attendance->remarks  = $row['remarks']  ?? null;
@@ -169,6 +208,17 @@ class AttendanceController extends Controller
                 $attendance->total_ot_minute = 0;
             }
 
+            if ($attendance->in_time && $attendance->out_time) {
+                $inTime  = Carbon::parse($attendance->in_time);
+                $outTime = Carbon::parse($attendance->out_time);
+                if ($outTime->lt($inTime)) {
+                    $outTime->addDay();
+                }
+                $attendance->total_working_minute = (int) $inTime->diffInMinutes($outTime);
+            } else {
+                $attendance->total_working_minute = 0;
+            }
+
             $attendance->save();
         }
 
@@ -179,7 +229,11 @@ class AttendanceController extends Controller
             }
         }
 
-        return redirect()->route('hr-center.attendances.index', $query)->with('success', 'Attendance saved for ' . $employee->name . '.');
+        $message = 'Attendance saved for ' . $employee->name . '.';
+        if ($skippedLocked > 0) {
+            $message .= " ({$skippedLocked} locked date(s) were skipped.)";
+        }
+        return redirect()->route('hr-center.attendances.index', $query)->with('success', $message);
     }
 
     private function calculateStatus($attendance, $shift)

@@ -12,6 +12,7 @@ use ME\Hr\Http\Controllers\ProductionRateController;
 use ME\Hr\Http\Controllers\RosterController;
 use ME\Hr\Http\Controllers\RegularToWeekendController;
 use ME\Hr\Http\Controllers\AttendanceMachineController;
+use ME\Hr\Http\Controllers\LockController;
 
 $route = config('hr.route');
 
@@ -46,6 +47,8 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsPage'])->name('employees.increments.page');
 		Route::post('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsStore'])->name('employees.increments.store');
 		Route::put('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsUpdate'])->name('employees.increments.update');
+		Route::post('/employees/{employee}/increments/{increment}/lock', [HrEmployeeController::class, 'incrementsLock'])->name('employees.increments.lock');
+		Route::post('/employees/{employee}/increments/{increment}/unlock', [HrEmployeeController::class, 'incrementsUnlock'])->name('employees.increments.unlock');
 		Route::get('/employees/{employee}/earnings-deductions', [HrEmployeeController::class, 'earningsDeductionsPage'])->name('employees.earnings.page');
 		Route::post('/employees/{employee}/earnings-deductions', [HrEmployeeController::class, 'earningsDeductionsStore'])->name('employees.earnings.store');
 		Route::put('/employees/{employee}/earnings-deductions', [HrEmployeeController::class, 'earningsDeductionsUpdate'])->name('employees.earnings.update');
@@ -117,6 +120,9 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::put('/rosters/{id}', [RosterController::class, 'update'])->name('rosters.update');
 		Route::delete('/rosters/{id}', [RosterController::class, 'destroy'])->name('rosters.destroy');
 
+		// Period Locking (Increment / Attendance / Salary)
+		Route::get('/locks', [LockController::class, 'index'])->name('locks.index');
+		Route::post('/locks/toggle', [LockController::class, 'toggle'])->name('locks.toggle');
 
 		Route::get('/zkteco-data-import',[AttendanceMachineController::class,'import'])->name('importZkteco');
 		Route::post('/import-zkteco-data',[AttendanceMachineController::class,'importAction'])->name('importZktecoAction');

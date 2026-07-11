@@ -639,6 +639,7 @@ class HrEmployeeController extends Controller
                     'increment_amount' => (float) $row->increment_amount,
                     'new_salary' => (float) $row->new_salary,
                     'increment_date' => $row->increment_date,
+                    'is_locked' => (bool) $row->is_locked,
                 ];
             })->values();
         } else {
@@ -721,6 +722,11 @@ class HrEmployeeController extends Controller
         // ১. বিদ্যমান ইনক্রিমেন্ট রেকর্ডটি খুঁজে বের করা
         $increment = HrEmployeeSalaryIncrement::findOrFail($payload['identifier']);
 
+        if ($increment->is_locked) {
+            return redirect()->route('hr-center.employees.increments.page', $employee->id)
+                ->with('error', 'This increment is locked — unlock it first before editing.');
+        }
+
         // ২. স্যালারি রিভার্স করা (আগের ইনক্রিমেন্ট বাদ দিয়ে বেস স্যালারিতে ফিরে যাওয়া)
         // Use the stored previous_salary from the increment record — salary_info must not be read for this.
         $old_increment_amount = $increment->increment_amount;
@@ -748,6 +754,40 @@ class HrEmployeeController extends Controller
 
         return redirect()->route('hr-center.employees.increments.page', $employee->id)
                         ->with('success', 'Increment updated successfully.');
+    }
+
+    /**
+     * A draft increment has no effect on any report/salary calculation
+     * (see HrEmployeeSalaryIncrement::applyIncrementOverride()) until locked.
+     */
+    public function incrementsLock(HrEmployee $employee, HrEmployeeSalaryIncrement $increment): RedirectResponse
+    {
+        $this->ensureEmployee($employee);
+        abort_unless($increment->employee_id === $employee->id, 404);
+
+        $increment->update([
+            'is_locked' => true,
+            'locked_at' => now(),
+            'locked_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('hr-center.employees.increments.page', $employee->id)
+            ->with('success', 'Increment locked — it is now effective in reports.');
+    }
+
+    public function incrementsUnlock(HrEmployee $employee, HrEmployeeSalaryIncrement $increment): RedirectResponse
+    {
+        $this->ensureEmployee($employee);
+        abort_unless($increment->employee_id === $employee->id, 404);
+
+        $increment->update([
+            'is_locked' => false,
+            'locked_at' => null,
+            'locked_by' => null,
+        ]);
+
+        return redirect()->route('hr-center.employees.increments.page', $employee->id)
+            ->with('success', 'Increment unlocked.');
     }
 
 
@@ -1118,7 +1158,7 @@ class HrEmployeeController extends Controller
             $swap      = $rtwByDate->get($dateStr);
 
             $isRegularToWeekend = $swap && $swap->type === 'weekend';
-            $isWeekendToRegular = $swap && $swap->type === 'half_day';
+            $isWeekendToRegular = $swap && $swap->type === 'regular';
 
             $isWeekendDay = ($dayOfWeek === $empWeekend && !$isWeekendToRegular) || $isRegularToWeekend;
             $isHoliday    = $holidays->contains(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);

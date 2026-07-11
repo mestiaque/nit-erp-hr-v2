@@ -1,19 +1,28 @@
 @extends('admin.layouts.app')
 
 @section('title')
-<title>Regular to Weekend</title>
+<title>Weekend to Regular</title>
 @endsection
 
 @section('contents')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Regular to Weekend</h4>
+            <h4 class="mb-0">Weekend to Regular</h4>
             <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createModal">Add New</button>
         </div>
         <div class="card-body">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
             <form method="get" class="row mb-3 align-items-end">
                 <div class="col-md-3">
@@ -35,10 +44,10 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label mb-1">Is Active</label>
-                    <select name="is_active" class="form-control form-control-sm">
+                    <select name="status" class="form-control form-control-sm">
                         <option value="">All</option>
-                        <option value="1" @selected($request->is_active === '1')>Yes</option>
-                        <option value="0" @selected($request->is_active === '0')>No</option>
+                        <option value="1" @selected($request->status === '1')>Yes</option>
+                        <option value="0" @selected($request->status === '0')>No</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -93,7 +102,7 @@
           <form method="POST" action="{{ route('hr-center.regular-to-weekend.store') }}">
             @csrf
             <div class="modal-header">
-              <h5 class="modal-title">Add Regular to Weekend</h5>
+              <h5 class="modal-title">Add Weekend to Regular</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -121,7 +130,7 @@
               </div>
               <div class="mb-3">
                 <label>Is Active</label>
-                <select name="is_active" class="form-control">
+                <select name="status" class="form-control">
                   <option value="1">Yes</option>
                   <option value="0">No</option>
                 </select>
@@ -145,7 +154,7 @@
             @csrf
             @method('PUT')
             <div class="modal-header">
-              <h5 class="modal-title">Edit Regular to Weekend</h5>
+              <h5 class="modal-title">Edit Weekend to Regular</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -172,7 +181,7 @@
               </div>
               <div class="mb-3">
                 <label>Is Active</label>
-                <select name="is_active" class="form-control">
+                <select name="status" class="form-control">
                   <option value="1" @selected($item->is_active)>Yes</option>
                   <option value="0" @selected(!$item->is_active)>No</option>
                 </select>

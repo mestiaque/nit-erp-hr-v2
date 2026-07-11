@@ -200,7 +200,7 @@ class JobcardDataService {
             ->exists();
         $isWeekendToRegular = RegularToWeekend::where('section_id', $employee->section_id)
             ->where('date', $dateStr)
-            ->where('type', 'half_day')
+            ->where('type', 'regular')
             ->where('status', 1)
             ->exists();
 

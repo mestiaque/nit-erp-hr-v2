@@ -58,8 +58,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 @endpush
 @section('contents')
 @php
-    $company = general()->title ?? 'Company Name';
-    $address = general()->address_one ?? '';
+    $company = hr_factory('name') ?? 'Company Name';
+    $address = hr_factory('address') ?? '';
     $fmt     = fn($v) => number_format((float)$v, 2);
     $byDept  = $employees->groupBy('department_id');
     $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
@@ -141,6 +141,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
 {{-- ── CORPORATE REPORT HEADER ── --}}
 <div class="rpt-header">
+    @if(!blank(general()->logo()))
+        <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+    @endif
     <h2>{{ $company }}</h2>
     <p>{{ $address }}</p>
 </div>

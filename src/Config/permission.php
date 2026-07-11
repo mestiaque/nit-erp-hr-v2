@@ -104,7 +104,7 @@ return [
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
         'hr_regular_to_weekend' => [
-            'label' => 'Regular to Weekend',
+            'label' => 'Weekend to Regular',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
         'hr_shift_roastering' => [
