@@ -908,7 +908,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 							<td>{{ $language === 'bn' && $employee->bn_name ? $employee->bn_name : $employee->name }}</td>
 							@if($withPicture)
 								<td class="tc photo-cell">
-									<img src="{{ asset($employee->image()) }}" alt="" style="width:32px;height:32px;object-fit:cover;">
+									<img src="{{ asset($employee->image()) }}" alt="" style="object-fit:cover;">
 								</td>
 							@endif
 							<td class="tc">{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d-M-Y') : '-' }}</td>
