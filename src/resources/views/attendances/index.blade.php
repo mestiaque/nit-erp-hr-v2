@@ -97,7 +97,7 @@
                                     {{ $emp->employee_id }}
                                     @if($emp->department) &bull; {{ $emp->department->name }} @endif
                                     @if($emp->section) &bull; {{ $emp->section->name }} @endif
-                                    @if($shift) &bull; <i class="fa fa-clock-o"></i> {{ $shift->name }} @endif
+                                    @if($shift) &bull; <i class="fa fa-clock"></i> {{ $shift->name }} @endif
                                 </div>
                             </div>
                         </div>
