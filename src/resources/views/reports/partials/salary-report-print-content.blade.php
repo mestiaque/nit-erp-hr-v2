@@ -33,7 +33,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
 .dept-title { font-size:10.5px; font-weight:700; background:#1a3a5c; color:#fff; padding:4px 8px; margin:12px 0 2px; letter-spacing:.3px; }
 .summary-row td { background:#dcedc8; font-weight:700; }
-.photo-cell img { max-width:28px; max-height:34px; }
+.photo-cell img { max-width:28px; max-height:20mm; }
 
 .rpt-footer { margin-top:18px; border-top:1.5px solid #1a3a5c; padding-top:8px; }
 .sig-row { display:flex; justify-content:space-between; margin-top:24px; }
@@ -59,6 +59,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 .sheet-sec-total td { background:#fafafa; font-weight:700; }
 .sheet-grand td { background:#ececec; font-weight:700; font-size:10px; }
 .sheet-inwords { margin-top:10px; font-size:10px; font-weight:700; }
+.stamp-box { width:25mm; height:20mm; padding:0; }
 
 @media print {
 	@page {
@@ -966,12 +967,12 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
 							<td class="tr">{{ number_format($row['extra_facility']) }}</td>
 							<td class="tr"><strong>{{ number_format($row['net']) }}</strong></td>
-							<td></td>
+							<td class="stamp-box"></td>
 						</tr>
 					@endforeach
 
 					<tr class="sheet-sec-total">
-						<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">{{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
+						<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">{{ $departmentMap->get($group['dept_id'], 'N/A') }} &mdash; {{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
 						<td class="tr">{{ number_format($group['totals']['gross']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['basic']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['house']) }}</td>
