@@ -33,7 +33,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
 .dept-title { font-size:10.5px; font-weight:700; background:#1a3a5c; color:#fff; padding:4px 8px; margin:12px 0 2px; letter-spacing:.3px; }
 .summary-row td { background:#dcedc8; font-weight:700; }
-.photo-cell img { max-width:28px; max-height:20mm; }
+.photo-cell img {  max-height:20mm; }
 
 .rpt-footer { margin-top:18px; border-top:1.5px solid #1a3a5c; padding-top:8px; }
 .sig-row { display:flex; justify-content:space-between; margin-top:24px; }
