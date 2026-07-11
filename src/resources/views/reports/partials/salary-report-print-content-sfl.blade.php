@@ -951,7 +951,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					@endforeach
 
 					<tr class="sheet-sec-total">
-						<td colspan="{{ $labelCols }}" class="tl">{{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
+						<td colspan="{{ $labelCols }}" class="tl">{{ $departmentMap->get($group['dept_id'], 'N/A') }} &mdash; {{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
 						<td class="tr">{{ number_format($group['totals']['basic']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['house']) }}</td>
 						<td class="tr">{{ number_format($group['totals']['medical']) }}</td>
