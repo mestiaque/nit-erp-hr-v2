@@ -961,11 +961,11 @@ class HrReportController extends Controller
                 'sub_section'      => $subSectionMap->get($employee->sub_section_id ?? data_get($profile, 'sub_section_id'), 'N/A'),
                 'line_block'       => $lineMap->get($employee->floor_line_id, 'N/A'),
                 'designation'      => $designationMap->get($employee->designation_id, 'N/A'),
-                'grade'            => $gradeMap->get($employee->grade_lavel, 'N/A'),
+                'grade'            => $employee->grade ?? optional($employee->designation)->grade ?? 'N/A',
                 'shift'            => $shiftMap->get($employee->shift_id, 'N/A'),
                 'weekend'          => data_get($profile, 'weekend', $employee->weekend ?? 'N/A'),
                 'contact_no'       => $employee->mobile ?? 'N/A',
-                'sex'              => $employee->sex ?? 'N/A',
+                'sex'              => $employee->gender ?? 'N/A',
             ]);
         }
         return $rows;

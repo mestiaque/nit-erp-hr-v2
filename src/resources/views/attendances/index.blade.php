@@ -105,7 +105,7 @@
                     </div>
 
                     {{-- Attendance rows form --}}
-                    <form method="POST" action="{{ route('hr-center.attendances.bulk-update', $empId) }}">
+                    <form method="POST" action="{{ route('hr-center.attendances.bulk-update', $empId) }}" class="js-att-form" data-shift-in="{{ $shift ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : '' }}" data-shift-out="{{ $shift ? \Carbon\Carbon::parse($shift->end_time)->format('H:i') : '' }}">
                         @csrf
                         {{-- Preserve filter params --}}
                         @foreach(['employee','status','date_from','date_to'] as $p)
@@ -118,6 +118,9 @@
                             <table class="att-table">
                                 <thead>
                                     <tr>
+                                        <th style="text-align:center;">
+                                            <input type="checkbox" class="js-att-check-all" @disabled(!$shift) title="Check/uncheck all">
+                                        </th>
                                         <th>Date</th>
                                         <th>Day</th>
                                         <th>Status</th>
@@ -144,17 +147,21 @@
                                                 str_contains($st, 'Early')         => 'badge-early',
                                                 default                            => 'badge-default',
                                             };
+                                            $hasTime = !empty($row['attendance']->in_time) || !empty($row['attendance']->out_time);
                                         @endphp
                                         <tr>
+                                            <td style="text-align:center;">
+                                                <input type="checkbox" class="js-att-row-check" @disabled(!$shift || $hasTime)>
+                                            </td>
                                             <td>{{ $row['date'] }}</td>
                                             <td class="{{ $isWeekend ? 'day-weekend' : '' }}">{{ $dayName }}</td>
                                             <td><span class="status-badge {{ $badgeClass }}">{{ $st }}</span></td>
                                             <td>
                                                 <input type="hidden" name="rows[{{ $i }}][date]" value="{{ $row['date'] }}">
-                                                <input type="time" name="rows[{{ $i }}][in_time]" value="{{ $row['attendance']->in_time ?? '' }}">
+                                                <input type="time" class="js-att-in" name="rows[{{ $i }}][in_time]" value="{{ $row['attendance']->in_time ?? '' }}">
                                             </td>
                                             <td>
-                                                <input type="time" name="rows[{{ $i }}][out_time]" value="{{ $row['attendance']->out_time ?? '' }}">
+                                                <input type="time" class="js-att-out" name="rows[{{ $i }}][out_time]" value="{{ $row['attendance']->out_time ?? '' }}">
                                             </td>
                                             <td>
                                                 <input type="text" name="rows[{{ $i }}][remarks]" value="{{ $row['attendance']->remarks ?? '' }}" placeholder="Remarks">
@@ -179,4 +186,44 @@
         </div>
     </div>
 </div>
+
+@push('js')
+<script>
+    (function () {
+        function fillRow(row, checked) {
+            var inInput  = row.querySelector('.js-att-in');
+            var outInput = row.querySelector('.js-att-out');
+            var form     = row.closest('.js-att-form');
+            if (!form) return;
+            var shiftIn  = form.getAttribute('data-shift-in');
+            var shiftOut = form.getAttribute('data-shift-out');
+
+            if (checked) {
+                if (inInput)  inInput.value  = shiftIn;
+                if (outInput) outInput.value = shiftOut;
+            } else {
+                if (inInput)  inInput.value  = '';
+                if (outInput) outInput.value = '';
+            }
+        }
+
+        document.querySelectorAll('.js-att-row-check').forEach(function (checkbox) {
+            checkbox.addEventListener('change', function () {
+                fillRow(checkbox.closest('tr'), checkbox.checked);
+            });
+        });
+
+        document.querySelectorAll('.js-att-check-all').forEach(function (checkAll) {
+            checkAll.addEventListener('change', function () {
+                var table = checkAll.closest('table');
+                if (!table) return;
+                table.querySelectorAll('.js-att-row-check:not(:disabled)').forEach(function (checkbox) {
+                    checkbox.checked = checkAll.checked;
+                    fillRow(checkbox.closest('tr'), checkbox.checked);
+                });
+            });
+        });
+    })();
+</script>
+@endpush
 @endsection

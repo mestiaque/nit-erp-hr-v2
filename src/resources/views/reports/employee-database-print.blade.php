@@ -104,7 +104,7 @@
         <tr>
             <th colspan="5">Employee Profile</th>
             <th colspan="7">Salary Info.</th>
-            <th colspan="11">Basic Info.</th>
+            <th colspan="12">Basic Info.</th>
             <th colspan="22">Reference</th>
             <th colspan="4">Permanent Address</th>
             <th colspan="4">Present Address</th>
@@ -139,7 +139,8 @@
             <th class="nowrap">Marital Status</th>
             <th class="nowrap">Spouse Name</th>
             <th class="nowrap">Sex</th>
-            <th class="nowrap">Kids</th>
+            <th class="nowrap">Boys</th>
+            <th class="nowrap">Girls</th>
             <th class="nowrap">Religion</th>
             <th class="nowrap">DOB</th>
             <th class="nowrap">Blood Group</th>
@@ -212,14 +213,24 @@
                     data_get($profileNested, 'reference_2')
                 );
                 $referenceCardNo = $firstFilled(
+                    optional($employee->basicInfo)->reference_card_no,
                     data_get($profile, 'reference_card_no'),
                     data_get($profileNested, 'reference_card_no'),
                     data_get($other, 'reference_card_no')
                 );
                 $referenceMobile = $firstFilled(
+                    optional($employee->basicInfo)->reference_mobile_no,
                     data_get($profile, 'reference_mobile'),
                     data_get($profileNested, 'reference_mobile'),
                     data_get($other, 'reference_mobile')
+                );
+                $jobExperience = $firstFilled(
+                    optional($employee->basicInfo)->job_experience,
+                    data_get($profile, 'job_experience')
+                );
+                $previousOrganization = $firstFilled(
+                    optional($employee->basicInfo)->previous_organization,
+                    data_get($profile, 'prev_organization')
                 );
                 $nomineeMobile = $firstFilled(
                     data_get($nominee, 'nominee_mobile'),
@@ -237,18 +248,18 @@
                 <td>{{ $fmtDate($employee->joining_date) }}</td>
                 <td class="text-right">{{ $fmtMoney($employee->gross_salary) }}</td>
                 <td>{{ $employee->salary_type ?? 'N/A' }}</td>
-                <td>{{ data_get($salaryInfo, 'bank_or_phone', 'N/A') }}</td>
-                <td class="text-right">{{ $fmtMoney(data_get($salaryInfo, 'car_fuel', 0)) }}</td>
-                <td class="text-right">{{ $fmtMoney(data_get($salaryInfo, 'phone_internet', 0)) }}</td>
-                <td class="text-right">{{ $fmtMoney(data_get($salaryInfo, 'extra_facility', 0)) }}</td>
-                <td class="text-right">{{ $fmtMoney(data_get($salaryInfo, 'tax', 0)) }}</td>
+                <td>{{ $employee->salaryInfo?->bank_ac_or_phone ?? 'N/A' }}</td>
+                <td class="text-right">{{ $fmtMoney($employee->salaryInfo?->car_fuel ?? 0) }}</td>
+                <td class="text-right">{{ $fmtMoney($employee->salaryInfo?->phone_internet ?? 0) }}</td>
+                <td class="text-right">{{ $fmtMoney($employee->salaryInfo?->extra_facility ?? 0) }}</td>
+                <td class="text-right">{{ $fmtMoney($employee->salaryInfo?->tax ?? 0) }}</td>
                 <td>{{ $classificationMap->get($employee->employee_type, 'N/A') }}</td>
                 <td>{{ $departmentMap->get($employee->department_id, 'N/A') }}</td>
                 <td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
                 <td>{{ data_get($subSection, 'name', 'N/A') }}</td>
                 <td>{{ $line }}</td>
                 <td>{{ $designationName }}</td>
-                <td>{{ $gradeMap->get($employee->grade_lavel, 'N/A') }}</td>
+                <td>{{ $employee->grade ?? optional($employee->designation)->grade ?? 'N/A' }}</td>
                 <td>{{ $shiftMap->get($employee->shift_id, 'N/A') }}</td>
                 <td>{{ $weekend }}</td>
                 <td>{{ $employee->mobile ?? 'N/A' }}</td>
@@ -259,6 +270,7 @@
                 <td>{{ $employee->spouse_name ?? 'N/A' }}</td>
                 <td>{{ $employee->gender ?? 'N/A' }}</td>
                 <td>{{ $employee->boys ?? 'N/A' }}</td>
+                <td>{{ $employee->girls ?? 'N/A' }}</td>
                 <td>{{ $employee->religion ?? 'N/A' }}</td>
                 <td>{{ $fmtDate($employee->dob) }}</td>
                 <td>{{ $employee->blood_group ?? 'N/A' }}</td>
@@ -269,8 +281,8 @@
                 <td>{{ $employee->driving_license ?? 'N/A' }}</td>
                 <td>{{ $employee->distinguished_mark ?? 'N/A' }}</td>
                 <td>{{ $employee->education ?? 'N/A' }}</td>
-                <td>{{ data_get($profile, 'job_experience', $employee->job_experience ?? 'N/A') }}</td>
-                <td>{{ data_get($profile, 'prev_organization', 'N/A') }}</td>
+                <td>{{ $jobExperience }}</td>
+                <td>{{ $previousOrganization }}</td>
                 <td>{{ $employee->reference_1 ?? 'N/A' }}</td>
                 <td>{{ $referenceDesignation }}</td>
                 <td>{{ $referenceCardNo }}</td>
@@ -294,7 +306,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="61" class="text-center">No employee found.</td>
+                <td colspan="62" class="text-center">No employee found.</td>
             </tr>
         @endforelse
     </tbody>

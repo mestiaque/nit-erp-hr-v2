@@ -283,7 +283,9 @@ class HrEmployee extends BaseHrModel
 
     public function getSalaryTypeAttribute(): ?string
     {
-        $id = $this->salaryInfo?->payment_method_id;
+        // Pay Mode can be set from either the Salary Info form (salary_infos.payment_method_id)
+        // or the Basic Info form (basic_infos.payment_method_id) — read whichever was used.
+        $id = $this->salaryInfo?->payment_method_id ?? $this->basicInfo?->payment_method_id;
         return $id ? HrPaymentMethod::find($id)?->name : null;
     }
 
