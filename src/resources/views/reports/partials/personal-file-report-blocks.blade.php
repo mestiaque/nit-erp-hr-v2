@@ -38,4 +38,8 @@
     @case('increment-letter')
         @include('hr::reports.partials.personal-file.increment-letter')
         @break
+
+    @case('probaitionary-exten')
+        @include('hr::reports.partials.personal-file.probaitionary-exten')
+        @break
 @endswitch

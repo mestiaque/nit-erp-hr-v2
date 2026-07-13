@@ -1331,6 +1331,7 @@ class HrReportController extends Controller
             'appraisal-letter' => 'Apprasial Letter',
             'joining-letter' => 'Joining Letter',
             'increment-letter' => 'Increment Letter',
+            'probaitionary-exten' => 'Probationary Extension',
         ];
 
         if ($request->boolean('print')) {
