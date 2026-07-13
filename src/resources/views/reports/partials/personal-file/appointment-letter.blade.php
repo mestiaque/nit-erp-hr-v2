@@ -22,11 +22,14 @@
 
     $designationModel = optional($employee->designation);
     $designationAttr = optional(\ME\Hr\Models\HrDesignation::find($employee->designation_id));
-    $grade = $desinationAttr->grade ?? $designationModel->grade ?? data_get($employee, 'designation_grade') ?? $na;
+    $grade = $designationAttr->grade ?? $designationModel->grade ?? data_get($employee, 'designation_grade') ?? $na;
     $designation = $isBangla
         ? ($designationModel->bn_name ?? data_get($designationAttr, 'bn_name') ?? $designationModel->name ?? data_get($designationAttr, 'name') ?? data_get($employee, 'designation_bn_name') ?? data_get($employee, 'designation_name') ?? $na)
         : ($designationModel->name ?? data_get($designationAttr, 'name') ?? data_get($employee, 'designation_name') ?? $designationModel->bn_name ?? data_get($designationAttr, 'bn_name') ?? data_get($employee, 'designation_bn_name') ?? $na);
-
+    $departmentAttr = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
+    $department = $isBangla
+        ? (data_get($departmentAttr, 'bn_name') ?? data_get($departmentAttr, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na)
+        : (data_get($departmentAttr, 'name') ?? data_get($employee, 'department_name') ?? data_get($departmentAttr, 'bn_name') ?? data_get($employee, 'department_bn_name') ?? $na);
     $sectionAttr = optional(\ME\Hr\Models\HrSection::find($employee->section_id));
     $section = $isBangla
         ? (data_get($sectionAttr, 'bn_name') ?? data_get($sectionAttr, 'name') ?? data_get($employee, 'section_bn_name') ?? data_get($employee, 'section_name') ?? $na)
@@ -36,8 +39,8 @@
     $employeeOthers = $employee->otherInfo();
 
     $jobType = $isBangla
-        ? $masterData['classifications']->where('id', $employee->employee_type)->first()->bn_name
-        : $masterData['classifications']->where('id', $employee->employee_type)->first()->name;
+        ? $masterData['classifications']->where('id', $employee->employee_type)->first()?->bn_name
+        : $masterData['classifications']->where('id', $employee->employee_type)->first()?->name;
     $employeeId = data_get($employee, 'employee_id', $na);
 
     $present_district = $employee->present_district;

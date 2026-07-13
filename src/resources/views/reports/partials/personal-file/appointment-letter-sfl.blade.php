@@ -11,8 +11,8 @@
       $gradeSfl = $designationAttrSfl->grade_bn ?? $designationModelSfl->grade_bn ?? $designationAttrSfl->grade ?? $designationModelSfl->grade ?? data_get($employee, 'designation_grade') ?? $na;
       $designationSfl = $designationModelSfl->bn_name ?? data_get($designationAttrSfl, 'bn_name') ?? $designationModelSfl->name ?? data_get($designationAttrSfl, 'name') ?? data_get($employee, 'designation_name') ?? $na;
 
-      $sectionAttrSfl = optional(\ME\Hr\Models\HrSection::find($employee->section_id));
-      $sectionSfl = data_get($sectionAttrSfl, 'bn_name') ?? data_get($sectionAttrSfl, 'name') ?? data_get($employee, 'section_name') ?? $na;
+      $departmentAttrSfl = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
+      $departmentSfl = data_get($departmentAttrSfl, 'bn_name') ?? data_get($departmentAttrSfl, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na;
 
       $employeeIdSfl = data_get($employee, 'employee_id', $na);
       $joiningDateSfl = blank($employee->joining_date) ? $na : bn_date($employee->joining_date, 'd/m/Y');
@@ -74,9 +74,9 @@
             <td class="detail-value text-english">{{ $designationSfl }}</td>
           </tr>
           <tr class="profile-detail-item">
-            <td class="detail-label">সেকশন (Section)</td>
+            <td class="detail-label">বিভাগ (Department)</td>
             <td class="detail-colon">:</td>
-            <td class="detail-value text-english">{{ $sectionSfl }}</td>
+            <td class="detail-value text-english">{{ $departmentSfl }}</td>
           </tr>
           <tr class="profile-detail-item">
             <td class="detail-label">যোগদানের তারিখ (Joining date)</td>

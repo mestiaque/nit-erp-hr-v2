@@ -1,5 +1,5 @@
   @php
-      $na = '';
+      $na = 'N/A';
       $employeeIdSfl = data_get($employee, 'employee_id', $na);
       $employeeNameSfl = data_get($employee, 'bn_name') ?? data_get($employee, 'name', $na);
       $fatherNameSfl = $employee->father_name_bn ?? $employee->father_name ?? $na;
@@ -80,12 +80,14 @@
                   ২। নাম <span class="bb-dot">{{ $employeeNameSfl }}</span>
               </td>
               <td colspan="2" rowspan="2">
-                  আমি এই মর্মে প্রত্যয়ন করিতেছি যে নাম
-                  <span class="bb-dot" style="min-width:200px">{{ $employeeNameSfl }}</span>
-                  <span class="dotted-fill-span" style="min-width:150px"></span> পিতা <span class="bb-dot" style="min-width:250px">{{ $fatherNameSfl }}</span>
-                  মাতা <span class="bb-dot" style="min-width:220px">{{ $motherNameSfl }}</span> ঠিকানা <span class="dotted-fill-span" style="min-width:120px"></span>
-                  <span class="bb-dot" style="min-width:350px">{{ $permanentAddressSfl }}</span> কে আমি
-                  পরীক্ষা করিয়াছি।
+                <div class="tw">
+                    আমি এই মর্মে প্রত্যয়ন করিতেছি যে নাম
+                    <span class="bb-dot" style="min-width:200px">{{ $employeeNameSfl }}</span>
+                    <span class="dotted-fill-span" style="min-width:150px"></span> পিতা <span class="bb-dot" style="min-width:250px">{{ $fatherNameSfl }}</span>
+                    মাতা <span class="bb-dot" style="min-width:220px">{{ $motherNameSfl ?? '........................' }}</span> ঠিকানা <span class="dotted-fill-span" style="min-width:120px"></span>
+                    <span class="bb-dot" style="min-width:350px">{{ $permanentAddressSfl }}</span> কে আমি
+                    পরীক্ষা করিয়াছি।
+                </div>
               </td>
           </tr>
           <tr>
@@ -240,7 +242,8 @@
         }
         .bb-dot {
           border-bottom: 1px dotted rgb(37, 37, 37) !important;
-          padding: 0 20mm;
+          padding: 0 2mm;
         }
+
       </style>
   @endpush

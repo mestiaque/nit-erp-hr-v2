@@ -1,4 +1,4 @@
-@if(!empty($nominee) || filled($employee->nominee) || filled($employee->nominee_relation) || filled($employee->nominee_age))
+{{-- @if(!empty($nominee) || filled($employee->nominee) || filled($employee->nominee_relation) || filled($employee->nominee_age)) --}}
 @php
     $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
     $employeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
@@ -289,4 +289,4 @@
       </table>
     </div>
   @endif
-@endif
+{{-- @endif --}}
