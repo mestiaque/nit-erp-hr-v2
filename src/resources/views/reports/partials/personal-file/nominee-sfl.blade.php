@@ -8,7 +8,7 @@
       $dobMonthSfl = $dobSfl ? en2bnNumber(\Carbon\Carbon::parse($dobSfl)->format('m')) : '';
       $dobYearSfl = $dobSfl ? en2bnNumber(\Carbon\Carbon::parse($dobSfl)->format('Y')) : '';
       $identificationMarkSfl = optional($employee->ageVerification)->identification_mark_bn ?? optional($employee->ageVerification)->identification_mark ?? '';
-
+      $employeeId = $employee->employee_id ?? '';
       $permVillageSfl = $employee->permanent_village_bn ?? $employee->permanent_village ?? '';
       $permPostOfficeSfl = $employee->permanent_post_office_bn ?? $employee->permanent_post_office ?? '';
       $permThanaSfl = $employee->permanent_upazila_bn ?? $employee->permanent_upazila ?? '';
@@ -31,37 +31,34 @@
     <article class="nomination-letter-card">
 
       <header class="form-header">
-        <h1 class="form-title-main">ফরম-৪১</h1>
+        <h1 class="form-title-main">ফরম-{{ en2bnNumber((string) $employeeId) }}</h1>
         <p class="law-reference-description">
           বাংলাদেশ শ্রম আইন,২০০৬ এর [ ধারা ১৯, ১৩১ (১) (ক) , ১৫৫ ( ২), ২৩৪, ২৬৪, ২৬৫ ও ২৭৩ এবং বিধি ১১৮ (১), ১৩৬, ২৩২ (২), ২৬২ (১) , ২৮৯ (১) ও ৩২১ (১)] অনুযায়ী জমা ও বিভিন্নখাতে প্রাপ্য অর্থ পরিশোধের ঘোষণা ও মনোনয়নের ফরম
         </p>
       </header>
 
       <table class="form-fields-table">
-        <tr><td class="num-col">১.</td><td>কারখানা / প্রতিষ্ঠানের নাম :</td><td class="text-english">{{ $ed['company_name'] }}</td></tr>
-        <tr><td class="num-col">২.</td><td>কারখানা / প্রতিষ্ঠানের ঠিকানাঃ</td><td class="text-english">{{ $ed['company_address'] }}</td></tr>
-        <tr><td class="num-col">৩.</td><td>শ্রমিকের নাম :</td><td class="text-english">{{ $ed['employee_name'] }}</td></tr>
-        <tr><td class="num-col">৪.</td><td>ঠিকানাঃ</td><td class="text-english">{{ $ed['present_address_bn'] }}</td></tr>
-        <tr><td></td><td>লিঙ্গঃ</td><td class="text-english">{{ $ed['gender'] }}</td></tr>
-        <tr><td class="num-col">৫.</td><td>পিতা / মাতা/ স্বামী / স্ত্রীর নামঃ</td><td class="text-english">{{ $familyNameSfl }}</td></tr>
+        <tr><td class="num-col">১.</td><td>কারখানা / প্রতিষ্ঠানের নাম : <span class=""><strong>{{ $ed['company_name'] }}</strong></span></td></tr>
+        <tr><td class="num-col">২.</td><td>কারখানা / প্রতিষ্ঠানের ঠিকানাঃ<span class=""> <strong>{{ $ed['company_address'] }}</strong></span></td></tr>
+        <tr><td class="num-col">৩.</td><td>শ্রমিকের নাম :<span class="bb-dot">{{ $ed['employee_name'] }}</span></td></tr>
+        <tr><td class="num-col">৪.</td><td>ঠিকানাঃ<span class="bb-dot">{{ $ed['present_address_bn'] }}</span></td></tr>
+        <tr><td></td><td>লিঙ্গঃ<span class="bb-dot">{{ $ed['gender'] }}</span></td></tr>
+        <tr><td class="num-col">৫.</td><td>পিতা / মাতা/ স্বামী / স্ত্রীর নামঃ<span class="bb-dot">{{ $familyNameSfl }}</span></td></tr>
         <tr>
           <td class="num-col">৬.</td>
-          <td>জন্ম তারিখঃ</td>
-          <td class="text-english">দিন {{ $dobDaySfl }} মাস {{ $dobMonthSfl }} বছর {{ $dobYearSfl }}</td>
+          <td>জন্ম তারিখঃদিন <span class="bb-dot">{{ $dobDaySfl }}</span> মাস <span class="bb-dot">{{ $dobMonthSfl }}</span> বছর <span class="bb-dot">{{ $dobYearSfl }}</span></td>
         </tr>
-        <tr><td class="num-col">৭.</td><td>সনাক্তকরণ চিহ্ন (যদি থাকে)ঃ</td><td class="text-english">{{ $identificationMarkSfl }}</td></tr>
+        <tr><td class="num-col">৭.</td><td>সনাক্তকরণ চিহ্ন (যদি থাকে)ঃ<span class="bb-dot">{{ $identificationMarkSfl }}</span></td></tr>
         <tr>
           <td class="num-col">৮.</td>
-          <td>স্থায়ী ঠিকানাঃ গ্রামঃ</td>
-          <td class="text-english">{{ $permVillageSfl }} , ডাকঘরঃ {{ $permPostOfficeSfl }}</td>
+          <td>স্থায়ী ঠিকানাঃ গ্রামঃ<span class="bb-dot">{{ $permVillageSfl }}</span> , ডাকঘরঃ <span class="bb-dot">{{ $permPostOfficeSfl }}</span></td>
         </tr>
         <tr>
           <td></td>
-          <td>থানাঃ</td>
-          <td class="text-english">{{ $permThanaSfl }} , জেলাঃ {{ $permDistrictSfl }}</td>
+          <td>থানাঃ<span class="bb-dot">{{ $permThanaSfl }}</span> , জেলাঃ <span class="bb-dot">{{ $permDistrictSfl }}</span></td>
         </tr>
-        <tr><td class="num-col">৯.</td><td>চাকরিতে নিযুক্তি তারিখঃ</td><td class="text-english">{{ $ed['joining_date'] }}</td></tr>
-        <tr><td class="num-col">১০.</td><td>পদের নামঃ</td><td class="text-english">{{ $ed['designation'] }}</td></tr>
+        <tr><td class="num-col">৯.</td><td>চাকরিতে নিযুক্তি তারিখঃ<span class="bb-dot">{{ $ed['joining_date'] }}</span></td></tr>
+        <tr><td class="num-col">১০.</td><td>পদের নামঃ<span class="bb-dot">{{ $ed['designation'] }}</span></td></tr>
       </table>
 
       <p class="declaration-paragraph">
@@ -83,7 +80,12 @@
           <tr>
             <td rowspan="7" class="text-english">
               {{ $nomineeNameSfl }}<br>{{ $nomineeAddressSfl }}
-              @if($nomineePhotoSfl)<br><img src="{{ asset($nomineePhotoSfl) }}" class="nominee-photo-img" alt="{{ $nomineeNameSfl }}" onerror="this.remove()">@endif
+              <br>
+              <div class="nominee-photo-box">
+                @if($nomineePhotoSfl)
+                  <img src="{{ asset($nomineePhotoSfl) }}" class="nominee-photo-img" alt="{{ $nomineeNameSfl }}" onerror="this.remove()">
+                @endif
+              </div>
               @if($nomineeNidSfl)<br>{{ $nomineeNidSfl }}@endif
             </td>
             <td rowspan="7" class="text-english">{{ $nomineeRelationSfl }}</td>
@@ -122,7 +124,7 @@
             <p class="bottom-sig-subtitle">(শ্রমিক কর্তৃক সত্যায়িত ছবি)</p>
           </td>
           <td class="text-center">
-            <div class="handwritten-sig-placeholder"><span class="script-sig-text">{{ auth()->user()->name ?? '' }}</span></div>
+            <div class="handwritten-sig-placeholder"><span class="script-sig-text"></span></div>
             <div class="employer-dotted-sig-line">...........................................................</div>
             <p class="bottom-sig-title">মালিকের বা প্রাধিকারপ্রাপ্ত কর্মকর্তার স্বাক্ষর ও তারিখ</p>
           </td>
@@ -134,43 +136,41 @@
 
   @push('css')
       <style>
-            body{
-        font-size: 13px;
-    }
-.document-page-wrapper { padding: 30px 15px; display: flex; justify-content: center; }
-.nomination-letter-card { max-width: 850px; width: 100%; margin: auto; background: #fff; border: 2px solid #000; padding: 24px 30px; box-sizing: border-box; font-size: 14px; color: #000; }
+          body{
+              font-size: 13px;
+          }
+          .document-page-wrapper {  display: flex; justify-content: center; }
+          .nomination-letter-card { width: 210mm; margin: auto; background: #fff; box-sizing: border-box; font-size: 14px; color: #000; }
 
-.form-header { text-align: center; margin-bottom: 16px; }
-.form-title-main { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
-.law-reference-description { font-size: 12px; margin: 0; }
+          .form-header { text-align: center; margin-bottom: 16px; }
+          .form-title-main { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
+          .law-reference-description { font-size: 12px; margin: 0; }
 
-.form-fields-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-.form-fields-table td { padding: 7px 6px; font-size: 14px;  vertical-align: bottom; }
-.num-col { width: 22px; font-weight: 600; vertical-align: top; border-bottom: none !important; }
+          .form-fields-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+          .form-fields-table td { padding: 3px 6px; font-size: 14px;  vertical-align: bottom; }
+          .num-col { width: 22px; font-weight: 600; vertical-align: top; border-bottom: none !important; }
 
-.declaration-paragraph, .witness-paragraph { font-size: 13px; line-height: 1.7; text-align: justify; margin: 0 0 14px; }
+          .declaration-paragraph, .witness-paragraph { font-size: 13px; line-height: 1.7; text-align: justify; margin: 0 0 14px; }
 
-.nomination-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-.nomination-table th, .nomination-table td { border: 1px solid #000 !important; padding: 6px; font-size: 12.5px; text-align: center; }
-.nomination-table thead tr:first-child th { width: 25%; }
-.nominee-photo-img { max-width: 60px; max-height: 60px; object-fit: cover; }
+          .nomination-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+          .nomination-table th, .nomination-table td { border: 1px solid #000 !important; padding: 6px; font-size: 12.5px; text-align: center; }
+          .nomination-table thead tr:first-child th { width: 25%; }
+          .nominee-photo-box { display: inline-block; height: 23mm; width: 20mm; border: 1px solid #000; overflow: hidden; vertical-align: top; margin-top: 4mm; margin-bottom: 4mm; }
+          .nominee-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-.dotted-fill-span { display: inline-block; border-bottom: 1px dotted #000; }
+          .dotted-fill-span { display: inline-block; border-bottom: 1px dotted #000; }
 
-.signature-row-table, .bottom-signatures-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-.bottom-signatures-table td { width: 50%; padding: 0 10px; vertical-align: bottom; }
-.text-start { text-align: left; }
-.text-center { text-align: center; }
-.bottom-sig-title { font-size: 11.5px; margin: 0; }
-.bottom-sig-subtitle { font-size: 11px; margin: 2px 0 0; }
-.script-sig-text { font-family: 'Brush Script MT', cursive; font-size: 26px; }
-.employer-dotted-sig-line { font-size: 12px; margin: 4px 0; }
-.font-weight-bold { font-weight: 700; }
-.text-english { font-family: inherit; }
+          .signature-row-table, .bottom-signatures-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          .bottom-signatures-table td { width: 50%; padding: 0 10px; vertical-align: bottom; }
+          .text-start { text-align: left; }
+          .text-center { text-align: center; }
+          .bottom-sig-title { font-size: 11.5px; margin: 0; }
+          .bottom-sig-subtitle { font-size: 11px; margin: 2px 0 0; }
+          .script-sig-text { font-family: 'Brush Script MT', cursive; font-size: 26px; }
+          .employer-dotted-sig-line { font-size: 12px; margin: 4px 0; }
+          .font-weight-bold { font-weight: 700; }
+          .text-english { font-family: inherit; }
+          .bb-dot { border-bottom: 1px dotted #000; display: inline-block; min-width: 100px; }
 
-@media print {
-  .document-page-wrapper { padding: 0; }
-  .nomination-letter-card { max-width: 100%; }
-}
       </style>
   @endpush

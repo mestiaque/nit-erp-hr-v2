@@ -3,7 +3,9 @@
 @section('title')
 <title>{{ $entity['title'] }}</title>
 @endsection
-
+@php
+    $hideCreate = in_array($entity['title'], ['Salary Key', 'Factory']);    
+@endphp
 @section('contents')
     <div class="flex-grow-1">
         <div class="card">
@@ -14,9 +16,6 @@
                         Create
                     </a>
                 @else
-                    @php
-                        $hideCreate = in_array($entity['title'], ['Salary Key', 'Factory']);    
-                    @endphp
                     <a href="{{ route('hr-center.masters.create', $entityKey) }}" class="btn btn-primary btn-sm @if($hideCreate) d-none @endif">Create</a>
                 @endif
             </div>
@@ -105,11 +104,13 @@
                                         @else
                                             <a href="{{ route('hr-center.masters.edit', [$entityKey, $item->id]) }}" class="btn-custom yellow"><i class="fas fa-edit"></i></a>
                                         @endif
-                                        <form method="post" action="{{ route('hr-center.masters.destroy', [$entityKey, $item->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this item?');">
-                                            @csrf
-                                            @method('delete')
-                                            <button type="submit" class="btn-custom danger"><i class="fas fa-trash"></i></button>
-                                        </form>
+                                        @if($hideCreate)
+                                            <form method="post" action="{{ route('hr-center.masters.destroy', [$entityKey, $item->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this item?');">
+                                                @csrf
+                                                @method('delete')
+                                                <button type="submit" class="btn-custom danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
