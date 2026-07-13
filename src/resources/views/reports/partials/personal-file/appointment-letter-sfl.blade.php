@@ -10,6 +10,7 @@
       $designationAttrSfl = optional(\ME\Hr\Models\HrDesignation::find($employee->designation_id));
       $gradeSfl = $designationAttrSfl->grade_bn ?? $designationModelSfl->grade_bn ?? $designationAttrSfl->grade ?? $designationModelSfl->grade ?? data_get($employee, 'designation_grade') ?? $na;
       $designationSfl = $designationModelSfl->bn_name ?? data_get($designationAttrSfl, 'bn_name') ?? $designationModelSfl->name ?? data_get($designationAttrSfl, 'name') ?? data_get($employee, 'designation_name') ?? $na;
+      $classificationSfl = optional($employee->classification)->bn_name ?? optional($employee->classification)->name ?? $na;
 
       $departmentAttrSfl = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
       $departmentSfl = data_get($departmentAttrSfl, 'bn_name') ?? data_get($departmentAttrSfl, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na;
@@ -61,7 +62,7 @@
           <tr class="profile-detail-item">
             <td class="detail-label">শ্রমিকের শ্রেণি/ গ্রেড</td>
             <td class="detail-colon">:</td>
-            <td class="detail-value text-english">{{ $gradeSfl }}</td>
+            <td class="detail-value text-english">{{ $classificationSfl }} / {{ $gradeSfl }}</td>
           </tr>
           <tr class="profile-detail-item">
             <td class="detail-label">আই ডি কার্ড নং (ID Card No)</td>
