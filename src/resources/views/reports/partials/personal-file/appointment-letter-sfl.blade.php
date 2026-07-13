@@ -10,8 +10,8 @@
       $designationAttrSfl = optional(\ME\Hr\Models\HrDesignation::find($employee->designation_id));
       $gradeSfl = $designationAttrSfl->grade_bn ?? $designationModelSfl->grade_bn ?? $designationAttrSfl->grade ?? $designationModelSfl->grade ?? data_get($employee, 'designation_grade') ?? $na;
       $designationSfl = $designationModelSfl->bn_name ?? data_get($designationAttrSfl, 'bn_name') ?? $designationModelSfl->name ?? data_get($designationAttrSfl, 'name') ?? data_get($employee, 'designation_name') ?? $na;
-      $classificationSfl = optional($employee->classification)->bn_name ?? optional($employee->classification)->name ?? $na;
-
+      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
+      $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
       $departmentAttrSfl = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
       $departmentSfl = data_get($departmentAttrSfl, 'bn_name') ?? data_get($departmentAttrSfl, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na;
 
@@ -60,9 +60,9 @@
             <td class="detail-value text-english">{{ $employeeNameSfl }}</td>
           </tr>
           <tr class="profile-detail-item">
-            <td class="detail-label">শ্রমিকের শ্রেণি/ গ্রেড</td>
+            <td class="detail-label">{{ $classWiseName }} শ্রেণি/ গ্রেড</td>
             <td class="detail-colon">:</td>
-            <td class="detail-value text-english">{{ $classificationSfl }} / {{ $gradeSfl }}</td>
+            <td class="detail-value text-english"> {{ $gradeSfl }}</td>
           </tr>
           <tr class="profile-detail-item">
             <td class="detail-label">আই ডি কার্ড নং (ID Card No)</td>
