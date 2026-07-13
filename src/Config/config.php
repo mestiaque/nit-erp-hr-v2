@@ -248,6 +248,7 @@ return [
                 'name' => ['label' => 'Name', 'type' => 'text', 'rules' => 'required|string|max:150'],
                 'bn_name' => ['label' => 'Bangla Name', 'type' => 'text', 'rules' => 'nullable|string|max:150'],
                 'grade' => ['label' => 'Grade', 'type' => 'text', 'rules' => 'nullable|string|max:20'],
+                'grade_bn' => ['label' => 'Grade (Bangla)', 'type' => 'text', 'rules' => 'nullable|string|max:50'],
                 'approved_manpower' => ['label' => 'Approved Manpower', 'type' => 'number', 'rules' => 'nullable|integer|min:0'],
                 'department_id' => ['label' => 'Department', 'type' => 'select', 'rules' => 'nullable|integer', 'source' => ['driver' => 'attribute', 'filter' => 'department']],
                 'section_id' => ['label' => 'Section', 'type' => 'select', 'rules' => 'nullable|integer', 'source' => ['driver' => 'attribute', 'filter' => 'sections']],

@@ -36,13 +36,84 @@
     $physicalAbility = $employee->otherInfo()['age_verification']['physical_ability'] ?? null;
 @endphp
 
+@if(ENV('FACTORY') == 'SFL')
+    @include('hr::reports.partials.personal-file.age-verification-sfl', [
+        'employee' => $employee,
+        'language' => $language,
+    ])
+@else
+
+    <div class="containerX">
+        <div class="header">
+            <h1>{{ $companyName }}</h1>
+            <p>{{ $companyAddress }}</p>
+        </div>
+
+        <div class="form-title">
+            <strong style="position: absolute; right: 2mm;">{{ $t('ফরম', 'Form') }} - {{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</strong>
+            <h2>বয়স ও সক্ষমতার প্রত্যয়নপত্র</h2>
+            <span>[ধারা ৩৪, ৩৬, ৩৭ ও ২৭৭ এবং বিধি- ৩৪(১) ও ৩৩৬(৪) দ্রষ্টব্য]</span>
+        </div>
+
+        <div class="main-content" style="min-height: 150mm">
+            <!-- অফিস কপি / সংক্ষিপ্ত তথ্য -->
+            <div class="left-panel">
+                <div class="info-row"><label>ক্রমিক নং:</label><div class="fill-gap">{{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</div></div>
+                <div class="info-row"><label>তারিখ:</label><div class="fill-gap">{{ $joiningDate }}</div></div>
+                <div class="info-row"><label>নাম:</label><div class="fill-gap">{{ $employeeName }}</div></div>
+                <div class="info-row"><label>পিতার নাম:</label><div class="fill-gap">{{ $fatherName }}</div></div>
+                <div class="info-row"><label>মাতার নাম:</label><div class="fill-gap">{{ $motherName }}</div></div>
+                <div class="info-row"><label>লিঙ্গ:</label><div class="fill-gap">{{ $gender }}</div></div>
+                <div class="info-row"><label>স্থায়ী ঠিকানা:</label><div class="fill-gap">{{ $permanentAddressFull }}</div></div>
+                <div class="info-row"><label>জন্ম তারিখ:</label><div class="fill-gap">{{ $birthDate }}</div></div>
+                <div class="info-row"><label>শারীরিক সক্ষমতা:</label><div class="fill-gap">{{ $physicalAbility }}</div></div>
+                <div class="info-row"><label>শনাক্তকরণ চিহ্ন:</label><div class="fill-gap">{{ $employee->distinguished_mark }}</div></div>
+
+                <div style="font-size: 9px; display: inline-flex; position: absolute; bottom: 0mm; ">
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        সংশ্লিষ্ট ব্যক্তির স্বাক্ষর/টিপসই
+                    </div>
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        কর্তৃপক্ষের স্বাক্ষর
+                    </div>
+                </div>
+            </div>
+
+            <!-- মূল সার্টিফিকেট অংশ -->
+            <div class="right-panel">
+                <div class="certify-text">
+                    আমি এই মর্মে প্রত্যয়ন করিতেছি যে, <br>
+                    <div class="info-row"><label>নাম:</label><div class="fill-gap">{{ $employeeName }}</div></div>
+                    <div class="info-row"><label>পিতার নাম:</label><div class="fill-gap">{{ $fatherName }}</div></div>
+                    <div class="info-row"><label>মাতার নাম:</label><div class="fill-gap">{{ $motherName }}</div></div>
+                    <div class="info-row"><label>স্থায়ী ঠিকানা:</label><div class="fill-gap">{{ $permanentAddressFull }}</div></div>
+                    কে আমি ব্যক্তিগতভাবে পরীক্ষা করিয়াছি। <br><br>
+                    তিনি অত্র প্রতিষ্ঠানে নিযুক্ত হইতে ইচ্ছুক। আমার পরীক্ষা মতে তাহার বর্তমান বয়স <span class="dotted-line" style="min-width: 60px;">{{ $employeeAge }}</span> বছর এবং তিনি এই প্রতিষ্ঠানের <span class="dotted-line" style="min-width: 150px;">{{ $designation }}</span> কাজে প্রাপ্ত বয়স্ক হিসেবে নিযুক্ত হওয়ার যোগ্য। <br><br>
+                    তাহার সনাক্তকরণের চিহ্ন: <span class="dotted-line" style="min-width: 180px;">{{ $employee->distinguished_mark }}</span>
+                </div>
+                <div style="font-size: 9px; display: inline-flex; position: absolute; bottom: 0mm; ">
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        সংশ্লিষ্ট ব্যক্তির স্বাক্ষর/টিপসই
+                    </div>
+                    <div class="sig-box">
+                        <div class="sig-line"></div>
+                        কর্তৃপক্ষের স্বাক্ষর
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 
     <style>
         body {
             font-family: 'Siyam Rupali', 'SolaimanLipi', Arial, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f4f4f4;
+            /* background-color: #f4f4f4; */
         }
         .header {
             text-align: center;
@@ -124,70 +195,5 @@
         }
     </style>
 
-
-
-<div class="containerX">
-    <div class="header">
-        <h1>{{ $companyName }}</h1>
-        <p>{{ $companyAddress }}</p>
-    </div>
-
-    <div class="form-title">
-        <strong style="position: absolute; right: 2mm;">{{ $t('ফরম', 'Form') }} - {{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</strong>
-        <h2>বয়স ও সক্ষমতার প্রত্যয়নপত্র</h2>
-        <span>[ধারা ৩৪, ৩৬, ৩৭ ও ২৭৭ এবং বিধি- ৩৪(১) ও ৩৩৬(৪) দ্রষ্টব্য]</span>
-    </div>
-
-    <div class="main-content" style="min-height: 150mm">
-        <!-- অফিস কপি / সংক্ষিপ্ত তথ্য -->
-        <div class="left-panel">
-            <div class="info-row"><label>ক্রমিক নং:</label><div class="fill-gap">{{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</div></div>
-            <div class="info-row"><label>তারিখ:</label><div class="fill-gap">{{ $joiningDate }}</div></div>
-            <div class="info-row"><label>নাম:</label><div class="fill-gap">{{ $employeeName }}</div></div>
-            <div class="info-row"><label>পিতার নাম:</label><div class="fill-gap">{{ $fatherName }}</div></div>
-            <div class="info-row"><label>মাতার নাম:</label><div class="fill-gap">{{ $motherName }}</div></div>
-            <div class="info-row"><label>লিঙ্গ:</label><div class="fill-gap">{{ $gender }}</div></div>
-            <div class="info-row"><label>স্থায়ী ঠিকানা:</label><div class="fill-gap">{{ $permanentAddressFull }}</div></div>
-            <div class="info-row"><label>জন্ম তারিখ:</label><div class="fill-gap">{{ $birthDate }}</div></div>
-            <div class="info-row"><label>শারীরিক সক্ষমতা:</label><div class="fill-gap">{{ $physicalAbility }}</div></div>
-            <div class="info-row"><label>শনাক্তকরণ চিহ্ন:</label><div class="fill-gap">{{ $employee->distinguished_mark }}</div></div>
-
-            <div style="font-size: 9px; display: inline-flex; position: absolute; bottom: 0mm; ">
-                <div class="sig-box">
-                    <div class="sig-line"></div>
-                    সংশ্লিষ্ট ব্যক্তির স্বাক্ষর/টিপসই
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line"></div>
-                    কর্তৃপক্ষের স্বাক্ষর
-                </div>
-            </div>
-        </div>
-
-        <!-- মূল সার্টিফিকেট অংশ -->
-        <div class="right-panel">
-            <div class="certify-text">
-                আমি এই মর্মে প্রত্যয়ন করিতেছি যে, <br>
-                <div class="info-row"><label>নাম:</label><div class="fill-gap">{{ $employeeName }}</div></div>
-                <div class="info-row"><label>পিতার নাম:</label><div class="fill-gap">{{ $fatherName }}</div></div>
-                <div class="info-row"><label>মাতার নাম:</label><div class="fill-gap">{{ $motherName }}</div></div>
-                <div class="info-row"><label>স্থায়ী ঠিকানা:</label><div class="fill-gap">{{ $permanentAddressFull }}</div></div>
-                কে আমি ব্যক্তিগতভাবে পরীক্ষা করিয়াছি। <br><br>
-                তিনি অত্র প্রতিষ্ঠানে নিযুক্ত হইতে ইচ্ছুক। আমার পরীক্ষা মতে তাহার বর্তমান বয়স <span class="dotted-line" style="min-width: 60px;">{{ $employeeAge }}</span> বছর এবং তিনি এই প্রতিষ্ঠানের <span class="dotted-line" style="min-width: 150px;">{{ $designation }}</span> কাজে প্রাপ্ত বয়স্ক হিসেবে নিযুক্ত হওয়ার যোগ্য। <br><br>
-                তাহার সনাক্তকরণের চিহ্ন: <span class="dotted-line" style="min-width: 180px;">{{ $employee->distinguished_mark }}</span>
-            </div>
-            <div style="font-size: 9px; display: inline-flex; position: absolute; bottom: 0mm; ">
-                <div class="sig-box">
-                    <div class="sig-line"></div>
-                    সংশ্লিষ্ট ব্যক্তির স্বাক্ষর/টিপসই
-                </div>
-                <div class="sig-box">
-                    <div class="sig-line"></div>
-                    কর্তৃপক্ষের স্বাক্ষর
-                </div>
-            </div>
-        </div>
-    </div>
-
-</div>
+@endif
 

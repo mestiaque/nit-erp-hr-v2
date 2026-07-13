@@ -10,6 +10,9 @@
     $companyAddress = $isBangla
         ? (hr_factory('bn_address') ?? hr_factory('address') ?? general()->address ?? $na)
         : (hr_factory('address') ?? general()->address ?? hr_factory('bn_address') ?? $na);
+    $companyContact = $isBangla
+        ? en2bnNumber(hr_factory('contact_number') ?? hr_factory('contact_number') ?? general()->contact ?? $na)
+        : (hr_factory('contact_number') ?? general()->contact ?? hr_factory('contact_number') ?? $na);
     $issueDate = now()->format('d/m/Y');
     $joinDate = $isBangla ? bn_date($employee->joining_date, 'd/m/Y') : $fmtDate($employee->joining_date);
 
@@ -160,7 +163,7 @@
         </p>
         <p class="id-back-company"><strong>{{ $companyName }}</strong></p>
         <p class="id-back-text">{{ $companyAddress }}</p>
-        <p class="id-back-text">{{ $t('যোগাযোগ নম্বর', 'Contact No.') }}: 0</p>
+        <p class="id-back-text">{{ $t('যোগাযোগ নম্বর', 'Contact No.') }}: {{ $companyContact }}</p>
 
         <div class="id-card-strip id-card-strip-bottom">{{ $t('মেয়াদ: চাকরির শেষ তারিখ পর্যন্ত।', 'Exp. Date: Up to the last date of job.') }}</div>
     </div>
