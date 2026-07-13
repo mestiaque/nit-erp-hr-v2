@@ -84,7 +84,7 @@
               <div class="nominee-photo-box" style="text-align:center;">
                 @if($nomineePhotoSfl)
                   <img src="{{ asset($nomineePhotoSfl) }}" class="nominee-photo-img" alt="{{ $nomineeNameSfl }}"  onerror="this.remove()">
-                  @else
+                @else
                   ছবি
                 @endif
               </div>
