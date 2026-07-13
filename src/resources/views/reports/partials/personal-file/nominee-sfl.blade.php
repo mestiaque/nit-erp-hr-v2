@@ -81,9 +81,11 @@
             <td rowspan="7" class="text-english">
               {{ $nomineeNameSfl }}<br>{{ $nomineeAddressSfl }}
               <br>
-              <div class="nominee-photo-box">
+              <div class="nominee-photo-box" style="text-align:center;">
                 @if($nomineePhotoSfl)
-                  <img src="{{ asset($nomineePhotoSfl) }}" class="nominee-photo-img" alt="ছবি"  onerror="this.remove()">
+                  <img src="{{ asset($nomineePhotoSfl) }}" class="nominee-photo-img" alt="{{ $nomineeNameSfl }}"  onerror="this.remove()">
+                  @else
+                  ছবি
                 @endif
               </div>
               @if($nomineeNidSfl)<br>{{ $nomineeNidSfl }}@endif
