@@ -65,7 +65,7 @@
         font-size: 2.2mm;
     }
     .id-card-strip {
-        margin-top: 1.2mm;
+        /* margin-top: 1.2mm; */
         background: #ec682c91;
         text-align: center;
         font-size: 3mm;
