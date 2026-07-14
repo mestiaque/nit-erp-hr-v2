@@ -956,6 +956,11 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 							<td class="tr">{{ number_format($row['loan']) }}</td>
 							<td class="tr">{{ number_format($row['tax']) }}</td>
 							<td class="tr">{{ number_format($row['stamp']) }}</td>
+								{{-- @if($row['tax']  == 0 || $row['tax'] == null || $row['tax'] == '')
+									{{ number_format($row['stamp']) }}
+								@else
+									0
+								@endif --}}
 							<td class="tr">{{ number_format($row['deduct_other']) }}</td>
 
 							<td class="tc">{{ $row['wph_days'] }}</td>

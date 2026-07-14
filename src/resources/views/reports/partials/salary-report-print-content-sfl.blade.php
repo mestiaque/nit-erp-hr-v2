@@ -664,10 +664,24 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 		}
 		$grand = $grandBase;
 		$sheetRows = [];
-
 		foreach ($byDept as $deptId => $deptEmps) {
 			$bySec = $deptEmps->groupBy('section_id');
 			foreach ($bySec as $secId => $secEmps) {
+				$secEmps = $secEmps->sort(function ($a, $b) {
+					preg_match('/^([A-Za-z]*)(\d+)$/', $a->employee_id, $ma);
+					preg_match('/^([A-Za-z]*)(\d+)$/', $b->employee_id, $mb);
+
+					$prefixA = strtoupper($ma[1] ?? '');
+					$prefixB = strtoupper($mb[1] ?? '');
+
+					// Prefix compare
+					if ($prefixA !== $prefixB) {
+						return strcmp($prefixA, $prefixB);
+					}
+
+					// Numeric compare
+					return (int)($ma[2] ?? 0) <=> (int)($mb[2] ?? 0);
+				})->values();
 				$rows = [];
 				$secTotals = $grandBase; // same shape, reset to zero
 
@@ -710,6 +724,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
 					$row = [
 						'emp'            => $emp,
+						'emp_id'         => $emp->employee_id,
 						'basic'          => $sd['basic'],
 						'house'          => $sd['house_rent'],
 						'medical'        => $sd['medical'],
@@ -1015,7 +1030,6 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				</tr>
 			</tbody>
 		</table>
-
 		<div class="sheet-inwords">
 			In Words :
 			@if($inWords)
