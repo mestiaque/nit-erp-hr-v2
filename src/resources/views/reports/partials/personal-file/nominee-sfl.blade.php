@@ -13,6 +13,9 @@
       $permPostOfficeSfl = $employee->permanent_post_office_bn ?? $employee->permanent_post_office ?? '';
       $permThanaSfl = $employee->permanent_upazila_bn ?? $employee->permanent_upazila ?? '';
       $permDistrictSfl = $employee->permanent_district_bn ?? $employee->permanent_district ?? '';
+      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
+      $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
+      $classWiseName1 = $classificationSfl == 'Worker' ? 'শ্রমিক' : 'কর্মচারী' ;
 
       $nomSfl = $employee->nomineeRecord;
       $nomineeNameSfl = optional($nomSfl)->bn_name ?? optional($nomSfl)->name ?? '';
@@ -40,7 +43,7 @@
       <table class="form-fields-table">
         <tr><td class="num-col">১.</td><td>কারখানা / প্রতিষ্ঠানের নাম : <span class=""><strong>{{ $ed['company_name'] }}</strong></span></td></tr>
         <tr><td class="num-col">২.</td><td>কারখানা / প্রতিষ্ঠানের ঠিকানাঃ<span class=""> <strong>{{ $ed['company_address'] }}</strong></span></td></tr>
-        <tr><td class="num-col">৩.</td><td>শ্রমিকের নাম :<span class="bb-dot">{{ $ed['employee_name'] }}</span></td></tr>
+        <tr><td class="num-col">৩.</td><td>{{ $classWiseName }} নাম :<span class="bb-dot">{{ $ed['employee_name'] }}</span></td></tr>
         <tr><td class="num-col">৪.</td><td>ঠিকানাঃ<span class="bb-dot">{{ $ed['present_address_bn'] }}</span></td></tr>
         <tr><td></td><td>লিঙ্গঃ<span class="bb-dot">{{ $ed['gender'] }}</span></td></tr>
         <tr><td class="num-col">৫.</td><td>পিতা / মাতা/ স্বামী / স্ত্রীর নামঃ<span class="bb-dot">{{ $familyNameSfl }}</span></td></tr>
@@ -68,7 +71,7 @@
       <table class="nomination-table">
         <thead>
           <tr>
-            <th rowspan="2">মনোনীত ব্যক্তি বা ব্যক্তিদের নাম, ঠিকানা ও ছবি (নমিনির ছবি ও স্বাক্ষর শ্রমিক কর্তৃক সত্যায়িত) এন্ড আই ডি নং</th>
+            <th rowspan="2">মনোনীত ব্যক্তি বা ব্যক্তিদের নাম, ঠিকানা ও ছবি (নমিনির ছবি ও স্বাক্ষর {{ $classWiseName1 }} কর্তৃক সত্যায়িত) এন্ড আই ডি নং</th>
             <th rowspan="2">সদস্যদের সহিত মনোনীত ব্যক্তিদের সম্পর্ক</th>
             <th rowspan="2">বয়স</th>
             <th colspan="2">প্রত্যেক মনোনীত ব্যক্তিকে দেয় অংশ</th>
@@ -113,7 +116,7 @@
       <table class="signature-row-table">
         <tr>
           <td>
-            মনোনয়ন প্রদানকারী শ্রমিকের / কর্মচারীর স্বাক্ষর, টিপসহ ও তারিখঃ
+            মনোনয়ন প্রদানকারী {{ $classWiseName }} স্বাক্ষর, টিপসহ ও তারিখঃ
             <span class="dotted-fill-span" style="min-width:200px"></span>
           </td>
         </tr>
@@ -123,7 +126,7 @@
         <tr>
           <td class="text-start">
             <p class="bottom-sig-title">তারিখ সহ মনোনীত ব্যক্তিগণের স্বাক্ষর অথবা টিপসহ</p>
-            <p class="bottom-sig-subtitle">(শ্রমিক কর্তৃক সত্যায়িত ছবি)</p>
+            <p class="bottom-sig-subtitle">({{ $classWiseName1 }} কর্তৃক সত্যায়িত ছবি)</p>
           </td>
           <td class="text-center">
             <div class="handwritten-sig-placeholder"><span class="script-sig-text"></span></div>

@@ -14,7 +14,9 @@
       $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
       $departmentAttrSfl = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
       $departmentSfl = data_get($departmentAttrSfl, 'bn_name') ?? data_get($departmentAttrSfl, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na;
-
+      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
+      $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
+      $classWiseName1 = $classificationSfl == 'Worker' ? 'শ্রমিক' : 'কর্মচারী' ;
       $employeeIdSfl = data_get($employee, 'employee_id', $na);
       $joiningDateSfl = blank($employee->joining_date) ? $na : bn_date($employee->joining_date, 'd/m/Y');
 
@@ -103,7 +105,7 @@
           <div class="term-bullet">১)</div>
           <div class="term-body-content">
             <span class="term-highlight">শিক্ষানবীশ কাল (Probationary period):</span>
-            প্রাথমিকভাবে আপনার শিক্ষানবীশ সময় {{ $probationTextSfl }} মাস, কিন্তু শিক্ষানবীশকালে আপনার যোগ্যতা কর্তৃপক্ষের নিকট আশানুরূপ না হইলে আপনার শিক্ষানবীশ সময় পত্রের মাধ্যমে আরো ৩ মাস বৃদ্ধি করা হইবে। চাকুরীর দক্ষতা, বিচক্ষণতার নিরিখে চাকুরী স্থায়ীকরণ করা হইবে এবং চাকুরী স্থায়ীকরণ পত্র আলাদাভাবে প্রদান করা হইবে। যদি কর্তৃপক্ষ {{ $probationDigitSfl }} মাসের মধ্যে আপনাকে স্থায়ীকরণ পত্র দিতে ব্যর্থ হয়, সেক্ষেত্রে আপনি একজন স্থায়ী শ্রমিক বলে গণ্য হইবেন।
+            প্রাথমিকভাবে আপনার শিক্ষানবীশ সময় {{ $probationTextSfl }} মাস, কিন্তু শিক্ষানবীশকালে আপনার যোগ্যতা কর্তৃপক্ষের নিকট আশানুরূপ না হইলে আপনার শিক্ষানবীশ সময় পত্রের মাধ্যমে আরো ৩ মাস বৃদ্ধি করা হইবে। চাকুরীর দক্ষতা, বিচক্ষণতার নিরিখে চাকুরী স্থায়ীকরণ করা হইবে এবং চাকুরী স্থায়ীকরণ পত্র আলাদাভাবে প্রদান করা হইবে। যদি কর্তৃপক্ষ {{ $probationDigitSfl }} মাসের মধ্যে আপনাকে স্থায়ীকরণ পত্র দিতে ব্যর্থ হয়, সেক্ষেত্রে আপনি একজন স্থায়ী {{ $classWiseName1 }} বলে গণ্য হইবেন।
           </div>
         </div>
         
@@ -255,7 +257,7 @@
         <div style="margin-top: 2px; width: 100%; display: flex; justify-content: space-between; padding:0mm 10mm;">
             <div>
                 <div style="border:1px dashed #333; height: 11mm; width: 50mm; margin-bottom: 7px; margin-top:3mm"></div>
-                <p class="signature-label" style="text-align: center;">শ্রমিক/ কর্মচারীর স্বাক্ষর</p>
+                <p class="signature-label" style="text-align: center;">{{ $classWiseName }} স্বাক্ষর</p>
             </div>
             <div>
                 <p class="signature-label">{{ $employeeNameSfl }} এর পক্ষে</p>

@@ -15,7 +15,9 @@
       $department = data_get($departmentAttr, 'bn_name') ?? data_get($departmentAttr, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na;
 
       $joiningDate = blank($employee->joining_date) ? $na : bn_date($employee->joining_date, 'd/m/Y');
-
+      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
+      $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
+      $classWiseName1 = $classificationSfl == 'Worker' ? 'শ্রমিক' : 'কর্মচারী' ;
 
       $companyNameSfl = hr_factory('bn_name') ?? hr_factory('name') ?? general()->name ?? $na;
       $companyAddressSfl = hr_factory('bn_address') ?? hr_factory('address') ?? general()->address ?? $na;
@@ -80,7 +82,7 @@
             <td class="detail-value text-english">{{ $employeeNameSfl }}</td>
           </tr>
           <tr class="profile-detail-item">
-            <td class="detail-label">শ্রমিকের শ্রেণি/ গ্রেড</td>
+            <td class="detail-label">{{ $classWiseName }} শ্রেণি/ গ্রেড</td>
             <td class="detail-colon">:</td>
             <td class="detail-value text-english">{{ $gradeSfl }}</td>
           </tr>
@@ -139,7 +141,7 @@
         <div style="margin-top: 2px; width: 100%; display: flex; justify-content: space-between; padding:0mm 10mm;">
             <div>
                 <div style="border:1px dashed #333; height: 11mm; width: 50mm; margin-bottom: 7px; margin-top:3mm"></div>
-                <p class="signature-label" style="text-align: center;">শ্রমিক/ কর্মচারীর স্বাক্ষর</p>
+                <p class="signature-label" style="text-align: center;">{{ $classWiseName }} স্বাক্ষর</p>
             </div>
             <div>
                 <p class="signature-label">{{ $employeeNameSfl }} এর পক্ষে</p>
