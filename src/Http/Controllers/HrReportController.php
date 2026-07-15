@@ -18,6 +18,7 @@ use ME\Hr\Models\HrDesignation;
 use ME\Hr\Models\HrEmployeeSalaryIncrement;
 use ME\Hr\Models\HrFloorLine;
 use ME\Hr\Models\HrHoliday;
+use ME\Hr\Models\HrLeaveInfo;
 use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrProductionBonus;
 use ME\Hr\Models\HrSection;
@@ -25,6 +26,7 @@ use ME\Hr\Models\HrShift;
 use ME\Hr\Models\HrSubSection;
 use ME\Hr\Models\HrSex;
 use ME\Hr\Models\HrWorkingPlace;
+use ME\Hr\Services\SalaryReportService;
 
 
 
@@ -1382,6 +1384,7 @@ class HrReportController extends Controller
             'subsections' => HrSubSection::orderBy('name')->get(['id', 'name']),
             'shifts' => HrShift::orderBy('name')->get(['id', 'name']),
             'workingPlaces' => HrWorkingPlace::orderBy('name')->get(['id', 'name']),
+            'designations' => HrDesignation::query()->orderBy('name')->get(['id', 'name']),
         ];
 
         $reportTypes = [
@@ -2118,6 +2121,124 @@ class HrReportController extends Controller
         ]);
     }
 
+    // ──────────────────────────────────────────────────────────────────
+    // DAILY ATTENDANCE REPORT
+    // ──────────────────────────────────────────────────────────────────
+
+    /**
+     * Route: GET /reports/daily-attendance-report
+     */
+    public function dailyAttendanceReportScreen(Request $request)
+    {
+        return view('hr::reports.daily-attendance-report', [
+            'options' => $this->employeeReportOptions(),
+            'groupByOptions' => self::DAILY_ATTENDANCE_GROUP_BY,
+            'request' => $request,
+        ]);
+    }
+
+    private const DAILY_ATTENDANCE_GROUP_BY = [
+        'none'                    => 'None (Flat List)',
+        'classification'          => 'Classification',
+        'department'              => 'Department',
+        'section'                 => 'Section',
+        'designation'             => 'Designation',
+        'department_section'      => 'Department + Section',
+        'department_designation'  => 'Department + Designation',
+    ];
+
+    /**
+     * Route: GET /reports/daily-attendance-report-print
+     */
+    public function dailyAttendanceReportPrint(Request $request)
+    {
+        $from = $request->input('from') ?: now()->toDateString();
+        $to = $request->input('to') ?: $from;
+        $isRange = $from !== $to;
+        $groupBy = array_key_exists($request->input('group_by'), self::DAILY_ATTENDANCE_GROUP_BY)
+            ? $request->input('group_by')
+            : 'none';
+
+        $options = $this->employeeReportOptions();
+        $departmentMap = collect($options['departments'])->pluck('name', 'id');
+        $sectionMap = collect($options['sections'])->pluck('name', 'id');
+        $designationMap = collect($options['designations'])->pluck('name', 'id');
+        $classificationMap = collect($options['classifications'])->pluck('name', 'id');
+
+        $employees = $this->employeeReportQuery($request)
+            ->with(['designation:id,name,bn_name'])
+            ->orderBy('section_id')
+            ->naturalOrderById()
+            ->get();
+
+        $employeeRows = $employees->map(function (HrEmployee $employee) use ($from, $to) {
+            $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
+            $days = collect($pack['attendance'] ?? [])->map(fn ($d) => [
+                'date' => $d['date'] ?? '-',
+                'in_time' => $d['in_time'] ?? '-',
+                'out_time' => $d['out_time'] ?? '-',
+                'status' => $d['status'] ?? 'N/A',
+                'ot_hours' => $d['compliance_ot'] ?? 0,
+            ]);
+            $firstDay = $days->first() ?? [];
+
+            return [
+                'employee' => $employee,
+                'employee_id' => $employee->employee_id,
+                'name' => $employee->bn_name ?? $employee->name,
+                'designation' => $employee->designation?->name ?? 'N/A',
+                'days' => $days,
+                'in_time' => $firstDay['in_time'] ?? '-',
+                'out_time' => $firstDay['out_time'] ?? '-',
+                'status' => $firstDay['status'] ?? 'N/A',
+                'ot_hours' => $firstDay['ot_hours'] ?? 0,
+            ];
+        });
+
+        $groupKey = match ($groupBy) {
+            'classification' => fn (array $row) => (string) $row['employee']->classification_id,
+            'department' => fn (array $row) => (string) $row['employee']->department_id,
+            'section' => fn (array $row) => (string) $row['employee']->section_id,
+            'designation' => fn (array $row) => (string) $row['employee']->designation_id,
+            'department_section' => fn (array $row) => $row['employee']->department_id . '|' . $row['employee']->section_id,
+            'department_designation' => fn (array $row) => $row['employee']->department_id . '|' . $row['employee']->designation_id,
+            default => fn (array $row) => 'all',
+        };
+
+        $groups = $employeeRows->groupBy($groupKey);
+
+        $groupLabel = function (string $key) use ($groupBy, $departmentMap, $sectionMap, $designationMap, $classificationMap) {
+            if (str_contains($key, '|')) {
+                [$a, $b] = explode('|', $key, 2);
+                return match ($groupBy) {
+                    'department_section' => $departmentMap->get($a, 'N/A') . ' — ' . $sectionMap->get($b, 'N/A'),
+                    'department_designation' => $departmentMap->get($a, 'N/A') . ' — ' . $designationMap->get($b, 'N/A'),
+                    default => 'N/A',
+                };
+            }
+
+            return match ($groupBy) {
+                'classification' => $classificationMap->get($key, 'N/A'),
+                'department' => $departmentMap->get($key, 'N/A'),
+                'section' => $sectionMap->get($key, 'N/A'),
+                'designation' => $designationMap->get($key, 'N/A'),
+                default => null,
+            };
+        };
+
+        return view('hr::reports.daily-attendance-report-print', [
+            'groups' => $groups,
+            'groupLabel' => $groupLabel,
+            'groupBy' => $groupBy,
+            'isRange' => $isRange,
+            'from' => $from,
+            'to' => $to,
+            'dateLabel' => $isRange
+                ? Carbon::parse($from)->format('d-M-Y') . ' to ' . Carbon::parse($to)->format('d-M-Y')
+                : Carbon::parse($from)->format('d-M-Y'),
+        ]);
+    }
+
     private function attendanceWithOtReportScreen(Request $request, string $report)
     {
         $options = $this->employeeReportOptions();
@@ -2702,62 +2823,144 @@ class HrReportController extends Controller
     // SALARY REPORT
     // ──────────────────────────────────────────────────────────────────
 
+    private const SALARY_REPORT_TYPES = [
+        'fixed'                => 'Fixed Salary',
+        'production'           => 'Production Salary',
+        'bonus'                => 'Bonus Salary',
+        'wages-salary-summary' => 'Wages & Salary Summary',
+    ];
+
     private function salaryReportScreen(Request $request, string $report)
     {
         $options = $this->employeeReportOptions();
         $bonusTitles = HrBonusTitle::where('status', 'active')->orderBy('title')->get(['id', 'title']);
-        $reportTypes = [
-            'fixed'                  => 'Fixed Salary',
-            'production'             => 'Production Salary',
-            'bonus'                  => 'Bonus Salary',
-            'wages-salary-summary'   => 'Wages & Salary Summary',
-        ];
         $paymentModes = HrEmployee::query()
-            
             ->whereNotNull('salary_type')
             ->distinct()
             ->pluck('salary_type')
             ->filter()
             ->values();
 
-        if ($request->boolean('print')) {
-            $printPayload = $this->prepareSalaryReportPrintPayload($request, $options, $reportTypes);
-            $printView = $this->resolveSalaryReportPrintView($printPayload['reportType']);
-
-            return view($printView, $printPayload);
-        }
-
         return view('hr::reports.salary-report', [
             'reportKey'    => $report,
             'reportTitle'  => config('hr.reports.' . $report),
             'options'      => $options,
             'bonusTitles'  => $bonusTitles,
-            'reportTypes'  => $reportTypes,
+            'reportTypes'  => self::SALARY_REPORT_TYPES,
             'paymentModes' => $paymentModes,
             'request'      => $request,
         ]);
     }
 
-    private function resolveSalaryReportPrintView(string $reportType): string
+    /**
+     * Route: GET /reports/fixed-salary (filter form)
+     */
+    public function fixedSalaryReportScreen(Request $request)
     {
-        return match ($reportType) {
-            'wages-salary-summary' => 'hr::reports.salary-report-print-wages',
-            'bonus' => 'hr::reports.salary-report-print-bonus',
-            'production' => 'hr::reports.salary-report-print-production',
-            default => 'hr::reports.salary-report-print-fixed',
-        };
+        return $this->salaryReportScreenFor($request, 'fixed');
     }
 
-    private function prepareSalaryReportPrintPayload(Request $request, array $options, array $reportTypes): array
+    /**
+     * Route: GET /reports/production-salary (filter form)
+     */
+    public function productionSalaryReportScreen(Request $request)
+    {
+        return $this->salaryReportScreenFor($request, 'production');
+    }
+
+    /**
+     * Route: GET /reports/bonus-salary (filter form)
+     */
+    public function bonusSalaryReportScreen(Request $request)
+    {
+        return $this->salaryReportScreenFor($request, 'bonus');
+    }
+
+    /**
+     * Route: GET /reports/wages-salary-summary (filter form)
+     */
+    public function wagesSalarySummaryReportScreen(Request $request)
+    {
+        return $this->salaryReportScreenFor($request, 'wages-salary-summary');
+    }
+
+    private function salaryReportScreenFor(Request $request, string $reportType)
+    {
+        if (!$request->filled('report_type')) {
+            $request->merge(['report_type' => $reportType]);
+        }
+
+        return $this->salaryReportScreen($request, 'salary-report');
+    }
+
+    /**
+     * Route: GET /reports/fixed-salary-print
+     */
+    public function fixedSalaryReportPrint(Request $request)
+    {
+        return $this->renderSalarySheetReport($request, 'fixed', 'hr::reports.salary-report-print-fixed');
+    }
+
+    /**
+     * Route: GET /reports/production-salary-print
+     */
+    public function productionSalaryReportPrint(Request $request)
+    {
+        return $this->renderSalarySheetReport($request, 'production', 'hr::reports.salary-report-print-production');
+    }
+
+    /**
+     * Route: GET /reports/bonus-salary-print
+     */
+    public function bonusSalaryReportPrint(Request $request)
+    {
+        $payload = $this->salaryReportBasePayload($request, 'bonus');
+        $payload = array_merge(
+            $payload,
+            SalaryReportService::buildBonusReportData($payload['employees'], $request, $payload['to'])
+        );
+
+        return view('hr::reports.salary-report-print-bonus', $payload);
+    }
+
+    /**
+     * Route: GET /reports/wages-salary-summary-print
+     */
+    public function wagesSalarySummaryReportPrint(Request $request)
+    {
+        $payload = $this->salaryReportBasePayload($request, 'wages-salary-summary');
+        $payload = array_merge(
+            $payload,
+            SalaryReportService::buildWagesSummaryData($payload['employees'], $payload['from'], $payload['to'], $request)
+        );
+
+        return view('hr::reports.salary-report-print-wages', $payload);
+    }
+
+    private function renderSalarySheetReport(Request $request, string $reportType, string $view)
+    {
+        $payload = $this->salaryReportBasePayload($request, $reportType);
+        $leaveInfos = HrLeaveInfo::where('status', 'active')->orderBy('id')->get(['id', 'name', 'code']);
+        $payload = array_merge(
+            $payload,
+            SalaryReportService::buildSalarySheetData($payload['employees'], $payload['from'], $payload['to'], $request, $leaveInfos),
+            ['leaveInfos' => $leaveInfos]
+        );
+
+        return view($view, $payload);
+    }
+
+    /**
+     * Common request/employee/lookup-map data every salary report print view needs.
+     */
+    private function salaryReportBasePayload(Request $request, string $reportType): array
     {
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
         $to = $request->input('to') ?: now()->toDateString();
-        $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'fixed'));
-        if (!array_key_exists($reportType, $reportTypes)) {
-            $reportType = 'fixed';
-        }
+        $options = $this->employeeReportOptions();
 
         $employees = $this->employeeReportQuery($request)
+            ->with(['designation:id,name,bn_name,grade', 'department:id,name,bn_name', 'section:id,name,bn_name'])
             ->orderBy('department_id')
             ->orderBy('section_id')
             ->orderBy('name')
@@ -2766,26 +2969,20 @@ class HrReportController extends Controller
         $departmentMap = collect($options['departments'])->pluck('name', 'id');
         $sectionMap = collect($options['sections'])->pluck('name', 'id');
         $subSectionMap = collect($options['subSections'])->pluck('name', 'id');
-        $designationMap = HrDesignation::query()->pluck('name', 'id');
+        $designationMap = HrDesignation::query()->get(['id', 'name', 'grade'])
+            ->mapWithKeys(fn (HrDesignation $d) => [$d->id => ['name' => $d->name, 'grade' => $d->grade]]);
         $lineMap = collect($options['lines'])->mapWithKeys(fn ($r) => [
             $r->id => trim(($r->name ?? '') . (filled($r->slug ?? null) ? ' - ' . $r->slug : '')),
         ]);
 
-        $fromMonth = Carbon::parse($from)->month;
-        $fromYear = Carbon::parse($from)->year;
-        $toMonth = Carbon::parse($to)->month;
-        $toYear = Carbon::parse($to)->year;
-
-        $salarySheets = collect();
-
         return [
             'request' => $request,
             'employees' => $employees,
-            'salarySheets' => $salarySheets,
+            'salarySheets' => collect(),
             'from' => $from,
             'to' => $to,
             'reportType' => $reportType,
-            'reportTypes' => $reportTypes,
+            'reportTypes' => self::SALARY_REPORT_TYPES,
             'departmentMap' => $departmentMap,
             'sectionMap' => $sectionMap,
             'subSectionMap' => $subSectionMap,
@@ -2795,7 +2992,7 @@ class HrReportController extends Controller
             'language' => $request->input('language', 'en'),
             'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
             'toLabel' => Carbon::parse($to)->format('d-M-Y'),
-            'reportTypeLabel' => $reportTypes[$reportType],
+            'reportTypeLabel' => self::SALARY_REPORT_TYPES[$reportType],
         ];
     }
 

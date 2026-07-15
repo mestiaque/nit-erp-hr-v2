@@ -351,12 +351,16 @@ class AttendanceMachineController extends Controller
     /**
      * Apply a single punch to the employee's attendance record according to the shift's
      * configured windows:
-     *   - a punch inside [start_allow_time, late_allow_time]  → in_time
-     *   - a punch inside [out_time_start, next day's start_allow_time)  → out_time
+     *   - a punch inside [start_allow_time, out_time_start)  → in_time (first punch in the
+     *     window wins; later punches in the same window never move it)
+     *   - a punch inside [out_time_start, next day's start_allow_time)  → out_time (last punch
+     *     in the window wins)
      *     (a punch after midnight but before the next day's in-window belongs to the
      *     previous day's attendance, so overnight shifts are handled correctly)
      *   - a punch outside both windows is ignored entirely — it never touches in_time/out_time
-     * If the shift has any of these windows unset, falls back to the legacy
+     * late_allow_time does not affect these window boundaries — it is only the Present/Late
+     * cutoff applied to the resulting in_time (see resolveStatus()).
+     * If the shift has start_allow_time/out_time_start unset, falls back to the legacy
      * earliest-punch-in / latest-punch-out behaviour for that punch's calendar date.
      *
      * Returns true if the punch produced an attendance change, false if it was ignored.
@@ -439,23 +443,24 @@ class AttendanceMachineController extends Controller
         $punchDate = $time->toDateString();
 
         $inStart  = $shift?->start_allow_time;
-        $inEnd    = $shift?->late_allow_time ?: $shift?->start_time;
         $outStart = $shift?->out_time_start;
 
         // Shift windows not fully configured — fall back to legacy earliest-in/latest-out behaviour.
-        if (!$shift || !$inStart || !$inEnd || !$outStart) {
+        if (!$shift || !$inStart || !$outStart) {
             return ['legacy', $punchDate];
         }
 
-        $inWinStart = Carbon::parse($punchDate . ' ' . $inStart, 'Asia/Dhaka');
-        $inWinEnd   = Carbon::parse($punchDate . ' ' . $inEnd, 'Asia/Dhaka');
+        $inWinStart  = Carbon::parse($punchDate . ' ' . $inStart, 'Asia/Dhaka');
+        $outWinStart = Carbon::parse($punchDate . ' ' . $outStart, 'Asia/Dhaka');
+        // The in-window runs right up to (but excludes) out_time_start, so a punch at
+        // exactly out_time_start is always treated as an out-punch, never in.
+        $inWinEnd    = $outWinStart->copy()->subSecond();
 
         if ($time->between($inWinStart, $inWinEnd)) {
             return ['in', $punchDate];
         }
 
-        $outWinStart = Carbon::parse($punchDate . ' ' . $outStart, 'Asia/Dhaka');
-        $dayEnd      = Carbon::parse($punchDate . ' 23:59:59', 'Asia/Dhaka');
+        $dayEnd = Carbon::parse($punchDate . ' 23:59:59', 'Asia/Dhaka');
 
         if ($time->between($outWinStart, $dayEnd)) {
             return ['out', $punchDate];

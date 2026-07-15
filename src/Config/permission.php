@@ -128,6 +128,10 @@ return [
             'label' => 'Attendance Report',
             'permissions' => ['view' => 'View', 'all' => 'All']
         ],
+        'hr_daily_attendance_report' => [
+            'label' => 'Daily Attendance Report',
+            'permissions' => ['view' => 'View', 'all' => 'All']
+        ],
         'hr_attendance_with_ot_report' => [
             'label' => 'Attendance Report With OT',
             'permissions' => ['view' => 'View', 'all' => 'All']

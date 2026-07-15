@@ -1,21 +1,31 @@
 @extends('admin.layouts.app')
 
+@php
+    $salaryReportType = $request->report_type ?? 'fixed';
+    $salaryReportLabel = $reportTypes[$salaryReportType] ?? ucfirst($salaryReportType);
+    $salaryReportPageTitle = $salaryReportLabel . ' Report';
+@endphp
+
 @section('title')
-<title>{{ $reportTitle }}</title>
+<title>{{ $salaryReportPageTitle }}</title>
 @endsection
 
 @section('contents')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">{{ $reportTitle }}</h4>
+            <h4 class="mb-0">{{ $salaryReportPageTitle }}</h4>
             <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm">Back</a>
         </div>
         <div class="card-body">
 @php
-    $salaryReportType = $request->report_type ?? 'fixed';
-    $salaryReportLabel = $reportTypes[$salaryReportType] ?? ucfirst($salaryReportType);
     $salaryReportRoutes = [
+        'fixed' => route('hr-center.reports.fixed-salary-print'),
+        'production' => route('hr-center.reports.production-salary-print'),
+        'bonus' => route('hr-center.reports.bonus-salary-print'),
+        'wages-salary-summary' => route('hr-center.reports.wages-salary-summary-print'),
+    ];
+    $salaryScreenRoutes = [
         'fixed' => route('hr-center.reports.fixed-salary'),
         'production' => route('hr-center.reports.production-salary'),
         'bonus' => route('hr-center.reports.bonus-salary'),
@@ -30,7 +40,7 @@
     $designationMap = collect($hrOptions['designations'])->pluck('name', 'id');
 @endphp
 
-            <form method="get" action="{{ route('hr-center.reports.show', $reportKey) }}">
+            <form method="get" action="{{ $salaryScreenRoutes[$salaryReportType] }}">
                 <input type="hidden" name="report_type" value="{{ $salaryReportType }}">
                 <div class="row">
 
@@ -194,7 +204,7 @@
 
                     <div class="col-12 mb-3">
                         <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-                        <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm">Reset</a>
+                        <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-light btn-sm">Reset</a>
                         <button type="submit" id="printSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
                                 formtarget="_blank" class="btn btn-primary btn-sm">
                             Report
