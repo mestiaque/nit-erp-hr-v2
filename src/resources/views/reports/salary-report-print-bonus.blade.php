@@ -3,6 +3,5 @@
 @section('title', $reportTypeLabel . ' - ' . $fromLabel . ' To ' . $toLabel)
 
 @section('contents')
-    @php($salaryPrintMode = 'bonus')
-    @include('hr::reports.partials.salary-report-print-content')
+    @include('hr::reports.partials.bonus-report-print-content')
 @endsection

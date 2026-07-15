@@ -44,25 +44,77 @@
             {{-- Filter --}}
             <form method="GET" action="" class="mb-4">
                 <div class="row g-2">
-                    <div class="col">
-                        <input type="text" name="employee" class="form-control" placeholder="Employee Name/ID/Mobile" value="{{ request('employee') }}">
+                    <div class="col-md-2">
+                        <label class="mb-1">Employee</label>
+                        <input type="text" name="employee" class="form-control" placeholder="Name/ID/Mobile" value="{{ request('employee') }}">
                     </div>
-                    <div class="col">
-                        <select name="status" class="form-control">
-                            <option value="">All Status</option>
+                    <div class="col-md-2">
+                        <label class="mb-1">Department</label>
+                        <select name="department[]" class="form-control select2" multiple>
+                            <option value="">All</option>
+                            @foreach($options['departments'] as $dept)
+                                <option value="{{ $dept->id }}" {{ in_array((string)$dept->id, (array) request('department')) ? 'selected' : '' }}>{{ $dept->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">Section</label>
+                        <select name="section[]" class="form-control select2" multiple>
+                            <option value="">All</option>
+                            @foreach($options['sections'] as $sec)
+                                <option value="{{ $sec->id }}" {{ in_array((string)$sec->id, (array) request('section')) ? 'selected' : '' }}>{{ $sec->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">Sub-Section</label>
+                        <select name="sub_section[]" class="form-control select2" multiple>
+                            <option value="">All</option>
+                            @foreach($options['subSections'] as $sub)
+                                <option value="{{ $sub->id }}" {{ in_array((string)$sub->id, (array) request('sub_section')) ? 'selected' : '' }}>{{ $sub->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">Classification</label>
+                        <select name="classification[]" class="form-control select2" multiple>
+                            <option value="">All</option>
+                            @foreach($options['classifications'] as $cls)
+                                <option value="{{ $cls->id }}" {{ in_array((string)$cls->id, (array) request('classification')) ? 'selected' : '' }}>{{ $cls->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">Designation</label>
+                        <select name="designation[]" class="form-control select2" multiple>
+                            <option value="">All</option>
+                            @foreach($options['designations'] as $des)
+                                <option value="{{ $des->id }}" {{ in_array((string)$des->id, (array) request('designation')) ? 'selected' : '' }}>{{ $des->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="mb-1">Status</label>
+                        <select name="status" class="form-control form-control-sm">
+                            <option value="">All</option>
                             @foreach(['Present','Absent','Late','Punch Missing','Early Exit','Late and Early Exit','Late and Punch Missing'] as $s)
                                 <option value="{{ $s }}" @if(request('status')==$s) selected @endif>{{ $s }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col">
-                        <input type="date" name="date_from" class="form-control" value="{{ request('date_from', $dateFrom ?? '') }}">
+                    <div class="col-md-2">
+                        <label class="mb-1">Date From</label>
+                        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ request('date_from', $dateFrom ?? '') }}">
                     </div>
-                    <div class="col">
-                        <input type="date" name="date_to" class="form-control" value="{{ request('date_to', $dateTo ?? '') }}">
+                    <div class="col-md-2">
+                        <label class="mb-1">Date To</label>
+                        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to', $dateTo ?? '') }}">
                     </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Filter</button>
+                    <div class="col-auto d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                    </div>
+                    <div class="col-auto d-flex align-items-end">
+                        <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-secondary btn-sm">Reset</a>
                     </div>
                 </div>
             </form>
@@ -108,7 +160,7 @@
                     <form method="POST" action="{{ route('hr-center.attendances.bulk-update', $empId) }}" class="js-att-form" data-shift-in="{{ $shift ? \Carbon\Carbon::parse($shift->start_time)->format('H:i') : '' }}" data-shift-out="{{ $shift ? \Carbon\Carbon::parse($shift->end_time)->format('H:i') : '' }}">
                         @csrf
                         {{-- Preserve filter params --}}
-                        @foreach(['employee','status','date_from','date_to'] as $p)
+                        @foreach(['employee','status','date_from','date_to','department','section','sub_section','classification','designation'] as $p)
                             @if(request($p))
                                 <input type="hidden" name="{{ $p }}" value="{{ request($p) }}">
                             @endif
@@ -222,6 +274,12 @@
                     fillRow(checkbox.closest('tr'), checkbox.checked);
                 });
             });
+        });
+
+        $('.select2').select2({
+            placeholder: 'All',
+            allowClear: true,
+            width: '100%'
         });
     })();
 </script>

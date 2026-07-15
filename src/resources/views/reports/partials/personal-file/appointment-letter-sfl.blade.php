@@ -4,20 +4,17 @@
       $companyNameSfl = hr_factory('bn_name') ?? hr_factory('name') ?? general()->name ?? $na;
       $companyAddressSfl = hr_factory('bn_address') ?? hr_factory('address') ?? general()->address ?? $na;
 
-      $employeeNameSfl = data_get($employee, 'bn_name') ?? data_get($employee, 'name', $na);
+      $employeeNameSfl = $employee->bn_name ?? $employee->name ?? $na;
 
       $designationModelSfl = optional($employee->designation);
-      $designationAttrSfl = optional(\ME\Hr\Models\HrDesignation::find($employee->designation_id));
-      $gradeSfl = $designationAttrSfl->grade_bn ?? $designationModelSfl->grade_bn ?? $designationAttrSfl->grade ?? $designationModelSfl->grade ?? data_get($employee, 'designation_grade') ?? $na;
-      $designationSfl = $designationModelSfl->bn_name ?? data_get($designationAttrSfl, 'bn_name') ?? $designationModelSfl->name ?? data_get($designationAttrSfl, 'name') ?? data_get($employee, 'designation_name') ?? $na;
-      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
-      $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
-      $departmentAttrSfl = optional(\ME\Hr\Models\HrDepartment::find($employee->department_id));
-      $departmentSfl = data_get($departmentAttrSfl, 'bn_name') ?? data_get($departmentAttrSfl, 'name') ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na;
-      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
+      $gradeSfl = $designationModelSfl->grade_bn ?? $designationModelSfl->grade ?? $employee->designation_grade ?? $na;
+      $designationSfl = $designationModelSfl->bn_name ?? $designationModelSfl->name ?? $employee->designation_name ?? $na;
+      $classificationSfl = optional($employee->classification)->name ?? 'Worker';
       $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
       $classWiseName1 = $classificationSfl == 'Worker' ? 'শ্রমিক' : 'কর্মচারী' ;
-      $employeeIdSfl = data_get($employee, 'employee_id', $na);
+      $departmentModelSfl = optional($employee->department);
+      $departmentSfl = $departmentModelSfl->bn_name ?? $departmentModelSfl->name ?? $employee->department_name ?? $na;
+      $employeeIdSfl = $employee->employee_id ?? $na;
       $joiningDateSfl = blank($employee->joining_date) ? $na : bn_date($employee->joining_date, 'd/m/Y');
 
       // Probation period: Classification.probation_period (months, 1-12) mapped to Bangla digit + word.

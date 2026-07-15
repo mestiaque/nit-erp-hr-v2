@@ -31,61 +31,55 @@
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">Department</label>
-						<select name="department" class="form-control form-control-sm">
-							<option value="">All</option>
+						<select name="department[]" class="form-control form-control-sm select2" multiple>
 							@foreach($options['departments'] as $item)
-								<option value="{{ $item->id }}" @selected((string)$request->department === (string)$item->id)>{{ $item->name }}</option>
+								<option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->department))>{{ $item->name }}</option>
 							@endforeach
 						</select>
 					</div>
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">Section</label>
-						<select name="section" class="form-control form-control-sm">
-							<option value="">All</option>
+						<select name="section[]" class="form-control form-control-sm select2" multiple>
 							@foreach($options['sections'] as $item)
-								<option value="{{ $item->id }}" @selected((string)$request->section === (string)$item->id)>{{ $item->name }}</option>
+								<option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->section))>{{ $item->name }}</option>
 							@endforeach
 						</select>
 					</div>
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">Sub-Section</label>
-						<select name="sub_section" class="form-control form-control-sm">
-							<option value="">All</option>
+						<select name="sub_section[]" class="form-control form-control-sm select2" multiple>
 							@foreach($options['subSections'] as $item)
-								<option value="{{ $item->id }}" @selected((string)$request->sub_section === (string)$item->id)>{{ $item->name }}</option>
+								<option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->sub_section))>{{ $item->name }}</option>
 							@endforeach
 						</select>
 					</div>
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">Designation</label>
-						<select name="designation" class="form-control form-control-sm">
-							<option value="">All</option>
+						<select name="designation[]" class="form-control form-control-sm select2" multiple>
 							@foreach($options['designations'] as $item)
-								<option value="{{ $item->id }}" @selected((string)$request->designation === (string)$item->id)>{{ $item->name }}</option>
+								<option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->designation))>{{ $item->name }}</option>
 							@endforeach
 						</select>
 					</div>
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">Shift</label>
-						<select name="shift" class="form-control form-control-sm">
-							<option value="">All</option>
+						<select name="shift[]" class="form-control form-control-sm select2" multiple>
 							@foreach($options['shifts'] as $item)
-								<option value="{{ $item->id }}" @selected((string)$request->shift === (string)$item->id)>{{ $item->name }}</option>
+								<option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->shift))>{{ $item->name }}</option>
 							@endforeach
 						</select>
 					</div>
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">Employee Status</label>
-						<select name="employee_status" class="form-control form-control-sm">
-							<option value="">All</option>
-							<option value="regular" @selected($request->employee_status === 'regular')>Regular</option>
-							<option value="lefty" @selected($request->employee_status === 'lefty')>Lefty</option>
-							<option value="resign" @selected($request->employee_status === 'resign')>Resign</option>
+						<select name="employee_status[]" class="form-control form-control-sm select2" multiple>
+							<option value="regular" @selected(in_array('regular', (array)$request->employee_status))>Regular</option>
+							<option value="lefty" @selected(in_array('lefty', (array)$request->employee_status))>Lefty</option>
+							<option value="resign" @selected(in_array('resign', (array)$request->employee_status))>Resign</option>
 						</select>
 					</div>
 
@@ -95,8 +89,20 @@
 						<button type="submit" name="print" value="1" formtarget="_blank" class="btn btn-primary btn-sm">Report</button>
 					</div>
 				</div>
-			</form>
-		</div>
-	</div>
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
+
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: 'All',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+@endpush

@@ -1,7 +1,21 @@
   @php
-      $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee();
-      $ed = $employeeDataFn($employee, ['language' => 'bn'], $factory ?? null, $salaryKey ?? null);
-      $familyNameSfl = $ed['father_name'] !== '--' ? $ed['father_name'] : ($ed['spouse_name'] !== '--' ? $ed['spouse_name'] : $ed['mother_name']);
+      $companyNameSfl = hr_factory('bn_name') ?? hr_factory('name') ?? general()->name;
+      $companyAddressSfl = hr_factory('bn_address') ?? hr_factory('address') ?? general()->address;
+      $employeeNameSfl = $employee->bn_name ?? $employee->name;
+      $designationModelSfl = optional($employee->designation);
+      $designationSfl = $designationModelSfl->bn_name ?? $designationModelSfl->name ?? '';
+      $joiningDateSfl = blank($employee->joining_date) ? '' : bn_date($employee->joining_date, 'd/m/Y');
+      $sexIdSfl = optional($employee->basicInfo)->sex_id;
+      $genderSfl = $sexIdSfl ? optional(\ME\Hr\Models\HrSex::find($sexIdSfl))->bn_name : '';
+      $presentAddressSfl = collect([
+          $employee->present_village_bn ?? $employee->present_village,
+          $employee->present_post_office_bn ?? $employee->present_post_office,
+          $employee->present_upazila_bn ?? $employee->present_upazila,
+          $employee->present_district_bn ?? $employee->present_district,
+      ])->filter(fn ($v) => filled($v))->implode(', ');
+      $familyNameSfl = $employee->father_name_bn ?? $employee->father_name
+          ?? $employee->spouse_name_bn ?? $employee->spouse_name
+          ?? $employee->mother_name_bn ?? $employee->mother_name ?? '';
 
       $dobSfl = $employee->dob;
       $dobDaySfl = $dobSfl ? en2bnNumber(\Carbon\Carbon::parse($dobSfl)->format('d')) : '';
@@ -13,7 +27,7 @@
       $permPostOfficeSfl = $employee->permanent_post_office_bn ?? $employee->permanent_post_office ?? '';
       $permThanaSfl = $employee->permanent_upazila_bn ?? $employee->permanent_upazila ?? '';
       $permDistrictSfl = $employee->permanent_district_bn ?? $employee->permanent_district ?? '';
-      $classificationSfl = optional($employee->classification)->name ?? optional($employee->classification)->name ?? 'Worker';
+      $classificationSfl = optional($employee->classification)->name ?? 'Worker';
       $classWiseName = $classificationSfl == 'Worker' ? 'শ্রমিকের' : 'কর্মচারীর' ;
       $classWiseName1 = $classificationSfl == 'Worker' ? 'শ্রমিক' : 'কর্মচারী' ;
 
@@ -41,11 +55,11 @@
       </header>
 
       <table class="form-fields-table">
-        <tr><td class="num-col">১.</td><td>কারখানা / প্রতিষ্ঠানের নাম : <span class=""><strong>{{ $ed['company_name'] }}</strong></span></td></tr>
-        <tr><td class="num-col">২.</td><td>কারখানা / প্রতিষ্ঠানের ঠিকানাঃ<span class=""> <strong>{{ $ed['company_address'] }}</strong></span></td></tr>
-        <tr><td class="num-col">৩.</td><td>{{ $classWiseName }} নাম :<span class="bb-dot">{{ $ed['employee_name'] }}</span></td></tr>
-        <tr><td class="num-col">৪.</td><td>ঠিকানাঃ<span class="bb-dot">{{ $ed['present_address_bn'] }}</span></td></tr>
-        <tr><td></td><td>লিঙ্গঃ<span class="bb-dot">{{ $ed['gender'] }}</span></td></tr>
+        <tr><td class="num-col">১.</td><td>কারখানা / প্রতিষ্ঠানের নাম : <span class=""><strong>{{ $companyNameSfl }}</strong></span></td></tr>
+        <tr><td class="num-col">২.</td><td>কারখানা / প্রতিষ্ঠানের ঠিকানাঃ<span class=""> <strong>{{ $companyAddressSfl }}</strong></span></td></tr>
+        <tr><td class="num-col">৩.</td><td>{{ $classWiseName }} নাম :<span class="bb-dot">{{ $employeeNameSfl }}</span></td></tr>
+        <tr><td class="num-col">৪.</td><td>ঠিকানাঃ<span class="bb-dot">{{ $presentAddressSfl }}</span></td></tr>
+        <tr><td></td><td>লিঙ্গঃ<span class="bb-dot">{{ $genderSfl }}</span></td></tr>
         <tr><td class="num-col">৫.</td><td>পিতা / মাতা/ স্বামী / স্ত্রীর নামঃ<span class="bb-dot">{{ $familyNameSfl }}</span></td></tr>
         <tr>
           <td class="num-col">৬.</td>
@@ -60,8 +74,8 @@
           <td></td>
           <td>থানাঃ<span class="bb-dot">{{ $permThanaSfl }}</span> , জেলাঃ <span class="bb-dot">{{ $permDistrictSfl }}</span></td>
         </tr>
-        <tr><td class="num-col">৯.</td><td>চাকরিতে নিযুক্তি তারিখঃ<span class="bb-dot">{{ $ed['joining_date'] }}</span></td></tr>
-        <tr><td class="num-col">১০.</td><td>পদের নামঃ<span class="bb-dot">{{ $ed['designation'] }}</span></td></tr>
+        <tr><td class="num-col">৯.</td><td>চাকরিতে নিযুক্তি তারিখঃ<span class="bb-dot">{{ $joiningDateSfl }}</span></td></tr>
+        <tr><td class="num-col">১০.</td><td>পদের নামঃ<span class="bb-dot">{{ $designationSfl }}</span></td></tr>
       </table>
 
       <p class="declaration-paragraph">

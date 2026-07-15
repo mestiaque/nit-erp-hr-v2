@@ -214,8 +214,7 @@ class HrOptionsService
                 : \Illuminate\Support\Carbon::parse($birthDate)->age;
             $employeePhoto = method_exists($employee, 'image') ? $employee->image() : null;
 
-            $shifts = \ME\Hr\Models\HrShift::orderBy('name')->get();
-            $shift = $shifts->where('id', $employee->shift_id)->first();
+            $shift = $employee->shift_id ? \ME\Hr\Models\HrShift::find($employee->shift_id) : null;
 
 
             // Nominee fields (EN & BN)
@@ -252,58 +251,80 @@ class HrOptionsService
             $presentAddress = $presentAddress ?: data_get($employee, 'present_address', data_get($employee, 'address', $na));
 
             // --- Salary/Earnings/Deductions/Leaves/Increments Logic ---
-            $earningsDeductions = \ME\Hr\Models\HrEmployeeOtherTransaction::query()
-                ->where('employee_id', $employee->id)
-                ->orderBy('txn_date')
-                ->get()
-                ->map(static function ($row) {
-                    return [
-                        'date' => $row->txn_date,
-                        'advance_iou' => (float) ($row->advance_iou ?? 0),
-                        'ot' => (float) ($row->ot_adjust ?? 0),
-                        'day' => (float) ($row->day_adjust ?? 0),
-                        'earnings' => (float) ($row->earnings ?? 0),
-                        'deductions' => (float) ($row->deductions ?? 0),
-                        'remarks' => $row->remarks,
-                    ];
-                })->all();
+            // These three are only queried the first time their getter closure is actually
+            // called below, instead of on every getOptionsForEmployee() invocation regardless
+            // of whether the caller needs them.
+            $earningsDeductions = null;
+            $loadEarningsDeductions = function () use ($employee, &$earningsDeductions) {
+                if ($earningsDeductions === null) {
+                    $earningsDeductions = \ME\Hr\Models\HrEmployeeOtherTransaction::query()
+                        ->where('employee_id', $employee->id)
+                        ->orderBy('txn_date')
+                        ->get()
+                        ->map(static function ($row) {
+                            return [
+                                'date' => $row->txn_date,
+                                'advance_iou' => (float) ($row->advance_iou ?? 0),
+                                'ot' => (float) ($row->ot_adjust ?? 0),
+                                'day' => (float) ($row->day_adjust ?? 0),
+                                'earnings' => (float) ($row->earnings ?? 0),
+                                'deductions' => (float) ($row->deductions ?? 0),
+                                'remarks' => $row->remarks,
+                            ];
+                        })->all();
+                }
+                return $earningsDeductions;
+            };
 
-            $increments = \ME\Hr\Models\HrEmployeeSalaryIncrement::query()
-                ->where('employee_id', $employee->id)
-                ->orderByDesc('increment_date')
-                ->get()
-                ->map(static function ($row) {
-                    return [
-                        'increment_date' => $row->increment_date,
-                        'previous_salary' => (float) ($row->previous_salary ?? 0),
-                        'increment_amount' => (float) ($row->increment_amount ?? 0),
-                        'new_salary' => (float) ($row->new_salary ?? 0),
-                        'classification_id' => $row->classification_id,
-                        'department_id' => $row->department_id,
-                        'section_id' => $row->section_id,
-                        'designation_id' => $row->designation_id,
-                    ];
-                })->all();
+            $increments = null;
+            $loadIncrements = function () use ($employee, &$increments) {
+                if ($increments === null) {
+                    $increments = \ME\Hr\Models\HrEmployeeSalaryIncrement::query()
+                        ->where('employee_id', $employee->id)
+                        ->orderByDesc('increment_date')
+                        ->get()
+                        ->map(static function ($row) {
+                            return [
+                                'increment_date' => $row->increment_date,
+                                'previous_salary' => (float) ($row->previous_salary ?? 0),
+                                'increment_amount' => (float) ($row->increment_amount ?? 0),
+                                'new_salary' => (float) ($row->new_salary ?? 0),
+                                'classification_id' => $row->classification_id,
+                                'department_id' => $row->department_id,
+                                'section_id' => $row->section_id,
+                                'designation_id' => $row->designation_id,
+                            ];
+                        })->all();
+                }
+                return $increments;
+            };
 
-            $leaves = \ME\Hr\Models\HrEmployeeLeave::query()
-                ->where('employee_id', $employee->id)
-                ->orderByDesc('leave_from')
-                ->get()
-                ->map(static function ($row) {
-                    return [
-                        'application_date' => $row->application_date,
-                        'application_no' => $row->application_no,
-                        'leave_type_id' => $row->leave_type_id,
-                        'start_date' => $row->leave_from,
-                        'end_date' => $row->leave_to,
-                        'reason' => $row->reason,
-                        'remarks' => $row->remarks,
-                        'status' => $row->status,
-                    ];
-                })->all();
+            $leaves = null;
+            $loadLeaves = function () use ($employee, &$leaves) {
+                if ($leaves === null) {
+                    $leaves = \ME\Hr\Models\HrEmployeeLeave::query()
+                        ->where('employee_id', $employee->id)
+                        ->orderByDesc('leave_from')
+                        ->get()
+                        ->map(static function ($row) {
+                            return [
+                                'application_date' => $row->application_date,
+                                'application_no' => $row->application_no,
+                                'leave_type_id' => $row->leave_type_id,
+                                'start_date' => $row->leave_from,
+                                'end_date' => $row->leave_to,
+                                'reason' => $row->reason,
+                                'remarks' => $row->remarks,
+                                'status' => $row->status,
+                            ];
+                        })->all();
+                }
+                return $leaves;
+            };
 
             // Earnings/Deductions summary logic (for a date range)
-            $getEarningsDeductionsSummary = function($from = null, $to = null) use ($earningsDeductions) {
+            $getEarningsDeductionsSummary = function($from = null, $to = null) use ($loadEarningsDeductions) {
+                $earningsDeductions = $loadEarningsDeductions();
                 $earnings    = 0.0;
                 $deductions  = 0.0;
                 $advanceIou  = 0.0;
@@ -334,13 +355,13 @@ class HrOptionsService
             };
 
             // Increments logic
-            $getIncrements = function() use ($increments) {
-                return $increments;
+            $getIncrements = function() use ($loadIncrements) {
+                return $loadIncrements();
             };
 
             // Leaves logic
-            $getLeaves = function() use ($leaves) {
-                return $leaves;
+            $getLeaves = function() use ($loadLeaves) {
+                return $loadLeaves();
             };
 
             $getWeekendToRegularSummary = function($from = null, $to = null) use ($employee) {

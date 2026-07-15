@@ -9,6 +9,11 @@ use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrEmployee;
 use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrShift;
+use ME\Hr\Models\HrDepartment;
+use ME\Hr\Models\HrSection;
+use ME\Hr\Models\HrSubSection;
+use ME\Hr\Models\HrClassification;
+use ME\Hr\Models\HrDesignation;
 
 use Illuminate\Routing\Controller;
 use function view;
@@ -23,6 +28,8 @@ class AttendanceController extends Controller
         $dateFrom = $request->input('date_from');
         $dateTo = $request->input('date_to');
 
+        $options = \ME\Hr\Services\HrOptionsService::getOptions();
+
         $employees = HrEmployee::query();
         if ($employee) {
             $employees->where(function($q) use ($employee) {
@@ -32,6 +39,42 @@ class AttendanceController extends Controller
                   ;
             });
         }
+
+        if ($request->filled('department')) {
+            $values = array_filter(array_map('intval', (array) $request->department));
+            if (!empty($values)) {
+                $employees->whereIn('department_id', $values);
+            }
+        }
+
+        if ($request->filled('section')) {
+            $values = array_filter(array_map('intval', (array) $request->section));
+            if (!empty($values)) {
+                $employees->whereIn('section_id', $values);
+            }
+        }
+
+        if ($request->filled('sub_section')) {
+            $values = array_filter(array_map('intval', (array) $request->sub_section));
+            if (!empty($values)) {
+                $employees->whereIn('sub_section_id', $values);
+            }
+        }
+
+        if ($request->filled('classification')) {
+            $values = array_filter(array_map('intval', (array) $request->classification));
+            if (!empty($values)) {
+                $employees->whereIn('classification_id', $values);
+            }
+        }
+
+        if ($request->filled('designation')) {
+            $values = array_filter(array_map('intval', (array) $request->designation));
+            if (!empty($values)) {
+                $employees->whereIn('designation_id', $values);
+            }
+        }
+
         $employees = $employees->naturalOrderById()->get();
 
         // Determine date range
@@ -103,7 +146,7 @@ class AttendanceController extends Controller
         // We'll keep the variable $date as the first date or today.
         $date = $dates[0] ?? Carbon::today()->toDateString();
 
-        return view('hr::attendances.index', compact('attendanceList', 'date', 'status', 'employee', 'dateFrom', 'dateTo'));
+        return view('hr::attendances.index', compact('attendanceList', 'date', 'status', 'employee', 'dateFrom', 'dateTo', 'options'));
     }
 
     public function edit($userId, $date)
@@ -173,7 +216,7 @@ class AttendanceController extends Controller
 
         // Preserve filter parameters after update
         $query = [];
-        foreach (['employee', 'status', 'date_from', 'date_to'] as $param) {
+        foreach (['employee', 'status', 'date_from', 'date_to', 'department', 'section', 'sub_section', 'classification', 'designation'] as $param) {
             if ($request->filled($param)) {
                 $query[$param] = $request->input($param);
             }
@@ -223,7 +266,7 @@ class AttendanceController extends Controller
         }
 
         $query = [];
-        foreach (['employee', 'status', 'date_from', 'date_to'] as $param) {
+        foreach (['employee', 'status', 'date_from', 'date_to', 'department', 'section', 'sub_section', 'classification', 'designation'] as $param) {
             if ($request->filled($param)) {
                 $query[$param] = $request->input($param);
             }

@@ -1,7 +1,7 @@
   @php
       $na = 'N/A';
-      $employeeIdSfl = data_get($employee, 'employee_id', $na);
-      $employeeNameSfl = data_get($employee, 'bn_name') ?? data_get($employee, 'name', $na);
+      $employeeIdSfl = $employee->employee_id ?? $na;
+      $employeeNameSfl = $employee->bn_name ?? $employee->name ?? $na;
       $fatherNameSfl = $employee->father_name_bn ?? $employee->father_name ?? $na;
       $motherNameSfl = $employee->mother_name_bn ?? $employee->mother_name ?? $na;
 
@@ -16,21 +16,21 @@
       $isFemaleSfl = $sexNameSfl ? stripos($sexNameSfl, 'female') !== false : false;
 
       $presentAddressSfl = collect([
-          data_get($employee, 'present_address_bn'),
-          data_get($employee, 'present_village_bn'),
-          data_get($employee, 'present_post_office_bn'),
-          data_get($employee, 'present_upazila_bn'),
-          data_get($employee, 'present_district_bn'),
+          $employee->present_address_bn,
+          $employee->present_village_bn,
+          $employee->present_post_office_bn,
+          $employee->present_upazila_bn,
+          $employee->present_district_bn,
       ])->filter(fn ($v) => filled($v))->implode(', ');
-      $presentAddressSfl = $presentAddressSfl !== '' ? $presentAddressSfl : data_get($employee, 'address', $na);
+      $presentAddressSfl = $presentAddressSfl !== '' ? $presentAddressSfl : $employee->address ?? $na;
       $permanentAddressSfl = collect([
-          data_get($employee, 'permanent_address_bn'),
-          data_get($employee, 'permanent_village_bn'),
-          data_get($employee, 'permanent_post_office_bn'),
-          data_get($employee, 'permanent_upazila_bn'),
-          data_get($employee, 'permanent_district_bn'),
+          $employee->permanent_address_bn,
+          $employee->permanent_village_bn,
+          $employee->permanent_post_office_bn,
+          $employee->permanent_upazila_bn,
+          $employee->permanent_district_bn,
       ])->filter(fn ($v) => filled($v))->implode(', ');
-      $permanentAddressSfl = $permanentAddressSfl !== '' ? $permanentAddressSfl : data_get($employee, 'address', $na);
+      $permanentAddressSfl = $permanentAddressSfl !== '' ? $permanentAddressSfl : $employee->address ?? $na;
 
       $dobSfl = $employee->dob;
       $dobTextSfl = blank($dobSfl) ? $na : bn_date($dobSfl, 'd/m/Y');

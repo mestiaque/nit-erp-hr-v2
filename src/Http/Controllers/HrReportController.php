@@ -44,9 +44,9 @@ class HrReportController extends Controller
         // Show table if any filter is applied or print requested
         if ($request->hasAny([
             'employee_ids', 'from', 'to', 'classification', 'department', 'section', 'sub_section',
-            'shift', 'working_place', 'line_number', 'salary_type', 'employee_status', 'language', 'report_type', 'print'])
+            'shift', 'working_place', 'line_number', 'salary_type', 'employee_status', 'designation', 'language', 'report_type', 'print'])
         ) {
-            [$columns, $rows] = $this->productionJobCardReport();
+            [$columns, $rows] = $this->productionJobCardReport($request);
             $showTable = true;
         }
 
@@ -214,7 +214,7 @@ class HrReportController extends Controller
             'personal-file' => $this->personalFileReport(),
             'attendance' => $this->attendanceReport(),
             'tiffin-night-dinner' => $this->mealAllowanceReport(),
-            'pro-job-card' => $this->productionJobCardReport(),
+            'pro-job-card' => $this->productionJobCardReport(new Request),
             'bonus-salary-fixed' => $this->bonusSalaryFixedReport(),
             'bonus-salary-production' => $this->bonusSalaryProductionReport(),
             'salary-fixed' => $this->salaryFixedReport(),
@@ -974,6 +974,7 @@ class HrReportController extends Controller
     private function employeeReportQuery(Request $request)
     {
         $query = HrEmployee::query();
+        // dd($request->all());
 
         if ($request->filled('employee_id')) {
             $query->where('employee_id', 'like', '%' . trim((string) $request->employee_id) . '%');
@@ -990,22 +991,34 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('classification')) {
-            $query->where('classification_id', (int) $request->classification);
+            $values = array_filter(array_map('intval', (array) $request->classification));
+            if (!empty($values)) {
+                $query->whereIn('classification_id', $values);
+            }
         }
 
         if ($request->filled('department')) {
-            $query->where('department_id', (int) $request->department);
+            $values = array_filter(array_map('intval', (array) $request->department));
+            if (!empty($values)) {
+                $query->whereIn('department_id', $values);
+            }
         }
 
         if ($request->filled('section')) {
-            $query->where('section_id', (int) $request->section);
+            $values = array_filter(array_map('intval', (array) $request->section));
+            if (!empty($values)) {
+                $query->whereIn('section_id', $values);
+            }
         }
 
         if ($request->filled('sub_section')) {
             $subSectionCol = Schema::hasColumn((new HrEmployee())->getTable(), 'sub_section_id') ? 'sub_section_id'
                 : (Schema::hasColumn((new HrEmployee())->getTable(), 'hr_sub_section_id') ? 'hr_sub_section_id' : null);
             if ($subSectionCol) {
-                $query->where($subSectionCol, (int) $request->sub_section);
+                $values = array_filter(array_map('intval', (array) $request->sub_section));
+                if (!empty($values)) {
+                    $query->whereIn($subSectionCol, $values);
+                }
             }
         }
 
@@ -1013,12 +1026,18 @@ class HrReportController extends Controller
             $wpCol = Schema::hasColumn((new HrEmployee())->getTable(), 'working_place_id') ? 'working_place_id'
                 : (Schema::hasColumn((new HrEmployee())->getTable(), 'hr_working_place_id') ? 'hr_working_place_id' : null);
             if ($wpCol) {
-                $query->where($wpCol, (int) $request->working_place);
+                $values = array_filter(array_map('intval', (array) $request->working_place));
+                if (!empty($values)) {
+                    $query->whereIn($wpCol, $values);
+                }
             }
         }
 
         if ($request->filled('shift')) {
-            $query->where('shift_id', (int) $request->shift);
+            $values = array_filter(array_map('intval', (array) $request->shift));
+            if (!empty($values)) {
+                $query->whereIn('shift_id', $values);
+            }
         }
 
         if ($request->filled('today_shifts')) {
@@ -1036,41 +1055,61 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('line_number')) {
-            $query->where('floor_line_id', (int) $request->line_number);
+            $values = array_filter(array_map('intval', (array) $request->line_number));
+            if (!empty($values)) {
+                $query->whereIn('floor_line_id', $values);
+            }
         }
 
         if ($request->filled('salary_type')) {
-            $query->where('salary_type', (string) $request->salary_type);
+            $values = array_filter((array) $request->salary_type);
+            if (!empty($values)) {
+                $query->whereIn('salary_type', $values);
+            }
         }
 
         if ($request->filled('designation')) {
-            $query->where('designation_id', (int) $request->designation);
+            $values = array_filter(array_map('intval', (array) $request->designation));
+            if (!empty($values)) {
+                $query->whereIn('designation_id', $values);
+            }
         }
 
         if ($request->filled('gender')) {
-            $query->whereHas('basicInfo', function ($q) use ($request) {
-                $sexId = HrSex::where('name', (string) $request->gender)->value('id');
-                $q->where('sex_id', $sexId);
-            });
+            $genderValues = (array) $request->gender;
+            $sexIds = HrSex::query()
+                ->whereIn('name', $genderValues)
+                ->pluck('id')
+                ->filter()
+                ->values();
+            if ($sexIds->isNotEmpty()) {
+                $query->whereHas('basicInfo', function ($q) use ($sexIds) {
+                    $q->whereIn('sex_id', $sexIds);
+                });
+            }
         }
 
         if ($request->filled('employee_status')) {
-            $status = (string) $request->employee_status;
-            $query->where(function ($builder) use ($status) {
-                if ($status === 'regular') {
-                    $builder->whereNull('employment_status')
-                        ->orWhere('employment_status', '')
-                        ->orWhere('employment_status', 'regular');
-
-                    return;
-                }
-
-                $builder->where('employment_status', $status);
-                if ($status === 'lefty') {
-                    $builder->orWhere('employment_status', 'left');
-                }
-                if ($status === 'resign') {
-                    $builder->orWhere('employment_status', 'resigned');
+            $statuses = (array) $request->employee_status;
+            $query->where(function ($builder) use ($statuses) {
+                foreach ($statuses as $status) {
+                    if ($status === 'regular') {
+                        $builder->orWhere(function ($sq) {
+                            $sq->whereNull('employment_status')
+                                ->orWhere('employment_status', '')
+                                ->orWhere('employment_status', 'regular');
+                        });
+                    } else {
+                        $builder->orWhere(function ($sq) use ($status) {
+                            $sq->where('employment_status', $status);
+                            if ($status === 'lefty') {
+                                $sq->orWhere('employment_status', 'left');
+                            }
+                            if ($status === 'resign') {
+                                $sq->orWhere('employment_status', 'resigned');
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -1257,54 +1296,79 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('classification')) {
-            $query->where('classification_id', $request->classification);
+            $values = array_filter(array_map('intval', (array) $request->classification));
+            if (!empty($values)) {
+                $query->whereIn('classification_id', $values);
+            }
         }
 
         if ($request->filled('department')) {
-            $query->where('department_id', $request->department);
+            $values = array_filter(array_map('intval', (array) $request->department));
+            if (!empty($values)) {
+                $query->whereIn('department_id', $values);
+            }
         }
 
         if ($request->filled('section')) {
-            $query->where('section_id', $request->section);
+            $values = array_filter(array_map('intval', (array) $request->section));
+            if (!empty($values)) {
+                $query->whereIn('section_id', $values);
+            }
         }
 
         if ($request->filled('subsection') && Schema::hasColumn((new HrEmployee())->getTable(), 'sub_section_id')) {
-            $query->where('sub_section_id', $request->subsection);
+            $values = array_filter(array_map('intval', (array) $request->subsection));
+            if (!empty($values)) {
+                $query->whereIn('sub_section_id', $values);
+            }
         }
 
         if ($request->filled('shift')) {
-            $query->where('shift_id', $request->shift);
+            $values = array_filter(array_map('intval', (array) $request->shift));
+            if (!empty($values)) {
+                $query->whereIn('shift_id', $values);
+            }
         }
 
         if ($request->filled('working_place')) {
-            $workingPlace = trim((string) $request->working_place);
-            $query->where(function ($builder) use ($workingPlace) {
-                if (Schema::hasColumn((new HrEmployee())->getTable(), 'working_place_id')) {
-                    $builder->orWhere('working_place_id', $workingPlace);
-                }
-                if (Schema::hasColumn((new HrEmployee())->getTable(), 'location')) {
-                    $builder->orWhere('location', 'like', '%' . $workingPlace . '%');
-                }
-            });
+            $wpValues = array_filter((array) $request->working_place);
+            if (!empty($wpValues)) {
+                $query->where(function ($builder) use ($wpValues) {
+                    if (Schema::hasColumn((new HrEmployee())->getTable(), 'working_place_id')) {
+                        $builder->whereIn('working_place_id', array_map('intval', $wpValues));
+                    }
+                    if (Schema::hasColumn((new HrEmployee())->getTable(), 'location')) {
+                        $builder->orWhere(function ($q2) use ($wpValues) {
+                            foreach ($wpValues as $val) {
+                                $q2->orWhere('location', 'like', '%' . trim((string) $val) . '%');
+                            }
+                        });
+                    }
+                });
+            }
         }
 
         if ($request->filled('employee_status')) {
-            $status = (string) $request->employee_status;
-            $query->where(function ($builder) use ($status) {
-                if ($status === 'regular') {
-                    $builder->whereNull('employment_status')
-                        ->orWhere('employment_status', '')
-                        ->orWhere('employment_status', 'regular');
-
-                    return;
-                }
-
-                $builder->where('employment_status', $status);
-                if ($status === 'lefty') {
-                    $builder->orWhere('employment_status', 'left');
-                }
-                if ($status === 'resign') {
-                    $builder->orWhere('employment_status', 'resigned');
+            $statuses = (array) $request->employee_status;
+            $query->where(function ($builder) use ($statuses) {
+                foreach ($statuses as $status) {
+                    if ($status === 'regular') {
+                        $builder->orWhere(function ($sq) {
+                            $sq->whereNull('employment_status')
+                                ->orWhere('employment_status', '')
+                                ->orWhere('employment_status', 'regular');
+                        });
+                    } else {
+                        $builder->orWhere(function ($sq) use ($status) {
+                            $sq->where('employment_status', $status);
+                            if ($status === 'lefty') {
+                                $sq->orWhere('employment_status', 'left');
+                            }
+                            if ($status === 'resign') {
+                                $sq->orWhere('employment_status', 'resigned');
+                            }
+                        });
+                    }
                 }
             });
         }
@@ -1336,10 +1400,10 @@ class HrReportController extends Controller
 
         if ($request->boolean('print')) {
             $validated = $request->validate([
-                'report_type' => 'required|string',
+                'report_type' => 'required|array|min:1',
             ]);
 
-            $reportType = (string) $validated['report_type'];
+            $reportType = (string) ($validated['report_type'][0] ?? 'database');
             abort_unless(array_key_exists($reportType, $reportTypes), 422);
 
             return view('hr::reports.personal-file-print', [
@@ -1353,7 +1417,7 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('report_type')) {
-            $reportType = (string) $request->report_type;
+            $reportType = (string) ($request->input('report_type')[0] ?? $request->report_type);
             abort_unless(array_key_exists($reportType, $reportTypes), 422);
         }
 
@@ -1552,17 +1616,47 @@ class HrReportController extends Controller
         return [['designation', 'tiffin_allowance', 'night_allowance', 'dinner_allowance', 'payment_way'], $rows];
     }
 
-    private function productionJobCardReport(): array
+    private function productionJobCardReport(Request $request): array
     {
-        $rows = HrEmployee::query()
-            
+        $employees = $this->employeeReportQuery($request)
             ->whereNotNull('floor_line_id')
+            ->with(['department', 'section', 'subSection', 'designation', 'workingPlace', 'shift', 'classification', 'floorLine'])
             ->orderBy('floor_line_id')
             ->naturalOrderById()
-            ->get()
-            ->map(fn (HrEmployee $user) => ['line_number' => $user->floor_line_id, 'employee_id' => $user->employee_id, 'name' => $user->name, 'salary_type' => $user->salary_type]);
+            ->get();
 
-        return [['line_number', 'employee_id', 'name', 'salary_type'], $rows];
+        $rows = $employees->map(function (HrEmployee $employee) {
+            $other = is_array($employee->other_information)
+                ? $employee->other_information
+                : json_decode($employee->other_information ?? '{}', true);
+
+            return [
+                'line_number'        => $employee->floor_line_id,
+                'employee_id'        => $employee->employee_id,
+                'name'               => $employee->name,
+                'designation_name'   => $employee->designation->name ?? null,
+                'section_name'       => $employee->section->name ?? null,
+                'department_name'    => $employee->department->name ?? null,
+                'sub_section_name'   => $employee->subSection->name ?? data_get($other, 'profile.sub_section_name'),
+                'working_place_name' => $employee->workingPlace->name ?? null,
+                'shift_name'         => $employee->shift->name ?? null,
+                'classification'     => $employee->classification->name ?? null,
+                'join_date'          => $employee->join_date ?? null,
+                'block_line'         => $employee->floorLine->line_name ?? null,
+                'salary_type'        => $employee->salary_type,
+                'employee_status'    => $employee->employment_status,
+            ];
+        });
+
+        return [
+            [
+                'line_number', 'employee_id', 'name', 'designation_name',
+                'section_name', 'department_name', 'sub_section_name',
+                'working_place_name', 'shift_name', 'classification',
+                'join_date', 'block_line', 'salary_type', 'employee_status'
+            ],
+            $rows
+        ];
     }
 
     private function bonusSalaryFixedReport(): array
@@ -1652,7 +1746,7 @@ class HrReportController extends Controller
         if ($request->boolean('print')) {
             $from = $request->input('from') ?: now()->toDateString();
             $to   = $request->input('to') ?: $from;
-            $reportType = $request->input('report_type', 'job-card');
+            $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'job-card'));
             if (!array_key_exists($reportType, $reportTypes)) {
                 $reportType = 'job-card';
             }
@@ -2346,7 +2440,7 @@ class HrReportController extends Controller
             if (!array_key_exists($mealType, $mealTypes)) {
                 $mealType = 'tiffin';
             }
-            $reportType = $request->input('report_type', 'details');
+            $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'details'));
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
@@ -2658,7 +2752,7 @@ class HrReportController extends Controller
     {
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
         $to = $request->input('to') ?: now()->toDateString();
-        $reportType = $request->input('report_type', 'fixed');
+        $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'fixed'));
         if (!array_key_exists($reportType, $reportTypes)) {
             $reportType = 'fixed';
         }

@@ -66,20 +66,18 @@
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-1">Block / Line</label>
-                        <select name="line_number" class="form-control form-control-sm">
-                            <option value="">All</option>
+                        <select name="line_number[]" class="form-control form-control-sm select2" multiple>
                             @foreach($options['lines'] as $item)
-                                <option value="{{ $item->id }}" @selected((string)$request->line_number === (string)$item->id)>{{ $item->name }}{{ $item->slug ? ' - '.$item->slug : '' }}</option>
+                                <option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->line_number))>{{ $item->name }}{{ $item->slug ? ' - '.$item->slug : '' }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-1">Designation</label>
-                        <select name="designation" class="form-control form-control-sm">
-                            <option value="">All</option>
+                        <select name="designation[]" class="form-control form-control-sm select2" multiple>
                             @foreach(\ME\Hr\Models\HrDesignation::orderBy('name')->get(['id','name']) as $item)
-                                <option value="{{ $item->id }}" @selected((string)$request->designation === (string)$item->id)>{{ $item->name }}</option>
+                                <option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->designation))>{{ $item->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -135,5 +133,17 @@
     </div>
 </div>
 @endsection
+
+@push('js')
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: 'All',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
+@endpush
 
 

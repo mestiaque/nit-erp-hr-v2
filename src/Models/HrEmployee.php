@@ -449,27 +449,23 @@ class HrEmployee extends BaseHrModel
 
     public function getPermanentDistrictAttribute(): ?string
     {
-        $id = $this->permanentAddress?->district_id;
-        return $id ? HrGeoLocation::find($id)?->name : null;
+        return $this->permanentAddress?->district?->name;
     }
 
     public function getPermanentDistrictBnAttribute(): ?string
     {
-        $id = $this->permanentAddress?->district_id;
-        $loc = $id ? HrGeoLocation::find($id) : null;
+        $loc = $this->permanentAddress?->district;
         return $loc ? ($loc->bn_name ?? $loc->name) : null;
     }
 
     public function getPermanentUpazilaAttribute(): ?string
     {
-        $id = $this->permanentAddress?->police_station_id;
-        return $id ? HrGeoLocation::find($id)?->name : null;
+        return $this->permanentAddress?->policeStation?->name;
     }
 
     public function getPermanentUpazilaBnAttribute(): ?string
     {
-        $id = $this->permanentAddress?->police_station_id;
-        $loc = $id ? HrGeoLocation::find($id) : null;
+        $loc = $this->permanentAddress?->policeStation;
         return $loc ? ($loc->bn_name ?? $loc->name) : null;
     }
 
@@ -495,27 +491,23 @@ class HrEmployee extends BaseHrModel
 
     public function getPresentDistrictAttribute(): ?string
     {
-        $id = $this->presentAddress?->district_id;
-        return $id ? HrGeoLocation::find($id)?->name : null;
+        return $this->presentAddress?->district?->name;
     }
 
     public function getPresentDistrictBnAttribute(): ?string
     {
-        $id = $this->presentAddress?->district_id;
-        $loc = $id ? HrGeoLocation::find($id) : null;
+        $loc = $this->presentAddress?->district;
         return $loc ? ($loc->bn_name ?? $loc->name) : null;
     }
 
     public function getPresentUpazilaAttribute(): ?string
     {
-        $id = $this->presentAddress?->police_station_id;
-        return $id ? HrGeoLocation::find($id)?->name : null;
+        return $this->presentAddress?->policeStation?->name;
     }
 
     public function getPresentUpazilaBnAttribute(): ?string
     {
-        $id = $this->presentAddress?->police_station_id;
-        $loc = $id ? HrGeoLocation::find($id) : null;
+        $loc = $this->presentAddress?->policeStation;
         return $loc ? ($loc->bn_name ?? $loc->name) : null;
     }
 

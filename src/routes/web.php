@@ -69,6 +69,11 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/reports/attendance-with-ot', [HrReportController::class, 'attendanceWithOt'])->name('reports.attendance-with-ot');
 		Route::get('/reports/monthly-late-report', [HrReportController::class, 'monthlyLateReport'])->name('reports.monthly-late-report');
 		Route::get('/reports', [HrReportController::class, 'index'])->name('reports.index');
+		Route::get('/reports/employee-basic-info', [\ME\Hr\Http\Controllers\EmployeeBasicInfoReportController::class, 'index'])->name('reports.employee-basic-info');
+		Route::get('/reports/fixed-salary', [HrReportController::class, 'fixedSalaryReport'])->name('reports.fixed-salary');
+		Route::get('/reports/production-salary', [HrReportController::class, 'productionSalaryReport'])->name('reports.production-salary');
+		Route::get('/reports/bonus-salary', [HrReportController::class, 'bonusSalaryReport'])->name('reports.bonus-salary');
+		Route::get('/reports/wages-salary-summary', [HrReportController::class, 'wagesSalarySummaryReport'])->name('reports.wages-salary-summary');
 		Route::get('/reports/{report}', [HrReportController::class, 'show'])->name('reports.show');
 		Route::post('/reports/monthly/lock-increment', [HrReportController::class, 'lockMonthlyIncrement'])->name('reports.monthly.lock-increment');
 		Route::post('/reports/job-card-report/lock', [HrReportController::class, 'applyJobCardLock'])->name('reports.job-card-report.lock');
