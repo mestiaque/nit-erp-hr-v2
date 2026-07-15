@@ -2171,13 +2171,25 @@ class HrReportController extends Controller
             ->naturalOrderById()
             ->get();
 
-        $employeeRows = $employees->map(function (HrEmployee $employee) use ($from, $to) {
+        // This report only ever wants to show Present, Late, Absent, Weekend, Holiday or
+        // Leave — "Punch Missing" (and "Late and Punch Missing") are a data-entry quality
+        // flag from other screens, not a real attendance state here, so fold them back into
+        // plain Present/Late.
+        $normalizeStatus = function ($status) {
+            $status = (string) ($status ?: 'N/A');
+            if (stripos($status, 'punch missing') === false) {
+                return $status;
+            }
+            return stripos($status, 'late') !== false ? 'Late' : 'Present';
+        };
+
+        $employeeRows = $employees->map(function (HrEmployee $employee) use ($from, $to, $normalizeStatus) {
             $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
             $days = collect($pack['attendance'] ?? [])->map(fn ($d) => [
                 'date' => $d['date'] ?? '-',
                 'in_time' => $d['in_time'] ?? '-',
                 'out_time' => $d['out_time'] ?? '-',
-                'status' => $d['status'] ?? 'N/A',
+                'status' => $normalizeStatus($d['status'] ?? 'N/A'),
                 'ot_hours' => $d['compliance_ot'] ?? 0,
             ]);
             $firstDay = $days->first() ?? [];

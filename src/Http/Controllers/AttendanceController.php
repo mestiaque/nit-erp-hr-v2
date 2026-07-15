@@ -283,19 +283,34 @@ class AttendanceController extends Controller
     {
         // If either in_time or out_time is missing
         if (!$attendance->in_time || !$attendance->out_time) {
+            $inMissing  = !$attendance->in_time;
+            $outMissing = !$attendance->out_time;
+
+            // Today (or a future date) isn't over yet — a missing out_time just means the
+            // employee hasn't left yet, same as a fresh machine punch. Only call it a genuine
+            // "Punch Missing" once the date has actually passed.
+            $isPastDate = $attendance->date && Carbon::parse($attendance->date)->lt(Carbon::today());
+
             if ($shift) {
-                $inMissing = !$attendance->in_time;
-                $outMissing = !$attendance->out_time;
                 $late = false;
                 if (!$inMissing) {
                     $in = Carbon::parse($attendance->in_time);
                     $lateAllow = $shift->late_allow_time ? Carbon::parse($shift->late_allow_time) : Carbon::parse($shift->start_time);
                     $late = $in->gt($lateAllow);
                 }
+
+                if (!$isPastDate && !$inMissing && $outMissing) {
+                    return $late ? 'Late' : 'Present';
+                }
+
                 if ($late && ($inMissing || $outMissing)) {
                     return 'Late and Punch Missing';
                 }
                 return 'Punch Missing';
+            }
+
+            if (!$isPastDate && !$inMissing && $outMissing) {
+                return 'Present';
             }
             return 'Punch Missing';
         }
