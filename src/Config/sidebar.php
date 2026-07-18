@@ -16,14 +16,14 @@ return [
                     'title'      => 'HR Dashboard',
                     'icon'       => 'fa-solid fa-gauge-high',
                     'icon_color' => 'text-primary',
-                    'permission' => '',
+                    'permission' => 'hr_factory',
                     'route'      => '/admin/hr-center',
                 ],
                 [
                     'title'      => 'Basic Info.',
                     'icon'       => 'fa-solid fa-gear',
                     'icon_color' => 'text-info',
-                    'permission' => 'hr_factory',
+                    'permission' => '',
                     'children'   => [
                         [
                             'title'      => 'Classification',
