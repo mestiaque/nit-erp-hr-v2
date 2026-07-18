@@ -3,13 +3,11 @@
 * { box-sizing: border-box; }
 body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
-.rpt-header { text-align:center;  padding-bottom:4px; margin-bottom:5px; line-height:1.2; }
-.rpt-header h2 { margin:0; font-size:14px; text-transform:uppercase; letter-spacing:.6px; color:#1a3a5c; }
-.rpt-header p  { margin:1px 0 0; font-size:9.5px; color:#444; }
-.rpt-title-bar { background:#ffffff00; color:#000000; text-align:center; padding:3px 6px; margin-bottom:-65px; line-height:1.15; }
-.rpt-title-bar h4 { margin:0; font-size:11px; letter-spacing:.3px; }
-.rpt-title-bar span { font-size:9px; opacity:.9; }
-.rpt-meta { display:flex; justify-content:space-between; align-items:center; font-size:9px; margin-bottom:4px; color:#333; line-height:1.15; }
+.report-head { text-align:center; margin-bottom:8px; line-height:1.2; }
+.report-head h3 { margin:0 0 2px; font-size:15px; }
+.report-head p { margin:0; font-size:11px; color:#444; }
+.sub-title { font-size:12px; font-weight:700; margin:8px 0 4px; text-align:center; }
+.rpt-meta { display:flex; justify-content:space-between; align-items:center; font-size:9px; margin-bottom:8px; color:#333; line-height:1.15; }
 .rpt-meta span { display:inline-block; }
 
 .t { width:100%; border-collapse:collapse; margin-bottom:12px; font-size:9.5px; }
@@ -48,22 +46,21 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
+	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
+	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
 	$fmt = fn($v) => number_format((float) $v, 2);
 @endphp
 
-<div class="rpt-header">
+<div class="report-head">
 	@if(!blank(optional(general())->logo()))
 		<img src="{{ asset(optional(general())->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
 	@endif
-	<h2>{{ $company }}</h2>
+	<h3>{{ $company }}</h3>
 	<p>{{ $address }}</p>
 </div>
-<div class="rpt-title-bar">
-	<h4>{{ $reportTypeLabel }}</h4>
-	<span>Period: {{ $fromLabel }} &mdash; {{ $toLabel }}</span>
-</div>
+<div class="sub-title">{{ $reportTypeLabel }} &mdash; {{ $fromLabel }} to {{ $toLabel }}</div>
 <div class="rpt-meta">
-	<span><strong>Print Date:</strong> {{ now()->format('d M Y, h:i A') }}</span>
+	<span><strong>Salary Date:</strong> {{ $salaryDate }}</span>
 	<span><strong>Currency:</strong> BDT (Bangladeshi Taka)</span>
 </div>
 
@@ -108,6 +105,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			<th rowspan="2">Net<br>Payable</th>
 			<th rowspan="2">Present</th>
 			<th rowspan="2">Absent</th>
+			<th rowspan="2">WH</th>
+			<th rowspan="2">FL</th>
+			<th rowspan="2">GL</th>
 		</tr>
 		<tr class="hdr2">
 			<th>Basic</th>
@@ -123,11 +123,12 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			@php
 				$deptTotals = [
 					'emp'=>0,'basic'=>0,'house_rent'=>0,'medical'=>0,'transport'=>0,
-					'ot'=>0,'gross'=>0,'earn'=>0,'deduct'=>0,'net'=>0,'present'=>0,'absent'=>0
+					'ot'=>0,'gross'=>0,'earn'=>0,'deduct'=>0,'net'=>0,'present'=>0,'absent'=>0,
+					'wh'=>0,'fl'=>0,'gl'=>0
 				];
 			@endphp
 			<tr class="dept-group-header">
-				<td colspan="15" class="tl">&nbsp;&nbsp;&#9658; {{ $departmentMap->get($deptId, 'N/A') }}</td>
+				<td colspan="18" class="tl">&nbsp;&nbsp;&#9658; {{ $departmentMap->get($deptId, 'N/A') }}</td>
 			</tr>
 			@foreach($deptRows as $row)
 				@php
@@ -151,6 +152,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<td class="tr">{{ $fmt($row['net']) }}</td>
 					<td class="tc">{{ $row['present'] }}</td>
 					<td class="tc">{{ $row['absent'] }}</td>
+					<td class="tc">{{ $row['wh'] }}</td>
+					<td class="tc">{{ $row['fl'] }}</td>
+					<td class="tc">{{ $row['gl'] }}</td>
 				</tr>
 			@endforeach
 			<tr class="dept-subtotal">
@@ -167,9 +171,12 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tr">{{ $fmt($deptTotals['net']) }}</td>
 				<td class="tc">{{ $deptTotals['present'] }}</td>
 				<td class="tc">{{ $deptTotals['absent'] }}</td>
+				<td class="tc">{{ $deptTotals['wh'] }}</td>
+				<td class="tc">{{ $deptTotals['fl'] }}</td>
+				<td class="tc">{{ $deptTotals['gl'] }}</td>
 			</tr>
 		@empty
-			<tr><td colspan="15" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
+			<tr><td colspan="18" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
 		@endforelse
 	</tbody>
 	<tfoot>
@@ -187,6 +194,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			<td class="tr">{{ $fmt($grandTotals['net']) }}</td>
 			<td class="tc">{{ $grandTotals['present'] }}</td>
 			<td class="tc">{{ $grandTotals['absent'] }}</td>
+			<td class="tc">{{ $grandTotals['wh'] }}</td>
+			<td class="tc">{{ $grandTotals['fl'] }}</td>
+			<td class="tc">{{ $grandTotals['gl'] }}</td>
 		</tr>
 	</tfoot>
 </table>

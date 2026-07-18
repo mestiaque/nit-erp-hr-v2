@@ -86,7 +86,10 @@ class JobcardDataService {
             $att  = $attendanceByDate->get($dStr);
 
             // ----- STATUS -----
-            $statusCode = $this->getStatusForDay($employee, $date, $holidays, $getAtt);
+            $dayMeta            = $this->getStatusForDay($employee, $date, $holidays, $getAtt);
+            $statusCode         = $dayMeta['code'];
+            $isOnWeekend        = $dayMeta['is_weekend'];
+            $isWeekendToRegular = $dayMeta['is_weekend_to_regular'];
             $statusLabel = $isBangla ? ($statusMapBn[$statusCode] ?? $statusCode) : ($statusMapEn[$statusCode] ?? $statusCode);
 
             // ----- SHIFT -----
@@ -97,49 +100,68 @@ class JobcardDataService {
             $bnDay = $dayNamesBn[$enDay] ?? $enDay;
             $day = $isBangla ? $bnDay : $enDay;
 
-            // ----- In/Out time -----
-            $intime = $att && $att->in_time ? ($isBangla ? bn_time($att->in_time) : $fmtTime($att->in_time)) : '-';
-            // Out time: factory rules apply
-            $displayOut = null;
-            $actualOut = $att && $att->out_time ? Carbon::parse($att->out_time) : null;
             $shiftEndTime = $shift && $shift->end_time ? Carbon::parse($shift->end_time) : null;
-            if($att && $att->out_time){
-                if($factoryNo == 1){
-                    if ($shiftEndTime) {
-                        $maxOut = $shiftEndTime->copy()->addHours((float)$allowOtHour);
-                        $displayOut = $actualOut->gt($maxOut) ? $maxOut : $actualOut;
-                    } else {
-                        $displayOut = $actualOut;
-                    }
-                } else {
-                    $displayOut = $actualOut;
-                }
-            }
-            $outtime = $displayOut ? ($isBangla ? bn_time($displayOut) : $fmtTime($displayOut)) : ($att && $att->out_time ? ($isBangla ? bn_time($att->out_time) : $fmtTime($att->out_time)) : '-');
+            $actualOut    = $att && $att->out_time ? Carbon::parse($att->out_time) : null;
+            $fmtOrDash    = fn ($t) => $t ? ($isBangla ? bn_time($t) : $fmtTime($t)) : '-';
 
-            // ----- OT with designation basis flags -----
-            $isOnWeekend = $statusCode === 'WO';
-            $otMinRaw    = $att ? (int)($att->overtime_minutes ?? 0) : 0;
-
-            // WPHP: full working time on weekends counts as OT
-            if ($isOtBasisWphp && $isOnWeekend && $att && $att->in_time) {
-                $otMinRaw = max($otMinRaw, (int)($att->in_minutes ?? 0));
-            }
-            // Zero out when the designation OT flag is off
+            // ----- In/Out time + OT, by day type and factory compliance mode -----
+            $otMinRaw = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
             if (!$otEnabled) {
                 $otMinRaw = 0;
             }
-            // Factory 0: weekend OT = 0 unless WPHP is ON
-            if ($factoryNo === 0 && $isOnWeekend && !$isOtBasisWphp) {
-                $otMinRaw = 0;
+
+            if ($isOnWeekend) {
+                // A genuine (unconverted) weekly holiday. Compliance modes never show
+                // attendance worked on a real weekend day, regardless of the WPHP flag.
+                // Actual shows the real punch, and when the designation's OT basis is WPHP
+                // the WHOLE worked span counts as OT (a weekend has no "regular shift"
+                // portion to subtract out), not just the excess over shift end.
+                if ($factoryNo === 1 || $factoryNo === 2) {
+                    $intime = '-';
+                    $outtime = '-';
+                    $rawOtMin = 0;
+                    $cappedOtMin = 0;
+                    $extraOtMin = 0;
+                } else {
+                    $intime  = $att && $att->in_time ? $fmtOrDash($att->in_time) : '-';
+                    $outtime = $fmtOrDash($actualOut);
+                    if ($isOtBasisWphp && $att && $att->in_time) {
+                        $otMinRaw = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
+                    }
+                    $rawOtMin    = $otMinRaw;
+                    $cappedOtMin = $rawOtMin;
+                    $extraOtMin  = 0;
+                }
+            } elseif ($isWeekendToRegular) {
+                // A weekend day converted to a working day is shown exactly like an
+                // ordinary shift day — capped at the shift's own hours, zero OT — in every
+                // factory mode. The real extra time worked is compensated separately via
+                // the Weekend-to-Regular allowance, not through the job card's OT columns.
+                $intime  = $att && $att->in_time ? $fmtOrDash($att->in_time) : '-';
+                $outtime = $fmtOrDash($shiftEndTime ?: $actualOut);
+                $rawOtMin    = 0;
+                $cappedOtMin = 0;
+                $extraOtMin  = 0;
+            } else {
+                // Regular working day (also covers holiday/leave/absent rows, where
+                // in_time/out_time are naturally empty).
+                $intime = $att && $att->in_time ? $fmtOrDash($att->in_time) : '-';
+
+                $displayOut = $actualOut;
+                if ($att && $att->out_time && $factoryNo == 1 && $shiftEndTime) {
+                    $maxOut = $shiftEndTime->copy()->addHours((float) $allowOtHour);
+                    $displayOut = $actualOut->gt($maxOut) ? $maxOut : $actualOut;
+                }
+                $outtime = $fmtOrDash($displayOut);
+
+                $rawOtMin    = $otMinRaw;
+                $cappedOtMin = ($factoryNo === 1 || $factoryNo === 2) ? min($rawOtMin, $allowOtMin) : $rawOtMin;
+                $extraOtMin  = ($factoryNo === 2 && $rawOtMin > $allowOtMin) ? ($rawOtMin - $allowOtMin) : 0;
             }
 
-            $rawOtMin    = $otMinRaw;
-            $cappedOtMin = ($factoryNo === 1 || $factoryNo === 2) ? min($rawOtMin, $allowOtMin) : $rawOtMin;
-            $extraOtMin  = ($factoryNo === 2 && $rawOtMin > $allowOtMin) ? ($rawOtMin - $allowOtMin) : 0;
-            $actualOt    = $fmtOT($rawOtMin);
+            $actualOt     = $fmtOT($rawOtMin);
             $complianceOt = $fmtOT($cappedOtMin);
-            $extraOt     = $fmtOT($extraOtMin);
+            $extraOt      = $fmtOT($extraOtMin);
 
             // All relevant data row
             $rows[] = [
@@ -173,21 +195,26 @@ class JobcardDataService {
         return $data;
     }
 
-    // The status logic --- copy your getStatus
-    public function getStatusForDay($employee, $date, $holidays, $getAtt)
+    /**
+     * Returns ['code' => status code, 'is_weekend' => genuine unconverted weekly holiday,
+     * 'is_weekend_to_regular' => weekend day explicitly converted to a working day].
+     * is_weekend and is_weekend_to_regular are mutually exclusive by construction — a
+     * weekend-to-regular day never resolves to the 'WO' code below.
+     */
+    public function getStatusForDay($employee, $date, $holidays, $getAtt): array
     {
         $att = $getAtt($employee->id, $date->toDateString());
         // leave check
         $leave = Leave::where('employee_id', $employee->id)
             ->whereDate('leave_from', '<=', $date->toDateString())
             ->whereDate('leave_to', '>=', $date->toDateString())->first();
-        if ($leave) return 'L';
+        if ($leave) return ['code' => 'L', 'is_weekend' => false, 'is_weekend_to_regular' => false];
 
         $dateStr = $date->format('Y-m-d');
         $isHoliday = $holidays->contains(function($h) use ($dateStr) {
             return ($dateStr >= $h->from_date && $dateStr <= $h->to_date);
         });
-        if($isHoliday) return 'GH';
+        if($isHoliday) return ['code' => 'GH', 'is_weekend' => false, 'is_weekend_to_regular' => false];
 
         $empWeekend = strtolower($employee->otherInfo()['profile']['weekend'] ?? 'friday');
         $dayOfWeek = strtolower($date->format('l'));
@@ -206,19 +233,25 @@ class JobcardDataService {
 
         // For compliance, do NOT treat weekend2regular as regular (weekend will always be shown except for null/0 factory)
         $factoryNo = hr_factory('factory_no');
+        $isWeekend = false;
         if ($factoryNo == 1 || $factoryNo == 2) {
             if ($dayOfWeek === $empWeekend && $isWeekendToRegular) {
                 // Do not treat as weekend, treat as working
             } elseif ($isRegularToWeekend || ($dayOfWeek === $empWeekend && !$isWeekendToRegular) || ($att && !empty($att->regular_to_weekend))) {
-                return 'WO';
+                $isWeekend = true;
             }
         } else { // factory null / 0: treat weekend2regular as regular day!
-            if ($isRegularToWeekend) return 'WO';
-            elseif ($dayOfWeek === $empWeekend && !$isWeekendToRegular) return 'WO';
+            if ($isRegularToWeekend) $isWeekend = true;
+            elseif ($dayOfWeek === $empWeekend && !$isWeekendToRegular) $isWeekend = true;
             // else: treat as regular working
         }
 
-        return $att ? ($att->status ?: ($att->in_time ? 'P' : 'A')) : 'A';
+        if ($isWeekend) {
+            return ['code' => 'WO', 'is_weekend' => true, 'is_weekend_to_regular' => false];
+        }
+
+        $code = $att ? ($att->status ?: ($att->in_time ? 'P' : 'A')) : 'A';
+        return ['code' => $code, 'is_weekend' => false, 'is_weekend_to_regular' => $isWeekendToRegular];
     }
 
 

@@ -10,10 +10,8 @@ use Illuminate\Routing\Controller;
 class HrHolidayController extends Controller
 {
     private const TYPES = [
-        'public',
-        'optional',
-        'factory',
-        'compensatory',
+        'festival',
+        'general',
     ];
 
     public function index(Request $request)
@@ -42,7 +40,7 @@ class HrHolidayController extends Controller
     {
         $validated = $request->validate([
             'purpose'   => 'required|string|max:200',
-            'type'      => 'required|string|in:public,optional,factory,compensatory',
+            'type'      => 'required|string|in:festival,general',
             'from_date' => 'required|date',
             'to_date'   => 'required|date|after_or_equal:from_date',
             'remarks'   => 'nullable|string|max:500',
@@ -62,7 +60,7 @@ class HrHolidayController extends Controller
 
         $validated = $request->validate([
             'purpose'   => 'required|string|max:200',
-            'type'      => 'required|string|in:public,optional,factory,compensatory',
+            'type'      => 'required|string|in:festival,general',
             'from_date' => 'required|date',
             'to_date'   => 'required|date|after_or_equal:from_date',
             'remarks'   => 'nullable|string|max:500',

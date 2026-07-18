@@ -6,6 +6,8 @@ use ME\Hr\Http\Controllers\HrDashboardController;
 use ME\Hr\Http\Controllers\HrEmployeeController;
 use ME\Hr\Http\Controllers\HrHolidayController;
 use ME\Hr\Http\Controllers\HrFloorLineController;
+use ME\Hr\Http\Controllers\HrEmployeeGatePassController;
+use ME\Hr\Http\Controllers\HrEmployeeAssetController;
 use ME\Hr\Http\Controllers\HrMasterController;
 use ME\Hr\Http\Controllers\HrReportController;
 use ME\Hr\Http\Controllers\ProductionRateController;
@@ -80,6 +82,12 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/reports/wages-salary-summary-print', [HrReportController::class, 'wagesSalarySummaryReportPrint'])->name('reports.wages-salary-summary-print');
 		Route::get('/reports/daily-attendance-report', [HrReportController::class, 'dailyAttendanceReportScreen'])->name('reports.daily-attendance-report');
 		Route::get('/reports/daily-attendance-report-print', [HrReportController::class, 'dailyAttendanceReportPrint'])->name('reports.daily-attendance-report-print');
+		Route::get('/reports/ot-summary', [HrReportController::class, 'otSummaryReportScreen'])->name('reports.ot-summary');
+		Route::get('/reports/ot-summary-print', [HrReportController::class, 'otSummaryReportPrint'])->name('reports.ot-summary-print');
+		Route::get('/reports/gate-pass-report', [HrReportController::class, 'gatePassReportScreen'])->name('reports.gate-pass-report');
+		Route::get('/reports/gate-pass-report-print', [HrReportController::class, 'gatePassReportPrint'])->name('reports.gate-pass-report-print');
+		Route::get('/reports/asset-report', [HrReportController::class, 'assetReportScreen'])->name('reports.asset-report');
+		Route::get('/reports/asset-report-print', [HrReportController::class, 'assetReportPrint'])->name('reports.asset-report-print');
 		Route::get('/reports/{report}', [HrReportController::class, 'show'])->name('reports.show');
 		Route::post('/reports/monthly/lock-increment', [HrReportController::class, 'lockMonthlyIncrement'])->name('reports.monthly.lock-increment');
 		Route::post('/reports/job-card-report/lock', [HrReportController::class, 'applyJobCardLock'])->name('reports.job-card-report.lock');
@@ -88,6 +96,21 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::post('/holidays', [HrHolidayController::class, 'store'])->name('holidays.store');
 		Route::put('/holidays/{id}', [HrHolidayController::class, 'update'])->name('holidays.update');
 		Route::delete('/holidays/{id}', [HrHolidayController::class, 'destroy'])->name('holidays.destroy');
+
+		// Employee Gate Pass
+		Route::get('/gate-passes', [HrEmployeeGatePassController::class, 'index'])->name('gate-passes.index');
+		Route::post('/gate-passes', [HrEmployeeGatePassController::class, 'store'])->name('gate-passes.store');
+		Route::put('/gate-passes/{id}', [HrEmployeeGatePassController::class, 'update'])->name('gate-passes.update');
+		Route::get('/gate-passes/{id}/print', [HrEmployeeGatePassController::class, 'print'])->name('gate-passes.print');
+
+		// Employee Asset Handover
+		Route::get('/employee-assets', [HrEmployeeAssetController::class, 'index'])->name('employee-assets.index');
+		Route::get('/employee-assets/create', [HrEmployeeAssetController::class, 'create'])->name('employee-assets.create');
+		Route::post('/employee-assets', [HrEmployeeAssetController::class, 'store'])->name('employee-assets.store');
+		Route::get('/employee-assets/{id}/edit', [HrEmployeeAssetController::class, 'edit'])->name('employee-assets.edit');
+		Route::put('/employee-assets/{id}', [HrEmployeeAssetController::class, 'update'])->name('employee-assets.update');
+		Route::put('/employee-assets/{id}/return', [HrEmployeeAssetController::class, 'returnAsset'])->name('employee-assets.return');
+		Route::get('/employee-assets/{id}/print', [HrEmployeeAssetController::class, 'print'])->name('employee-assets.print');
 
 		// Floor Lines (Block / Line)
 		Route::get('/masters/floor-lines', [HrFloorLineController::class, 'index'])->name('floor-lines.index');

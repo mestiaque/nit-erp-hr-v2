@@ -19,6 +19,11 @@
 .info-grid td:nth-child(odd) { font-weight:700; background:#f5f5f5; }
 .page-break { page-break-after: always; }
 .badge-lock { background:#e74c3c; color:#fff; padding:1px 5px; border-radius:3px; font-size:9px; }
+.grand-total-box { margin-top:8px; padding:6px 10px; background:#f4f4f4; border:1px solid #999; font-size:11px; font-weight:700; display:inline-block; }
+.t th, .t td { overflow-wrap:break-word; }
+/* Scoped to OT Summary specifically — forces identical column widths across every
+   section's table, instead of each one auto-sizing to its own longest content. */
+.t-ot-summary { table-layout:fixed; }
 </style>
 @endpush
 

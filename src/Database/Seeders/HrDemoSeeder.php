@@ -138,6 +138,7 @@ class HrDemoSeeder extends Seeder
             ['name' => 'Sick Leave',      'bn_name' => 'অসুস্থতা ছুটি',        'code' => 'SL',  'days' => 14,  'status' => 'active', 'created_at' => $now],
             ['name' => 'Earned Leave',    'bn_name' => 'অর্জিত ছুটি',          'code' => 'EL',  'days' => 18,  'status' => 'active', 'created_at' => $now],
             ['name' => 'Festival Leave',  'bn_name' => 'উৎসব ছুটি',            'code' => 'FL',  'days' => 2,   'status' => 'active', 'created_at' => $now],
+            ['name' => 'General Leave',   'bn_name' => 'সাধারণ ছুটি',          'code' => 'GL',  'days' => 0,   'status' => 'active', 'created_at' => $now],
             ['name' => 'Maternity Leave', 'bn_name' => 'মাতৃত্বকালীন ছুটি',   'code' => 'ML',  'days' => 112, 'status' => 'active', 'created_at' => $now],
             ['name' => 'Without Pay',     'bn_name' => 'বেতন বিহীন ছুটি',      'code' => 'WOP', 'days' => 0,   'status' => 'active', 'created_at' => $now],
         ] as $row) {
@@ -401,18 +402,18 @@ class HrDemoSeeder extends Seeder
         $now = now();
 
         foreach ([
-            ['purpose' => 'International New Year\'s Day',     'bn_purpose' => 'আন্তর্জাতিক নববর্ষ',          'type' => 'public',   'from_date' => '2026-01-01', 'to_date' => '2026-01-01'],
-            ['purpose' => 'International Mother Language Day', 'bn_purpose' => 'আন্তর্জাতিক মাতৃভাষা দিবস',  'type' => 'public',   'from_date' => '2026-02-21', 'to_date' => '2026-02-21'],
-            ['purpose' => 'Independence Day',                  'bn_purpose' => 'স্বাধীনতা দিবস',              'type' => 'public',   'from_date' => '2026-03-26', 'to_date' => '2026-03-26'],
+            ['purpose' => 'International New Year\'s Day',     'bn_purpose' => 'আন্তর্জাতিক নববর্ষ',          'type' => 'general',  'from_date' => '2026-01-01', 'to_date' => '2026-01-01'],
+            ['purpose' => 'International Mother Language Day', 'bn_purpose' => 'আন্তর্জাতিক মাতৃভাষা দিবস',  'type' => 'general',  'from_date' => '2026-02-21', 'to_date' => '2026-02-21'],
+            ['purpose' => 'Independence Day',                  'bn_purpose' => 'স্বাধীনতা দিবস',              'type' => 'general',  'from_date' => '2026-03-26', 'to_date' => '2026-03-26'],
             ['purpose' => 'Eid-ul-Fitr',                       'bn_purpose' => 'ঈদুল ফিতর',                   'type' => 'festival', 'from_date' => '2026-03-31', 'to_date' => '2026-04-02'],
-            ['purpose' => 'Bengali New Year (Pahela Boishakh)','bn_purpose' => 'পহেলা বৈশাখ',                  'type' => 'public',   'from_date' => '2026-04-14', 'to_date' => '2026-04-14'],
-            ['purpose' => 'May Day',                           'bn_purpose' => 'মে দিবস',                     'type' => 'public',   'from_date' => '2026-05-01', 'to_date' => '2026-05-01'],
+            ['purpose' => 'Bengali New Year (Pahela Boishakh)','bn_purpose' => 'পহেলা বৈশাখ',                  'type' => 'general',  'from_date' => '2026-04-14', 'to_date' => '2026-04-14'],
+            ['purpose' => 'May Day',                           'bn_purpose' => 'মে দিবস',                     'type' => 'general',  'from_date' => '2026-05-01', 'to_date' => '2026-05-01'],
             ['purpose' => 'Buddha Purnima',                    'bn_purpose' => 'বুদ্ধ পূর্ণিমা',             'type' => 'festival', 'from_date' => '2026-05-11', 'to_date' => '2026-05-11'],
             ['purpose' => 'Eid-ul-Adha',                       'bn_purpose' => 'ঈদুল আযহা',                   'type' => 'festival', 'from_date' => '2026-06-07', 'to_date' => '2026-06-09'],
-            ['purpose' => 'National Mourning Day',             'bn_purpose' => 'জাতীয় শোক দিবস',            'type' => 'public',   'from_date' => '2026-08-15', 'to_date' => '2026-08-15'],
-            ['purpose' => 'Victory Day',                       'bn_purpose' => 'বিজয় দিবস',                  'type' => 'public',   'from_date' => '2026-12-16', 'to_date' => '2026-12-16'],
+            ['purpose' => 'National Mourning Day',             'bn_purpose' => 'জাতীয় শোক দিবস',            'type' => 'general',  'from_date' => '2026-08-15', 'to_date' => '2026-08-15'],
+            ['purpose' => 'Victory Day',                       'bn_purpose' => 'বিজয় দিবস',                  'type' => 'general',  'from_date' => '2026-12-16', 'to_date' => '2026-12-16'],
             ['purpose' => 'Christmas Day',                     'bn_purpose' => 'বড়দিন',                       'type' => 'festival', 'from_date' => '2026-12-25', 'to_date' => '2026-12-25'],
-            ['purpose' => 'Factory Annual Maintenance',        'bn_purpose' => 'কারখানা বার্ষিক রক্ষণাবেক্ষণ','type' => 'factory',  'from_date' => '2026-07-01', 'to_date' => '2026-07-03'],
+            ['purpose' => 'Factory Annual Maintenance',        'bn_purpose' => 'কারখানা বার্ষিক রক্ষণাবেক্ষণ','type' => 'general',  'from_date' => '2026-07-01', 'to_date' => '2026-07-03'],
         ] as $row) {
             DB::table('hr_holidays')->updateOrInsert(
                 ['purpose' => $row['purpose'], 'from_date' => $row['from_date']],

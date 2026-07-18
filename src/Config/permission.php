@@ -6,6 +6,10 @@ return [
             'label' => 'Classification',
             'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
         ],
+        'hr_asset_category' => [
+            'label' => 'Asset Category',
+            'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
+        ],
         'hr_block' => [
             'label' => 'Block',
             'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
@@ -103,6 +107,14 @@ return [
             'label' => 'Factory Holiday',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
+        'hr_employee_gate_pass' => [
+            'label' => 'Employee Gate Pass',
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'all' => 'All' ],
+        ],
+        'hr_employee_asset' => [
+            'label' => 'Employee Asset Management',
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'all' => 'All' ],
+        ],
         'hr_regular_to_weekend' => [
             'label' => 'Weekend to Regular',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
@@ -178,6 +190,18 @@ return [
         ],
         'hr_salary_report_wage' => [
             'label' => 'Salary Report (Wage)',
+            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        ],
+        'hr_ot_summary_report' => [
+            'label' => 'OT Summary Report',
+            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        ],
+        'hr_gate_pass_report' => [
+            'label' => 'Gate Pass Report',
+            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        ],
+        'hr_asset_report' => [
+            'label' => 'Asset Report',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
         'pay_slip_report' => [

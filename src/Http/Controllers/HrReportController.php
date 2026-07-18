@@ -241,7 +241,7 @@ class HrReportController extends Controller
             'recruitment' => 'Recruitment',
             'migration' => 'Migration',
             'long-absent' => 'Long Absent',
-            'monthly-late-report' => 'Monthly Late Report',
+            'attendance-with-ot' => 'Attendance With OT',
             'increment' => 'Increment',
             'increment-summary' => 'Increment Report',
         ];
@@ -278,8 +278,8 @@ class HrReportController extends Controller
         };
 
         if ($request->boolean('print')) {
-            if ($reportType === 'monthly-late-report') {
-                return $this->monthlyLateReportScreen($request, 'monthly-late-report');
+            if ($reportType === 'attendance-with-ot') {
+                return $this->attendanceWithOtReportScreen($request, 'attendance-with-ot');
             }
 
             return view('hr::reports.monthly-print', [
@@ -1747,8 +1747,8 @@ class HrReportController extends Controller
         ];
 
         if ($request->boolean('print')) {
-            $from = $request->input('from') ?: now()->toDateString();
-            $to   = $request->input('to') ?: $from;
+            $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+            $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
             $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'job-card'));
             if (!array_key_exists($reportType, $reportTypes)) {
                 $reportType = 'job-card';
@@ -1844,12 +1844,18 @@ class HrReportController extends Controller
             'OT' => 'OT Only',
             'PM' => 'Attendance Missing',
             'AS' => 'Attendance Status',
+            'LR' => 'Late Report (Detailed)',
         ];
 
         if ($request->boolean('print')) {
-            $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-            $to   = $request->input('to')   ?: now()->toDateString();
             $type = strtoupper((string) $request->input('att_type', ''));
+
+            if ($type === 'LR') {
+                return $this->monthlyLateReportScreen($request, 'monthly-late-report');
+            }
+
+            $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+            $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
@@ -2217,6 +2223,25 @@ class HrReportController extends Controller
             default => fn (array $row) => 'all',
         };
 
+        // Report-wide summary — a simple total across every employee-day shown below,
+        // in a fixed, predictable status order (rather than sorted by count, which would
+        // reorder itself unpredictably day to day).
+        $statusOrder = ['Present', 'Late', 'Absent', 'Leave', 'Holiday', 'Weekend'];
+        $statusCounts = array_fill_keys($statusOrder, 0);
+        $totalOtHours = 0.0;
+        foreach ($employeeRows as $row) {
+            foreach ($row['days'] as $day) {
+                $status = $day['status'];
+                $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1;
+                $totalOtHours += (float) ($day['ot_hours'] ?? 0);
+            }
+        }
+        $summary = [
+            'total_employees' => $employees->count(),
+            'status_counts'   => $statusCounts,
+            'total_ot_hours'  => round($totalOtHours, 2),
+        ];
+
         $groups = $employeeRows->groupBy($groupKey);
 
         $groupLabel = function (string $key) use ($groupBy, $departmentMap, $sectionMap, $designationMap, $classificationMap) {
@@ -2243,11 +2268,150 @@ class HrReportController extends Controller
             'groupLabel' => $groupLabel,
             'groupBy' => $groupBy,
             'isRange' => $isRange,
+            'summary' => $summary,
             'from' => $from,
             'to' => $to,
             'dateLabel' => $isRange
                 ? Carbon::parse($from)->format('d-M-Y') . ' to ' . Carbon::parse($to)->format('d-M-Y')
                 : Carbon::parse($from)->format('d-M-Y'),
+        ]);
+    }
+
+    public function otSummaryReportScreen(Request $request)
+    {
+        return view('hr::reports.ot-summary-report', [
+            'options' => $this->employeeReportOptions(),
+            'request' => $request,
+        ]);
+    }
+
+    public function otSummaryReportPrint(Request $request)
+    {
+        $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+
+        $employees = $this->employeeReportQuery($request)
+            ->orderBy('section_id')
+            ->naturalOrderById()
+            ->get();
+
+        $dates = collect();
+        $cur = Carbon::parse($from);
+        $end = Carbon::parse($to);
+        while ($cur->lte($end)) {
+            $dates->push($cur->copy());
+            $cur->addDay();
+        }
+
+        return view('hr::reports.ot-summary-report-print', [
+            'employees' => $employees,
+            'from' => $from,
+            'to' => $to,
+            'dates' => $dates,
+            'request' => $request,
+            'language' => $request->input('language', 'bn'),
+            'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
+            'toLabel'   => Carbon::parse($to)->format('d-M-Y'),
+        ]);
+    }
+
+    public function gatePassReportScreen(Request $request)
+    {
+        return view('hr::reports.gate-pass-report', [
+            'options' => $this->employeeReportOptions(),
+            'request' => $request,
+        ]);
+    }
+
+    public function gatePassReportPrint(Request $request)
+    {
+        $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+
+        $employeeIds = $this->employeeReportQuery($request)->pluck('id');
+
+        $gatePasses = \ME\Hr\Models\HrEmployeeGatePass::query()
+            ->with(['employee.department', 'employee.section', 'employee.designation'])
+            ->whereIn('employee_id', $employeeIds)
+            ->whereDate('out_time', '>=', $from)
+            ->whereDate('out_time', '<=', $to)
+            ->orderBy('out_time')
+            ->get();
+
+        $isRange = $from !== $to;
+
+        // Grouped by employee (each group ending in a Total Duration row) once the
+        // report spans more than a single day — for a one-day report every employee
+        // already has just their one or two rows directly in a flat, chronological list.
+        $groupedGatePasses = $isRange
+            ? $gatePasses->groupBy('employee_id')
+                ->sortBy(fn ($rows) => $rows->first()->employee->employee_id ?? '')
+            : collect();
+
+        return view('hr::reports.gate-pass-report-print', [
+            'gatePasses' => $gatePasses,
+            'groupedGatePasses' => $groupedGatePasses,
+            'isRange' => $isRange,
+            'from' => $from,
+            'to' => $to,
+            'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
+            'toLabel'   => Carbon::parse($to)->format('d-M-Y'),
+        ]);
+    }
+
+    public function assetReportScreen(Request $request)
+    {
+        return view('hr::reports.asset-report', [
+            'options' => $this->employeeReportOptions(),
+            'categories' => \ME\Hr\Models\HrAssetCategory::query()->orderBy('name')->get(['id', 'name']),
+            'request' => $request,
+        ]);
+    }
+
+    public function assetReportPrint(Request $request)
+    {
+        $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+
+        $employeeIds = $this->employeeReportQuery($request)->pluck('id');
+
+        $assets = \ME\Hr\Models\HrEmployeeAsset::query()
+            ->with(['employee.department', 'employee.section', 'employee.designation', 'category'])
+            ->whereIn('employee_id', $employeeIds)
+            ->whereDate('issued_date', '>=', $from)
+            ->whereDate('issued_date', '<=', $to)
+            ->when($request->filled('asset_category'), function ($q) use ($request) {
+                $values = array_filter(array_map('intval', (array) $request->asset_category));
+                if (!empty($values)) {
+                    $q->whereIn('asset_category_id', $values);
+                }
+            })
+            ->when($request->filled('asset_status'), function ($q) use ($request) {
+                $values = array_filter((array) $request->asset_status);
+                if (!empty($values)) {
+                    $q->whereIn('status', $values);
+                }
+            })
+            ->orderBy('issued_date')
+            ->get();
+
+        $isRange = $from !== $to;
+
+        // Grouped by employee (each group ending in a Total Assets row) once the
+        // report spans more than a single day — mirrors the Gate Pass Report pattern.
+        $groupedAssets = $isRange
+            ? $assets->groupBy('employee_id')
+                ->sortBy(fn ($rows) => $rows->first()->employee->employee_id ?? '')
+            : collect();
+
+        return view('hr::reports.asset-report-print', [
+            'assets' => $assets,
+            'groupedAssets' => $groupedAssets,
+            'isRange' => $isRange,
+            'from' => $from,
+            'to' => $to,
+            'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
+            'toLabel'   => Carbon::parse($to)->format('d-M-Y'),
         ]);
     }
 
@@ -2266,52 +2430,49 @@ class HrReportController extends Controller
             $sectionMap = collect($options['sections'] ?? [])->pluck('name', 'id');
             $designationMap = collect($options['designations'] ?? [])->pluck('name', 'id');
 
-            $attendanceByUser = HrAttendance::query()
-                ->whereIn('employee_id', $employees->pluck('id'))
-                ->whereDate('date', $reportDate)
-                ->get()
-                ->keyBy('employee_id');
-
             $englishRequest = clone $request;
             $englishRequest->merge([
                 'language' => 'en',
             ]);
-            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee(null, $englishRequest, null, null, null, null); 
+            $employeeDataFn = \ME\Hr\Services\HrOptionsService::getOptionsForEmployee(null, $englishRequest, null, null, null, null);
 
-            $rows = $employees->map(function ($employee) use ($request, $attendanceByUser, $employeeDataFn, $sectionMap, $designationMap, $reportDate) {
-                $att = $attendanceByUser->get($employee->id);
+            // Same Punch-Missing fold used by Daily Attendance Report — it's a data-entry
+            // quality flag from other screens, not a real attendance state here.
+            $normalizeStatus = function ($status) {
+                $status = (string) ($status ?: 'N/A');
+                if (stripos($status, 'punch missing') === false) {
+                    return $status;
+                }
+                return stripos($status, 'late') !== false ? 'Late' : 'Present';
+            };
 
+            $rows = $employees->map(function ($employee) use ($request, $employeeDataFn, $sectionMap, $designationMap, $reportDate, $normalizeStatus) {
+                // The compliance-mode/weekend/holiday-aware processed row is the single
+                // source of truth here — previously this preferred the raw HrAttendance
+                // record instead, which showed unprocessed in/out/status (ignoring
+                // weekend-hiding, compliance capping, etc.), inconsistent with every other
+                // report in the system.
                 $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                     $employee->id,
                     $reportDate,
                     $reportDate
                 );
-                $summary = $pack['summary'] ?? [];
-                $attendanceRow = collect($pack['attendance'] ?? [])->first();
+                $attendanceRow = collect($pack['attendance'] ?? [])->first() ?? [];
+                $statusKey = (string) ($attendanceRow['status_key'] ?? '');
 
                 $employeeData = $employeeDataFn($employee, $request ?? null, null, null, null, null);
 
-                $late = (int) (($summary['totalLate'] ?? 0)
-                    + ($summary['totalLEO'] ?? 0)
-                    + ($summary['totalLPM'] ?? 0));
-
-                $status = (string) ($att->status ?? data_get($attendanceRow, 'status', ''));
-                if ($status === '') {
-                    $status = $att && $att->in_time ? 'P' : 'A';
-                }
-
-                $otHours = (float) ($att->compliance_ot ?? data_get($attendanceRow, 'compliance_ot', 0));
                 return [
                     'section_id' => $employee->section_id,
                     'section' => $employeeData['section'] ?? $sectionMap->get($employee->section_id, 'N/A'),
                     'card_no' => $employee->employee_id,
                     'name' => $employeeData['employee_name'] ?? $employee->name,
                     'designation' => $employeeData['designation'] ?? $designationMap->get($employee->designation_id, 'N/A'),
-                    'in_time' => $att->in_time ?? data_get($attendanceRow, 'in_time'),
-                    'out_time' => $att->out_time ?? data_get($attendanceRow, 'out_time'),
-                    'late' => $late,
-                    'ot_hours' => $otHours,
-                    'status' => strtoupper((string) $status),
+                    'in_time' => $attendanceRow['in_time'] ?? '-',
+                    'out_time' => $attendanceRow['out_time'] ?? '-',
+                    'late' => in_array($statusKey, ['late', 'late_and_early_exit', 'late_and_punch_missing'], true) ? 1 : 0,
+                    'ot_hours' => (float) ($attendanceRow['compliance_ot'] ?? 0),
+                    'status' => strtoupper($normalizeStatus($attendanceRow['status'] ?? 'N/A')),
                 ];
             });
 
@@ -2952,7 +3113,13 @@ class HrReportController extends Controller
     private function renderSalarySheetReport(Request $request, string $reportType, string $view)
     {
         $payload = $this->salaryReportBasePayload($request, $reportType);
-        $leaveInfos = HrLeaveInfo::where('status', 'active')->orderBy('id')->get(['id', 'name', 'code']);
+        // FL/GL are excluded here — those codes are now the dedicated Festival/General
+        // factory-holiday columns (see EmployeeAttendanceService's holiday_festival/
+        // holiday_general), not per-employee leave-type columns, so they must not also
+        // appear via the generic per-leave-type loop below.
+        $leaveInfos = HrLeaveInfo::where('status', 'active')
+            ->whereNotIn('code', ['FL', 'GL'])
+            ->orderBy('id')->get(['id', 'name', 'code']);
         $payload = array_merge(
             $payload,
             SalaryReportService::buildSalarySheetData($payload['employees'], $payload['from'], $payload['to'], $request, $leaveInfos),
@@ -2968,7 +3135,7 @@ class HrReportController extends Controller
     private function salaryReportBasePayload(Request $request, string $reportType): array
     {
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-        $to = $request->input('to') ?: now()->toDateString();
+        $to = $request->input('to') ?: now()->endOfMonth()->toDateString();
         $options = $this->employeeReportOptions();
 
         $employees = $this->employeeReportQuery($request)

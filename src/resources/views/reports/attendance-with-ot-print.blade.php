@@ -97,6 +97,16 @@
         font-weight: 700;
         background: #f7f7f7;
     }
+
+    .grand-total-box {
+        margin-top: 8px;
+        padding: 6px 10px;
+        background: #f4f4f4;
+        border: 1px solid #999;
+        font-size: 11px;
+        font-weight: 700;
+        display: inline-block;
+    }
 </style>
 @endpush
 
@@ -106,6 +116,7 @@
     $address = hr_factory('address') ?? '';
     $reportDateLabel = \Carbon\Carbon::parse($reportDate)->format('d/m/Y');
     $rowsBySection = $rows->groupBy('section_id');
+    $grandTotalOt = $rows->sum(fn ($row) => (float) ($row['ot_hours'] ?? 0));
 @endphp
 
 <div class=" text-center">
@@ -181,5 +192,11 @@
     @empty
         <p>No employees found.</p>
     @endforelse
+
+    @if($rows->isNotEmpty())
+        <div class="grand-total-box">
+            Grand Total: {{ $rows->count() }} Employees &nbsp;|&nbsp; Total OT: {{ number_format($grandTotalOt, 2) }}h
+        </div>
+    @endif
 </div>
 @endsection

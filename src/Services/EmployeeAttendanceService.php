@@ -105,6 +105,16 @@ class EmployeeAttendanceService
         $factoryNo = hr_factory('factory_no');
         $holidays  = \ME\Hr\Services\HrOptionsService::getOptions()['holidays'] ?? collect();
 
+        // A resigned/left employee's data stops on their exit date — every report that
+        // shares this engine (attendance, job card, salary sheet, OT summary, ...) must
+        // treat any date past it as "not employed", not as absent, so it neither shows
+        // fabricated attendance nor gets wrongly deducted for days they no longer worked.
+        $exitedAt = null;
+        $empExitStatus = strtolower((string) ($employee->employment_status ?? ''));
+        if (in_array($empExitStatus, ['lefty', 'left', 'resign', 'resigned'], true) && !blank($employee->exited_at)) {
+            $exitedAt = Carbon::parse($employee->exited_at)->startOfDay();
+        }
+
         // ── Designation effectiveness: OT flags & meal allowances ──────────
         $designation = $employee->designation
             ?? \ME\Hr\Models\HrDesignation::find($employee->designation_id);
@@ -183,6 +193,30 @@ class EmployeeAttendanceService
 
         foreach ($dates as $d) {
             $dateStr = $d->format('Y-m-d');
+
+            if ($exitedAt && $d->gt($exitedAt)) {
+                $result[] = [
+                    'date'            => $d->format('d-m-Y'),
+                    'day'             => $d->format('l'),
+                    'shift'           => null,
+                    'shift_bn'        => null,
+                    'in_time'         => '-',
+                    'out_time'        => '-',
+                    'status_key'      => 'not_employed',
+                    'status'          => 'N/A',
+                    'holiday_type'    => null,
+                    'actual_ot'       => 0.0,
+                    'compliance_ot'   => 0.0,
+                    'extra_ot'        => null,
+                    'worked_hours'    => 0,
+                    'tiffin_eligible' => false,
+                    'night_eligible'  => false,
+                    'dinner_eligible' => false,
+                    'remarks'         => '',
+                ];
+                continue;
+            }
+
             $att     = $attendanceMap[$employee->id . '_' . $dateStr] ?? null;
 
             // Leave
@@ -193,7 +227,8 @@ class EmployeeAttendanceService
             }
 
             // Holiday
-            $isHoliday = $holidays->contains(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);
+            $matchedHoliday = $holidays->first(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);
+            $isHoliday      = (bool) $matchedHoliday;
 
             // Weekend / Regular-To-Weekend / Weekend-To-Regular
             $dayOfWeek          = strtolower($d->format('l'));
@@ -231,19 +266,6 @@ class EmployeeAttendanceService
                 $status = 'absent'; $status_display = 'Absent';
             }
 
-            // In/Out visibility: an actual (unconverted) weekly holiday never shows punch
-            // times, even if the employee happened to punch in/out — only a day that's
-            // been explicitly converted to a working day (weekend-to-regular) shows
-            // attendance normally. This is independent of the WPHP flag, which only
-            // affects whether the full worked time counts as OT (see below), not visibility.
-            if ($isWeekend) {
-                $inTime  = null;
-                $outTime = null;
-            } else {
-                $inTime  = $att && $att->in_time  ? $att->in_time  : null;
-                $outTime = $att && $att->out_time ? $att->out_time : null;
-            }
-
             $resolvedShift = $employee->resolveShiftForDate($d);
             $shiftMinutes  = 0;
             if ($resolvedShift && $resolvedShift->start_time && $resolvedShift->end_time) {
@@ -255,54 +277,79 @@ class EmployeeAttendanceService
                 $shiftMinutes = (int) $shiftStartDur->diffInMinutes($shiftEndDur);
             }
 
-            // ── OT calculation with designation flags ─────────────────────
+            // ── In/Out visibility + OT, by day type and factory compliance mode ────
             $otMinRaw = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
-
-            // WPHP full-day count is an "Actual" mode concept only: with no shift/OT
-            // distinction, Actual just counts the whole worked day as OT. Compliance
-            // modes (1/2) keep the normal shift-excess OT ($otMinRaw, unchanged) and its
-            // Allow OT Hour cap — WPHP there instead adds the shift's own hours into the
-            // OT figure (see $fullOtOnWphpDay below), since a converted weekend day has no
-            // separate "regular salaried" portion — the whole recognized day is OT.
-            $otMinRawFull = $otMinRaw;
-            if ($isOtBasisWphp && $isWeekendToRegular && $att && $att->in_time) {
-                $otMinRawFull = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
-            }
-
-            // Zero out OT when not enabled for this factory / designation
             if (!$otEnabled) {
-                $otMinRaw     = 0;
-                $otMinRawFull = 0;
+                $otMinRaw = 0;
             }
 
-            $actualOt        = round($otMinRawFull / 60, 2);
-            $fullOtOnWphpDay = $isOtBasisWphp && $isWeekendToRegular;
+            if ($isWeekend) {
+                // A genuine (unconverted) weekly holiday. Compliance modes never show
+                // attendance worked on a real weekend day, regardless of the WPHP flag.
+                // Actual shows the real punch, and when the designation's OT basis is WPHP
+                // the WHOLE worked span counts as OT (a weekend has no "regular shift"
+                // portion to subtract out), not just the excess over shift end.
+                if ($factoryNo == 1 || $factoryNo == 2) {
+                    $inTime       = null;
+                    $outTime      = null;
+                    $actualOt     = 0.0;
+                    $complianceOt = 0.0;
+                    $extraOt      = null;
+                } else {
+                    $inTime  = $att && $att->in_time  ? $att->in_time  : null;
+                    $outTime = $att && $att->out_time ? $att->out_time : null;
 
-            if ($factoryNo == 1 || $factoryNo == 2) {
-                $weekendBlocksOt   = $isWeekendForCompliance && !$isOtBasisWphp;
-                $cappedExcessMin   = $weekendBlocksOt ? 0 : min($otMinRaw, $allowOtMin);
-                $shiftBonusMin     = ($weekendBlocksOt || !$fullOtOnWphpDay) ? 0 : $shiftMinutes;
-                $complianceOt      = round(($cappedExcessMin + $shiftBonusMin) / 60, 2);
-                $extraOt           = ($factoryNo == 2 && !$weekendBlocksOt && $otMinRaw > $allowOtMin)
-                    ? round(($otMinRaw - $allowOtMin) / 60, 2)
-                    : ($factoryNo == 2 ? 0 : null);
-
-                // Comp-1 shows no Extra OT column, so time worked beyond the compliance cap
-                // is instead hidden by capping the displayed Out Time itself; Comp-2 shows
-                // the real Out Time since Extra OT already accounts for the difference.
-                if ($factoryNo == 1 && $outTime && $shiftMinutes > 0 && $otMinRaw > 0) {
-                    $cappedOut = Carbon::parse($dateStr . ' ' . $resolvedShift->end_time)
-                        ->addMinutes($cappedExcessMin);
-                    $outTime = $cappedOut->format('H:i:s');
+                    $otMinRawForActual = $otMinRaw;
+                    if ($otEnabled && $isOtBasisWphp && $att && $att->in_time) {
+                        $otMinRawForActual = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
+                    }
+                    $actualOt     = round($otMinRawForActual / 60, 2);
+                    $complianceOt = $isOtBasisWphp ? $actualOt : 0.0;
+                    $extraOt      = null;
                 }
+            } elseif ($isWeekendToRegular) {
+                // A weekend day converted to a working day is shown exactly like an
+                // ordinary shift day — capped at the shift's own hours, zero OT — in every
+                // factory mode. The real extra time worked is compensated separately via
+                // the Weekend-to-Regular allowance (calculateWeekendToRegularAllowance()),
+                // not through the job card's OT columns.
+                $inTime  = $att && $att->in_time ? $att->in_time : null;
+                $outTime = ($resolvedShift && $resolvedShift->end_time)
+                    ? $resolvedShift->end_time
+                    : ($att && $att->out_time ? $att->out_time : null);
+                $actualOt     = 0.0;
+                $complianceOt = 0.0;
+                $extraOt      = ($factoryNo == 2) ? 0.0 : null;
             } else {
-                // Factory null/0 (Actual): weekend OT only when WPHP is ON; full worked
-                // time (via $actualOt / $otMinRawFull) counts, uncapped. Out Time always
-                // shows the real punch time.
-                $complianceOt = (($isWeekend || $isWeekendForCompliance) && !$isOtBasisWphp) ? 0 : $actualOt;
-                $extraOt      = null;
+                // Regular working day (also covers holiday/leave/absent rows, where
+                // in_time/out_time are naturally empty).
+                $inTime  = $att && $att->in_time  ? $att->in_time  : null;
+                $outTime = $att && $att->out_time ? $att->out_time : null;
+
+                $actualOt = round($otMinRaw / 60, 2);
+
+                if ($factoryNo == 1 || $factoryNo == 2) {
+                    $cappedExcessMin = min($otMinRaw, $allowOtMin);
+                    $complianceOt    = round($cappedExcessMin / 60, 2);
+                    $extraOt         = ($factoryNo == 2 && $otMinRaw > $allowOtMin)
+                        ? round(($otMinRaw - $allowOtMin) / 60, 2)
+                        : ($factoryNo == 2 ? 0.0 : null);
+
+                    // Comp-1 shows no Extra OT column, so time worked beyond the compliance
+                    // cap is instead hidden by capping the displayed Out Time itself;
+                    // Comp-2 shows the real Out Time since Extra OT already accounts for
+                    // the difference.
+                    if ($factoryNo == 1 && $outTime && $shiftMinutes > 0 && $otMinRaw > 0) {
+                        $cappedOut = Carbon::parse($dateStr . ' ' . $resolvedShift->end_time)
+                            ->addMinutes($cappedExcessMin);
+                        $outTime = $cappedOut->format('H:i:s');
+                    }
+                } else {
+                    $complianceOt = $actualOt;
+                    $extraOt      = null;
+                }
             }
-            // ─────────────────────────────────────────────────────────────
+            // ─────────────────────────────────────────────────────────────────────
 
             // ── Meal allowance eligibility ────────────────────────────────
             $workedHours    = $att ? round((int) ($att->total_working_minute ?? 0) / 60, 2) : 0;
@@ -324,6 +371,7 @@ class EmployeeAttendanceService
                 'out_time'        => $outTime ?? '-',
                 'status_key'      => $status,
                 'status'          => $status_display,
+                'holiday_type'    => $matchedHoliday->type ?? null,
                 'actual_ot'       => $actualOt,
                 'compliance_ot'   => $complianceOt,
                 'extra_ot'        => $extraOt,
@@ -339,6 +387,8 @@ class EmployeeAttendanceService
         $totals = [
             'totalDays'         => count($dates),
             'totalGovHolidays'  => 0,
+            'totalGovHolidaysFestival' => 0,
+            'totalGovHolidaysGeneral'  => 0,
             'totalWeekendDays'  => 0,
             'totalWorkingDays'  => 0,
             'totalAbsent'       => 0,
@@ -364,6 +414,12 @@ class EmployeeAttendanceService
             $row     = $result[$idx];
             $dateStr = $d->format('Y-m-d');
 
+            // Days after the employee's exit date never happened for them — excluded
+            // entirely from every total (not counted as absent, working, or anything else).
+            if ($row['status_key'] === 'not_employed') {
+                continue;
+            }
+
             // OT totals from per-row values (already designation-flag-adjusted)
             // totalOt  = actual (uncapped) OT after designation flags; totalComplianceOt = capped compliance OT
             $totals['totalOt']           += $row['actual_ot']    ?? 0;
@@ -372,9 +428,21 @@ class EmployeeAttendanceService
 
             // Use per-row status_key (already accounts for RegularToWeekend swaps)
             $sk = $row['status_key'];
-            if ($sk === 'holiday')       $totals['totalGovHolidays']++;
-            elseif ($sk === 'weekend')   $totals['totalWeekendDays']++;
-            else                         $totals['totalWorkingDays']++;
+            if ($sk === 'holiday') {
+                $totals['totalGovHolidays']++;
+                // Factory holidays are typed Festival or General (see HrHolidayController) —
+                // anything else (unset, or a legacy pre-replacement type still on an old
+                // record) defaults to General.
+                if (strtolower((string) ($row['holiday_type'] ?? '')) === 'festival') {
+                    $totals['totalGovHolidaysFestival']++;
+                } else {
+                    $totals['totalGovHolidaysGeneral']++;
+                }
+            } elseif ($sk === 'weekend') {
+                $totals['totalWeekendDays']++;
+            } else {
+                $totals['totalWorkingDays']++;
+            }
 
             if ($sk === 'leave')                                              $totals['totalLeave']++;
             if ($sk === 'absent')                                             $totals['totalAbsent']++;
@@ -397,6 +465,10 @@ class EmployeeAttendanceService
 
         $leaveSummary['weekly']   = (int) ($totals['totalWeekendDays']  ?? 0);
         $leaveSummary['festival'] = (int) ($totals['totalGovHolidays']  ?? 0);
+        // Factory-holiday day count split by type (Festival / General) — distinct from the
+        // 'festival'/'general' buckets above, which are actual employee leave-type tallies.
+        $leaveSummary['holiday_festival'] = (int) ($totals['totalGovHolidaysFestival'] ?? 0);
+        $leaveSummary['holiday_general']  = (int) ($totals['totalGovHolidaysGeneral']  ?? 0);
 
         // ── Meal totals (daily vs monthly payment way) ────────────────────
         if ($paymentWay === 'monthly') {

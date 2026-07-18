@@ -48,6 +48,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
+	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
+	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
 	$fmt = fn($v) => number_format((float) $v, 2);
 @endphp
 
@@ -63,7 +65,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	<span>Period: {{ $fromLabel }} &mdash; {{ $toLabel }}</span>
 </div>
 <div class="rpt-meta">
-	<span><strong>Print Date:</strong> {{ now()->format('d M Y, h:i A') }}</span>
+	<span><strong>Salary Date:</strong> {{ $salaryDate }}</span>
 	<span><strong>Currency:</strong> BDT (Bangladeshi Taka)</span>
 </div>
 

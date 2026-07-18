@@ -187,6 +187,8 @@ class SalaryReportService
             'absent'               => $absent,
             'wh'                   => (int) ($leave['weekly']   ?? 0),
             'fh'                   => (int) ($leave['festival'] ?? 0),
+            'fl'                   => (int) ($leave['holiday_festival'] ?? 0),
+            'gl'                   => (int) ($leave['holiday_general']  ?? 0),
             'leaves_by_code'       => $leavesByCode,
             'att_bonus'            => $attBonus,
             'allow_other'          => $allowOther,
@@ -219,8 +221,10 @@ class SalaryReportService
     {
         $employeeDataFn = HrOptionsService::getOptionsForEmployee();
         $byDept = $employees->groupBy('department_id');
+        $factoryNo = (int) (hr_factory('factory_no') ?? 0);
+        $deductionMonthDays = 30;
 
-        $keys = ['emp', 'basic', 'house_rent', 'medical', 'transport', 'ot', 'gross', 'earn', 'deduct', 'net', 'present', 'absent'];
+        $keys = ['emp', 'basic', 'house_rent', 'medical', 'transport', 'ot', 'gross', 'earn', 'deduct', 'net', 'present', 'absent', 'wh', 'fl', 'gl'];
         $grandTotals = array_fill_keys($keys, 0);
         $summaryData = [];
 
@@ -233,6 +237,20 @@ class SalaryReportService
 
                 foreach ($secEmps as $emp) {
                     $sd = self::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
+
+                    $presentDays = (int) ($sd['present'] ?? 0);
+                    $absentDays  = (int) ($sd['absent']  ?? 0);
+
+                    // getEmployeeSalaryData()'s own 'net'/'total_deduct' never apply an
+                    // attendance-based absent deduction at all — that's computed here
+                    // unconditionally (not gated behind a "looks fully paid" guess) so an
+                    // employee with absent days is never summed as paid in full.
+                    $absentBase   = ($factoryNo === 1 || $factoryNo === 2) ? $sd['basic'] : $sd['gross'];
+                    $deductAbsent = $absentDays > 0 ? round(($absentBase / $deductionMonthDays) * $absentDays, 2) : 0;
+
+                    $deductAmount = (float) ($sd['total_deduct'] ?? 0) + $deductAbsent;
+                    $netAmount    = max(0, (float) ($sd['gross'] ?? 0) + (float) ($sd['total_earn'] ?? 0) - $deductAmount);
+
                     $row['basic'] += $sd['basic'];
                     $row['house_rent'] += $sd['house_rent'];
                     $row['medical'] += $sd['medical'];
@@ -240,10 +258,13 @@ class SalaryReportService
                     $row['ot'] += $sd['ot'];
                     $row['gross'] += $sd['gross'];
                     $row['earn'] += $sd['total_earn'];
-                    $row['deduct'] += $sd['total_deduct'];
-                    $row['net'] += $sd['net'];
-                    $row['present'] += $sd['present'];
-                    $row['absent'] += $sd['absent'];
+                    $row['deduct'] += $deductAmount;
+                    $row['net'] += $netAmount;
+                    $row['present'] += $presentDays;
+                    $row['absent'] += $absentDays;
+                    $row['wh'] += $sd['wh'] ?? 0;
+                    $row['fl'] += $sd['fl'] ?? 0;
+                    $row['gl'] += $sd['gl'] ?? 0;
                 }
 
                 $summaryData[] = $row;
@@ -480,7 +501,7 @@ class SalaryReportService
         $grandBase = [
             'emp' => 0, 'basic' => 0, 'house' => 0, 'medical' => 0,
             'transport' => 0, 'food' => 0, 'salary_total' => 0,
-            'pr' => 0, 'wh' => 0, 'fh' => 0, 'ab' => 0, 'earn_days' => 0,
+            'pr' => 0, 'wh' => 0, 'fh' => 0, 'fl' => 0, 'gl' => 0, 'ab' => 0, 'earn_days' => 0,
             'att_bonus' => 0, 'deduct_absent' => 0, 'loan' => 0, 'tax' => 0, 'stamp' => 0,
             'deduct_other' => 0, 'wph_days' => 0, 'wph_amount' => 0,
             'other_earn' => 0, 'gross' => 0, 'payable' => 0,
@@ -543,8 +564,10 @@ class SalaryReportService
                         'food' => $sd['food_allow'],
                         'salary_total' => $salaryTotal,
                         'pr' => $presentDays,
-                        'wh' => $sd['wh'],
-                        'fh' => $sd['fh'],
+                        'wh' => $sd['wh'] ?? 0,
+                        'fh' => $sd['fh'] ?? 0,
+                        'fl' => $sd['fl'] ?? 0,
+                        'gl' => $sd['gl'] ?? 0,
                         'ab' => $absentDays,
                         'earn_days' => $totalMonthDays - $absentDays,
                         'att_bonus' => $attBonus,

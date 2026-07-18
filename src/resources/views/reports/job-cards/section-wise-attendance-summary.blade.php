@@ -57,8 +57,12 @@
                     <th>{{ $t('বিলম্ব ও পাঞ্চ মিসিং', 'Late & Punch Missing') }}</th>
                     <th>{{ $t('অনুপস্থিত', 'Absent') }}</th>
                     <th>{{ $t('ছুটি', 'Leave') }}</th>
-                    <th>{{ $t('সাপ্তাহিক ছুটি', 'Weekend') }}</th>
-                    <th>{{ $t('সরকারি ছুটি', 'Govt. Holiday') }}</th>
+                    @if(ENV('FACTORY') === 'SFL')
+                        <th>{{ $t('ছুটি', 'Holiday') }}</th>
+                    @else
+                        <th>{{ $t('সাপ্তাহিক ছুটি', 'Weekend') }}</th>
+                        <th>{{ $t('সরকারি ছুটি', 'Govt. Holiday') }}</th>
+                    @endif
                     <th>{{ $t('উপস্থিত', 'Present') }}</th>
                     <th>{{ $t('উপার্জিত দিন', 'Earn Days') }}</th>
                     <th>{{ $t('ওটি (ঘণ্টা)', 'OT (hrs)') }}</th>
@@ -117,8 +121,12 @@
                         <td class="tc">{{ $fmtNum($summary['totalLPM']) }}</td>
                         <td class="tc">{{ $fmtNum($summary['totalAbsent']) }}</td>
                         <td class="tc">{{ $fmtNum($summary['totalLeave']) }}</td>
-                        <td class="tc">{{ $fmtNum($summary['totalWeekendDays']) }}</td>
-                        <td class="tc">{{ $fmtNum($summary['totalGovHolidays']) }}</td>
+                        @if(ENV('FACTORY') === 'SFL')
+                            <td class="tc">{{ $fmtNum($summary['totalWeekendDays'] + $summary['totalGovHolidays']) }}</td>
+                        @else
+                            <td class="tc">{{ $fmtNum($summary['totalWeekendDays']) }}</td>
+                            <td class="tc">{{ $fmtNum($summary['totalGovHolidays']) }}</td>
+                        @endif
                         <td class="tc">{{ $fmtNum($summary['totalPresent']) }}</td>
                         <td class="tc">{{ $fmtNum($earnDays) }}</td>
 

@@ -43,7 +43,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
-	$totalCols = $withPicture ? 34 : 33;
+	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
+	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
+	$totalCols = $withPicture ? 35 : 34;
 	$labelCols = $withPicture ? 8 : 7;
 @endphp
 
@@ -59,7 +61,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	<span>Period: {{ $fromLabel }} &mdash; {{ $toLabel }}</span>
 </div>
 <div class="rpt-meta">
-	<span><strong>Print Date:</strong> {{ now()->format('d M Y, h:i A') }}</span>
+	<span><strong>Salary Date:</strong> {{ $salaryDate }}</span>
 	<span><strong>Currency:</strong> BDT (Bangladeshi Taka)</span>
 </div>
 
@@ -116,6 +118,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<th>Revenue</th>
 				<th>Payable</th>
 				<th>Stamp</th>
+				<th>Signature</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -176,6 +179,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						<td class="tr">{{ number_format($row['stamp']) }}</td>
 						<td class="tr"><strong>{{ number_format($row['net']) }}</strong></td>
 						<td class="stamp-box"></td>
+						<td class="stamp-box"></td>
 					</tr>
 				@endforeach
 
@@ -207,6 +211,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<td class="tr">{{ number_format($group['totals']['stamp']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['net']) }}</td>
 					<td class="tr"></td>
+					<td class="tr"></td>
 				</tr>
 			@endforeach
 
@@ -237,6 +242,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tr">{{ number_format($grand['loan']) }}</td>
 				<td class="tr">{{ number_format($grand['stamp']) }}</td>
 				<td class="tr">{{ number_format($grand['net']) }}</td>
+				<td class="tr"></td>
 				<td class="tr"></td>
 			</tr>
 		</tbody>

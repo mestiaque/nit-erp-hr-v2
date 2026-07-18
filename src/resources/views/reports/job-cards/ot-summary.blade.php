@@ -15,6 +15,15 @@
         );
 
         $options = \ME\Hr\Services\HrOptionsService::getOptions($request ?? null);
+
+        $pageGrandOT = 0;
+        $pageGrandExtraOT = 0;
+
+        // Fixed, consistent column widths across every section's table — otherwise each
+        // table auto-sizes its own columns based on that section's longest designation
+        // name, so the same column ends up a different width from section to section.
+        $otShowExtraCol = hr_factory('factory_no') == 2;
+        $otDayColWidth  = round((100 - 3 - 16 - 11 - 7 - ($otShowExtraCol ? 7 : 0)) / max($dates->count(), 1), 3);
     @endphp
 
     @foreach($bySection as $sectionId => $sectionEmps)
@@ -32,18 +41,18 @@
             {{ $t('সেকশন', 'Section') }}: {{ $sectionName }}
         </div>
 
-        <table class="t">
+        <table class="t t-ot-summary">
             <thead>
                 <tr>
-                    <th>{{ $t('ক্রমিক', 'SI') }}</th>
-                    <th>{{ $t('পদবী', 'Designation') }}</th>
-                    <th>{{ $t('সেকশন', 'Section') }}</th>
+                    <th style="width:3%;">{{ $t('ক্রমিক', 'SI') }}</th>
+                    <th style="width:16%;">{{ $t('পদবী', 'Designation') }}</th>
+                    <th style="width:11%;">{{ $t('সেকশন', 'Section') }}</th>
                     @foreach($dates as $d)
-                        <th class="tc" style="min-width:28px;">{{ $isBangla ? en2bnNumber($d->format('d')) : $d->format('d') }}</th>
+                        <th class="tc" style="width:{{ $otDayColWidth }}%;">{{ $isBangla ? en2bnNumber($d->format('d')) : $d->format('d') }}</th>
                     @endforeach
-                    <th>{{ $t('মোট ওটি', 'To. OT') }}</th>
-                    @if(hr_factory('factory_no') == 2)
-                        <th>{{ $t('অতিরিক্ত ওটি', 'Extra OT') }}</th>
+                    <th style="width:7%;">{{ $t('মোট ওটি', 'To. OT') }}</th>
+                    @if($otShowExtraCol)
+                        <th style="width:7%;">{{ $t('অতিরিক্ত ওটি', 'Extra OT') }}</th>
                     @endif
                 </tr>
             </thead>
@@ -76,6 +85,8 @@
                         $designationName = $designationObj
                             ? ($isBangla ? $designationObj->bn_name : $designationObj->name)
                             : $t('প্রযোজ্য নয়', 'N/A');
+
+                        $pageGrandOT += $grandOT;
                     @endphp
 
                     <tr>
@@ -93,7 +104,7 @@
                         <td class="tc">
                             {{ $fmtNum(number_format($grandOT, 2)) }}
                         </td>
-                        @if(hr_factory('factory_no') == 2)
+                        @if($otShowExtraCol)
                             <td class="tc">
                                 {{-- 🔥 EXTRA OT CALCULATION --}}
                                 @php
@@ -106,6 +117,8 @@
                                             $extraOT += $row['extra_ot'] ?? 0;
                                         }
                                     }
+
+                                    $pageGrandExtraOT += $extraOT;
                                 @endphp
                                 {{ $fmtNum(number_format($extraOT, 2)) }}
                             </td>
@@ -117,4 +130,12 @@
         </table>
 
     @endforeach
+
+    <div class="grand-total-box">
+        {{ $t('সর্বমোট ওটি (সকল সেকশন)', 'Grand Total OT (All Sections)') }}: {{ $fmtNum(number_format($pageGrandOT, 2)) }}
+        @if($otShowExtraCol)
+            &nbsp;|&nbsp;
+            {{ $t('সর্বমোট অতিরিক্ত ওটি', 'Grand Total Extra OT') }}: {{ $fmtNum(number_format($pageGrandExtraOT, 2)) }}
+        @endif
+    </div>
 @endif

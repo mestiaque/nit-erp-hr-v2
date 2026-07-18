@@ -198,8 +198,8 @@
                                 }
                                 $isActive = (string) ($employee->status ?? '') === '1' || (string) ($employee->status ?? '') === 'active';
                             @endphp
-                            <tr>
-                                
+                            <tr @if($employmentStatus === 'resign') style="background-color:#fde8e8;" @endif>
+
                                 <td>{{ $employee->employee_id }}</td>
                                 <td>{{ $employee->name }}</td>
                                 <td>{{ optional($employee->joining_date)->format('d-M-Y') }}</td>

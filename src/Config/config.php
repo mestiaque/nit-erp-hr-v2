@@ -6,6 +6,7 @@ use ME\Hr\Models\HrDepartment as Department;
 use ME\Hr\Models\HrFloorLine as FloorLine;
 use ME\Hr\Models\HrBonusTitle as BonusTitle;
 use ME\Hr\Models\HrClassification as Classification;
+use ME\Hr\Models\HrAssetCategory;
 use ME\Hr\Models\HrSection as Section;
 use ME\Hr\Models\HrDesignation as Designation;
 use ME\Hr\Models\HrFactory as Factory;
@@ -107,6 +108,18 @@ return [
                 'bn_name' => ['label' => 'Bangla Name', 'type' => 'text', 'rules' => 'nullable|string|max:191'],
                 'description' => ['label' => 'Description', 'type' => 'textarea', 'rules' => 'nullable|string|max:1000', 'tinymce' => false],
                 'probation_period' => ['label' => 'Probation Period', 'type' => 'number', 'rules' => 'nullable|integer|min:0', 'step' => 1],
+                'status' => ['label' => 'Status', 'type' => 'select', 'rules' => 'required|in:active,inactive', 'options' => ['active' => 'Active', 'inactive' => 'Inactive']],
+            ],
+        ],
+        'asset-categories' => [
+            'title' => 'Asset Category',
+            'model' => HrAssetCategory::class,
+            'search' => ['name', 'bn_name'],
+            'defaults' => ['status' => 'active'],
+            'index_fields' => ['name', 'bn_name', 'status'],
+            'fields' => [
+                'name' => ['label' => 'Name', 'type' => 'text', 'rules' => 'required|string|max:150'],
+                'bn_name' => ['label' => 'Bangla Name', 'type' => 'text', 'rules' => 'nullable|string|max:150'],
                 'status' => ['label' => 'Status', 'type' => 'select', 'rules' => 'required|in:active,inactive', 'options' => ['active' => 'Active', 'inactive' => 'Inactive']],
             ],
         ],

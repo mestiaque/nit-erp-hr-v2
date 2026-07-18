@@ -1,50 +1,52 @@
 @push('css')
 <style>
-* { box-sizing: border-box; }
-body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
+	* { box-sizing: border-box; }
+	body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 
-.rpt-header { text-align:center;  padding-bottom:4px; margin-bottom:5px; line-height:1.2; }
-.rpt-header h2 { margin:0; font-size:14px; text-transform:uppercase; letter-spacing:.6px; color:#1a3a5c; }
-.rpt-header p  { margin:1px 0 0; font-size:9.5px; color:#444; }
-.rpt-title-bar { background:#ffffff00; color:#000000; text-align:center; padding:3px 6px; margin-bottom:-65px; line-height:1.15; }
-.rpt-title-bar h4 { margin:0; font-size:11px; letter-spacing:.3px; }
-.rpt-title-bar span { font-size:9px; opacity:.9; }
-.rpt-meta { display:flex; justify-content:space-between; align-items:center; font-size:9px; margin-bottom:4px; color:#333; line-height:1.15; }
-.rpt-meta span { display:inline-block; }
+	.rpt-header { text-align:center;  padding-bottom:4px; margin-bottom:5px; line-height:1.2; }
+	.rpt-header h2 { margin:0; font-size:14px; text-transform:uppercase; letter-spacing:.6px; color:#1a3a5c; }
+	.rpt-header p  { margin:1px 0 0; font-size:9.5px; color:#444; }
+	.rpt-title-bar { background:#ffffff00; color:#000000; text-align:center; padding:3px 6px; margin-bottom:-65px; line-height:1.15; }
+	.rpt-title-bar h4 { margin:0; font-size:11px; letter-spacing:.3px; }
+	.rpt-title-bar span { font-size:9px; opacity:.9; }
+	.rpt-meta { display:flex; justify-content:space-between; align-items:center; font-size:9px; margin-bottom:4px; color:#333; line-height:1.15; }
+	.rpt-meta span { display:inline-block; }
 
-.photo-cell img { max-height:20mm; }
+	.photo-cell img { max-height:20mm; }
 
-.sheet-top { display:flex; justify-content:space-between; gap:10px; margin:2px 0 5px; font-size:9.2px; line-height:1.2; }
-.sheet-top .sheet-right { min-width:220px; }
-.sheet-top .sheet-right .row { display:flex; justify-content:space-between; gap:10px; margin:1px 0; }
+	.sheet-top { display:flex; justify-content:space-between; gap:10px; margin:2px 0 5px; font-size:9.2px; line-height:1.2; }
+	.sheet-top .sheet-right { min-width:220px; }
+	.sheet-top .sheet-right .row { display:flex; justify-content:space-between; gap:10px; margin:1px 0; }
 
-.sheet-table { width:100%; border-collapse:collapse; font-size:9px; margin-top:6px; }
-.sheet-table th, .sheet-table td { border:1px solid #6b6b6b; padding:3px 4px; vertical-align:middle; }
-.sheet-table thead th { text-align:center; font-weight:700; }
-.sheet-table thead tr.grp th { background:#efefef; font-size:9.5px; }
-.sheet-table thead tr.sub th { background:#f8f8f8; font-size:8px; font-weight:600; }
-.sheet-table .tc { text-align:center; }
-.sheet-table .tr { text-align:right; }
-.sheet-table .tl { text-align:left; }
+	.sheet-table { width:100%; border-collapse:collapse; font-size:9px; margin-top:6px; }
+	.sheet-table th, .sheet-table td { border:1px solid #6b6b6b; padding:3px 4px; vertical-align:middle; }
+	.sheet-table thead th { text-align:center; font-weight:700; }
+	.sheet-table thead tr.grp th { background:#efefef; font-size:9.5px; }
+	.sheet-table thead tr.sub th { background:#f8f8f8; font-size:8px; font-weight:600; }
+	.sheet-table .tc { text-align:center; }
+	.sheet-table .tr { text-align:right; }
+	.sheet-table .tl { text-align:left; }
 
-.sheet-sec-row td { background:#f4f4f4; color:#0b4f6c; font-weight:700; }
-.sheet-sec-total td { background:#fafafa; font-weight:700; }
-.sheet-grand td { background:#ececec; font-weight:700; font-size:10px; }
-.sheet-inwords { margin-top:10px; font-size:10px; font-weight:700; }
-.stamp-box { width:25mm; height:20mm; padding:0; }
+	.sheet-sec-row td { background:#f4f4f4; color:#0b4f6c; font-weight:700; }
+	.sheet-sec-total td { background:#fafafa; font-weight:700; }
+	.sheet-grand td { background:#ececec; font-weight:700; font-size:10px; }
+	.sheet-inwords { margin-top:10px; font-size:10px; font-weight:700; }
+	.stamp-box { width:25mm; height:20mm; padding:0; }
 
-@media print {
-	@page { size: A4 landscape; margin: 7mm; }
-	body { margin: 0; }
-}
+	@media print {
+		@page { size: A4 landscape; margin: 7mm; }
+		body { margin: 0; }
+	}
 </style>
 @endpush
 
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
-	$leaveCols = 2 + $leaveInfos->count();
-	$totalCols = ($withPicture ? 36 : 35) + $leaveInfos->count();
+	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
+	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
+	$leaveCols = 3 + $leaveInfos->count();
+	$totalCols = ($withPicture ? 37 : 36) + $leaveInfos->count();
 @endphp
 
 <div class="rpt-header">
@@ -59,7 +61,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	<span>Period: {{ $fromLabel }} &mdash; {{ $toLabel }}</span>
 </div>
 <div class="rpt-meta">
-	<span><strong>Print Date:</strong> {{ now()->format('d M Y, h:i A') }}</span>
+	<span><strong>Salary Date:</strong> {{ $salaryDate }}</span>
 	<span><strong>Currency:</strong> BDT (Bangladeshi Taka)</span>
 </div>
 
@@ -115,7 +117,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<th>Trans.</th>
 				<th>Total</th>
 				<th>WH</th>
-				<th>FH</th>
+				<th>FL</th>
+				<th>GL</th>
 				@foreach($leaveInfos as $li)
 					<th>{{ $li->code }}</th>
 				@endforeach
@@ -169,7 +172,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						<td class="tc">{{ $row['pr'] }}</td>
 
 						<td class="tc">{{ $row['wh'] }}</td>
-						<td class="tc">{{ $row['fh'] }}</td>
+						<td class="tc">{{ $row['fl'] }}</td>
+						<td class="tc">{{ $row['gl'] }}</td>
 						@foreach($leaveInfos as $li)
 							<td class="tc">{{ $row['leave_' . strtoupper($li->code)] ?? 0 }}</td>
 						@endforeach
@@ -212,7 +216,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<td class="tc">{{ $totalMonthDays }}</td>
 					<td class="tc">{{ $group['totals']['pr'] }}</td>
 					<td class="tc">{{ $group['totals']['wh'] }}</td>
-					<td class="tc">{{ $group['totals']['fh'] }}</td>
+					<td class="tc">{{ $group['totals']['fl'] }}</td>
+					<td class="tc">{{ $group['totals']['gl'] }}</td>
 					@foreach($leaveInfos as $li)
 						<td class="tc">{{ $group['totals']['leave_' . strtoupper($li->code)] ?? 0 }}</td>
 					@endforeach
@@ -249,7 +254,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tc">{{ $totalMonthDays }}</td>
 				<td class="tc">{{ $grand['pr'] }}</td>
 				<td class="tc">{{ $grand['wh'] }}</td>
-				<td class="tc">{{ $grand['fh'] }}</td>
+				<td class="tc">{{ $grand['fl'] }}</td>
+				<td class="tc">{{ $grand['gl'] }}</td>
 				@foreach($leaveInfos as $li)
 					<td class="tc">{{ $grand['leave_' . strtoupper($li->code)] ?? 0 }}</td>
 				@endforeach

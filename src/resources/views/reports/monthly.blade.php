@@ -91,6 +91,10 @@
                         <label class="mb-1">Min. Consecutive Absent Days</label>
                         <input type="number" min="1" name="min_absent_days" class="form-control form-control-sm" value="{{ $request->input('min_absent_days', 3) }}" placeholder="3">
                     </div>
+                    <div class="col-md-3 mb-3" id="attWithOtDateWrap" style="display:none;">
+                        <label class="mb-1">Date</label>
+                        <input type="date" name="date" class="form-control form-control-sm" value="{{ $request->input('date', date('Y-m-d')) }}">
+                    </div>
                     <div class="col-md-3 mb-3" id="incrementPercentWrap" style="display:none;">
                         <label class="mb-1">Increment %</label>
                         <input type="number" step="0.01" min="0" name="increment_percent" class="form-control form-control-sm" value="{{ $incrementPercent }}">
@@ -122,6 +126,7 @@
         const incrementWrap = document.getElementById('incrementPercentWrap');
         const effectiveWrap = document.getElementById('effectiveDateWrap');
         const minAbsentWrap = document.getElementById('minAbsentDaysWrap');
+        const attWithOtDateWrap = document.getElementById('attWithOtDateWrap');
         const fromLabel     = document.getElementById('fromLabel');
         const toLabel       = document.getElementById('toLabel');
         const fromInput     = document.getElementById('fromInput');
@@ -130,10 +135,12 @@
             const value = reportTypeEl ? reportTypeEl.value : '';
             const showIncrement = value === 'increment' || value === 'increment-summary';
             const showLongAbsent = value === 'long-absent';
+            const showAttWithOt = value === 'attendance-with-ot';
 
             if (incrementWrap) incrementWrap.style.display = showIncrement ? 'block' : 'none';
             if (effectiveWrap) effectiveWrap.style.display = showIncrement ? 'block' : 'none';
             if (minAbsentWrap) minAbsentWrap.style.display = showLongAbsent ? 'block' : 'none';
+            if (attWithOtDateWrap) attWithOtDateWrap.style.display = showAttWithOt ? 'block' : 'none';
 
             // Change From/To labels to clarify join-date / increment-date filtering
             if (fromLabel) fromLabel.textContent = showIncrement ? 'Join / Inc Date From' : 'From';

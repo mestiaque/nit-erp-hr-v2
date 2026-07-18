@@ -33,6 +33,13 @@ return [
                             'permission' => 'hr_classification',
                         ],
                         [
+                            'title'      => 'Asset Category',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/asset-categories',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_asset_category',
+                        ],
+                        [
                             'title'      => 'Block/Line',
                             'icon'       => 'fa-solid fa-arrow-right',
                             'route'      => '/admin/hr-center/masters/floor-lines',
@@ -213,6 +220,20 @@ return [
                     'permission' => 'hr_factory_holiday',
                 ],
                 [
+                    'title'      => 'Employee Gate Pass',
+                    'icon'       => 'fa-solid fa-right-to-bracket',
+                    'route'      => '/admin/hr-center/gate-passes',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_employee_gate_pass',
+                ],
+                [
+                    'title'      => 'Asset Management',
+                    'icon'       => 'fa-solid fa-laptop',
+                    'route'      => '/admin/hr-center/employee-assets',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_employee_asset',
+                ],
+                [
                     'title'      => 'Weekend to Regular',
                     'icon'       => 'fa-solid fa-arrow-right',
                     'route'      => '/admin/hr-center/regular-to-weekend',
@@ -286,25 +307,18 @@ return [
                                     'permission' => 'hr_daily_attendance_report',
                                 ],
                                 [
-                                    'title'      => 'Attendance With OT',
-                                    'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/attendance-with-ot',
-                                    'icon_color' => 'text-warning',
-                                    'permission' => 'hr_attendance_with_ot_report',
-                                ],
-                                [
-                                    'title'      => 'Monthly Late Report',
-                                    'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/monthly-late-report',
-                                    'icon_color' => 'text-warning',
-                                    'permission' => 'hr_monthly_late_report',
-                                ],
-                                [
                                     'title'      => 'Tiffin / Diner / Night',
                                     'icon'       => 'fa-solid fa-arrow-right',
                                     'route'      => '/admin/hr-center/reports/meal-report',
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_meal_report',
+                                ],
+                                [
+                                    'title'      => 'Gate Pass Report',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/gate-pass-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_gate_pass_report',
                                 ],
                             ],
                         ],
@@ -350,6 +364,13 @@ return [
                                     'route'      => '/admin/hr-center/reports/wages-salary-summary',
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_salary_report_wage',
+                                ],
+                                [
+                                    'title'      => 'OT Summary',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/ot-summary',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_ot_summary_report',
                                 ],
                                 [
                                     'title'      => 'Pay Slip',
@@ -405,6 +426,23 @@ return [
                                     'route'      => '/admin/hr-center/reports/bonus-sheet?bonus_category=production',
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_bonus_sheet_production',
+                                ],
+                            ],
+                        ],
+
+                        // ── Others ────────────────────────────────────────
+                        [
+                            'title'      => 'Others',
+                            'icon'       => 'fa-solid fa-ellipsis',
+                            'icon_color' => 'text-secondary',
+                            'permission' => '',
+                            'children'   => [
+                                [
+                                    'title'      => 'Asset Report',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/asset-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_asset_report',
                                 ],
                             ],
                         ],

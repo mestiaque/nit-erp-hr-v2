@@ -22,12 +22,26 @@ Actual      8:00 AM     7:00 PM     2 Hour      (Hide)
 Comp 1      8:00 AM     7:00  PM    2 Hour      (Hide)
 Comp 2      8:00 AM     7:00 PM     2 Hour      0 Hour
 
-13/7/2026   In 8:00 AM  -   Out 10:00 PM    (weekend day + designation->wphp enable)
+13/7/2026   In 8:00 AM  -   Out 10:00 PM    (designation->wphp enable + Weekend Day)
             In          Out         OT          EXTRA OT
 Actual      8:00 AM     10:00 PM    14 Hour      (Hide)
-Comp 1      8:00 AM     8:00  PM    12 Hour      (Hide)
-Comp 2      8:00 AM     10:00 PM    12 Hour      2 Hour
+Comp 1      --          --          --           (Hide)
+Comp 2      --          --          --           (Hide)
+    on weekend never show attendance in complince 
+
+14/7/2026   In 8:00 AM  -   Out 10:00 PM    (weekend to regular)
+            In          Out         OT          EXTRA OT
+Actual      8:00 AM     5:00 PM    0 Hour      (Hide)
+Comp 1      8:00 AM     5:00 PM    0 Hour      (Hide)
+Comp 2      8:00 AM     5:00 PM    0 Hour      0 Hour
 
     
+
+
+
+
+
+
+
 
 

@@ -34,8 +34,8 @@
                     <label class="form-label mb-1">Status</label>
                     <select name="status" class="form-control form-control-sm">
                         <option value="">All</option>
-                        <option value="active"   @selected($request->status === 'active')>Active</option>
-                        <option value="inactive" @selected($request->status === 'inactive')>Inactive</option>
+                        <option value="1" @selected($request->status === '1')>Active</option>
+                        <option value="0" @selected($request->status === '0')>Inactive</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -71,7 +71,7 @@
                             <td>{{ $holiday->to_date ? \Carbon\Carbon::parse($holiday->to_date)->format('d M Y') : '–' }}</td>
                             <td class="text-center">{{ $holiday->days }}</td>
                             <td class="text-center">
-                                @if($holiday->status === 'active')
+                                @if((int) $holiday->status === 1)
                                     <span class="badge badge-success">Active</span>
                                 @else
                                     <span class="badge badge-secondary">Inactive</span>
@@ -129,7 +129,7 @@
                 <div class="modal-body">
                     <div class="form-group mb-2">
                         <label class="form-label">Purpose <span class="text-danger">*</span></label>
-                        <input type="text" name="title" class="form-control form-control-sm"
+                        <input type="text" name="purpose" class="form-control form-control-sm"
                                placeholder="e.g. Eid-ul-Fitr" required>
                     </div>
                     <div class="form-group mb-2">
@@ -168,8 +168,8 @@
                     <div class="form-group mb-0">
                         <label class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" class="form-control form-control-sm" required>
-                            <option value="active" selected>Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
                         </select>
                     </div>
                 </div>
@@ -196,7 +196,7 @@
                 <div class="modal-body">
                     <div class="form-group mb-2">
                         <label class="form-label">Purpose <span class="text-danger">*</span></label>
-                        <input type="text" name="title" id="edit_title" class="form-control form-control-sm" required>
+                        <input type="text" name="purpose" id="edit_title" class="form-control form-control-sm" required>
                     </div>
                     <div class="form-group mb-2">
                         <label class="form-label">Type <span class="text-danger">*</span></label>
@@ -234,8 +234,8 @@
                     <div class="form-group mb-0">
                         <label class="form-label">Status <span class="text-danger">*</span></label>
                         <select name="status" id="edit_status" class="form-control form-control-sm" required>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
                         </select>
                     </div>
                 </div>
