@@ -84,9 +84,11 @@
                         <input type="date" name="to" class="form-control form-control-sm" value="{{ $request->to }}">
                     </div>
 
-                    <div class="col-md-3 mb-3">
-                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                        <a href="{{ route('hr-center.reports.gate-pass-report') }}" class="btn btn-light btn-sm">Reset</a>
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="w-100 d-flex gap-2">
+                            <a href="{{ route('hr-center.reports.gate-pass-report') }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" class="btn btn-primary btn-sm w-50"><i class="fa-solid fa-print"></i> Print</button>
+                        </div>
                     </div>
 
                 </div>

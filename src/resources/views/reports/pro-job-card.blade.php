@@ -14,16 +14,16 @@
         <div class="card-body">
             <form method="get" action="{{ route('hr-center.reports.pro-job-card') }}">
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="mb-1">Employee ID(s) <small class="text-muted">(use , for multiple)</small></label>
                         <input type="text" name="employee_ids" class="form-control form-control-sm"
                                value="{{ $request->employee_ids }}" placeholder="B00144,B00145">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="mb-1">From</label>
                         <input type="date" name="from" class="form-control form-control-sm" value="{{ $request->from }}">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="mb-1">To</label>
                         <input type="date" name="to" class="form-control form-control-sm" value="{{ $request->to }}">
                     </div>
@@ -127,57 +127,17 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-12 mb-3">
-                        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-                        <a href="{{ route('hr-center.reports.pro-job-card') }}" class="btn btn-light btn-sm">Reset</a>
-                        <button type="submit" name="print" value="1" formtarget="_blank" class="btn btn-primary btn-sm">
-                            <a
-                                href="{{ route('hr-center.reports.pro-job-card', array_merge(request()->all(), ['print' => 1, 'print_view' => 1])) }}"
-                                target="_blank"
-                                class="btn btn-primary btn-sm"
-                            >
-                                Report
-                            </a>
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="w-100 d-flex gap-2">
+                            <a href="{{ route('hr-center.reports.pro-job-card') }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" name="print" value="1" formtarget="_blank" class="btn btn-primary btn-sm w-50">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>
         </div>
-        @if($showTable)
-        <div class="card mt-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Production Job Card</h5>
-                <div>
-                    <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-sm">Print</button>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                        <thead>
-                        <tr>
-                            @foreach($columns as $column)
-                                <th>{{ ucwords(str_replace('_', ' ', $column)) }}</th>
-                            @endforeach
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @forelse($rows as $row)
-                            <tr>
-                                @foreach($columns as $column)
-                                    <td>{{ is_array($row) ? ($row[$column] ?? null) : data_get($row, $column) }}</td>
-                                @endforeach
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ count($columns) }}" class="text-center">No data found.</td>
-                            </tr>
-                        @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        @endif
     </div>
 </div>
 @endsection

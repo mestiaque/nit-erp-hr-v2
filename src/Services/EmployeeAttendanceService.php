@@ -278,7 +278,9 @@ class EmployeeAttendanceService
             }
 
             // ── In/Out visibility + OT, by day type and factory compliance mode ────
-            $otMinRaw = $att ? (int) ($att->overtime_minutes ?? 0) : 0;
+            // OT is only ever counted from after shift end — never negative. Clamped here
+            // (not just at write time) so any already-stored bad value is never displayed.
+            $otMinRaw = $att ? max(0, (int) ($att->overtime_minutes ?? 0)) : 0;
             if (!$otEnabled) {
                 $otMinRaw = 0;
             }

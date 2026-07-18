@@ -2950,6 +2950,16 @@ class HrReportController extends Controller
     // BONUS SHEET
     // ──────────────────────────────────────────────────────────────────
 
+    /**
+     * Route: GET /reports/bonus-sheet/{category} — path-based category (fixed/production)
+     * instead of the old ?bonus_category= query string, e.g. /reports/bonus-sheet/fixed.
+     */
+    public function bonusSheetByCategory(Request $request, string $category)
+    {
+        $request->merge(['bonus_category' => $category]);
+        return $this->bonusSheetScreen($request, 'bonus-sheet');
+    }
+
     public function bonusSheetScreen(Request $request, string $report)
     {
         // 1. Options and Static Data
@@ -3421,6 +3431,7 @@ class HrReportController extends Controller
         }
 
         return view('hr::reports.payslip.pay-slip', [
+            'reportKey'   => $report,
             'options'     => $options,
             'reportTypes' => $reportTypes,
             'languages'   => $languages,

@@ -25,8 +25,7 @@
     $designationMap = collect($hrOptions['designations'])->pluck('name', 'id');
 @endphp
 
-            <form method="get" action="{{ route('hr-center.reports.show', $reportKey) }}">
-                <input type="hidden" name="bonus_category" value="{{ $bonusCategory }}">
+            <form method="get" action="{{ route('hr-center.reports.bonus-sheet.category', $bonusCategory) }}">
                 <div class="row">
 
                     <div class="col-12 mb-2">
@@ -59,7 +58,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="mb-1">Employee ID(s) <small class="text-muted">(use , for multiple)</small></label>
                         <input type="text" name="employee_ids" class="form-control form-control-sm" value="{{ $request->employee_ids }}" placeholder="B00144,B00145">
                     </div>
@@ -128,12 +127,13 @@
                         </select>
                     </div>
 
-                    <div class="col-12 mb-3">
-                        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-                        <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm">Reset</a>
-                        <button type="submit" name="print" value="1" formtarget="_blank" class="btn btn-primary btn-sm">
-                            Report
-                        </button>
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="w-100 d-flex gap-2">
+                            <a href="{{ route('hr-center.reports.bonus-sheet.category', $bonusCategory) }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" name="print" value="1" formtarget="_blank" class="btn btn-primary btn-sm w-50">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+                        </div>
                     </div>
 
                 </div>

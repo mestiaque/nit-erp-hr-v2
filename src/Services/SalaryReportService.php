@@ -10,6 +10,17 @@ use ME\Hr\Models\HrLock;
 class SalaryReportService
 {
     /**
+     * The compliance-mode base used wherever a percentage/per-day rate needs a salary
+     * figure to work from — Actual (factory_no 0/null) uses Gross, Comp-1/Comp-2
+     * (1 or 2) use Basic. Applied identically to tax %, absent-day deduction, etc.,
+     * so this single rule lives in one place instead of being copy-pasted per site.
+     */
+    private static function complianceBase(int $factoryNo, float $basic, float $gross): float
+    {
+        return ($factoryNo === 1 || $factoryNo === 2) ? $basic : $gross;
+    }
+
+    /**
      * Get all salary-related data for a single employee for a date range.
      *
      * Pass $employeeDataFn (from HrOptionsService::getOptionsForEmployee()) so the
@@ -124,9 +135,11 @@ class SalaryReportService
         // Comp-1/Comp-2 (1/2) -> Basic.
         $taxRaw    = (float) ($empSi?->tax ?? 0);
         $taxCalcBy = (string) ($empSi?->tax_calculate_by ?? 'amount');
-        $taxBase   = ($factoryNo === 1 || $factoryNo === 2)
-            ? (float) ($salaryReport['basic'] ?? $sal['basic'] ?? 0)
-            : (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0);
+        $taxBase   = self::complianceBase(
+            $factoryNo,
+            (float) ($salaryReport['basic'] ?? $sal['basic'] ?? 0),
+            (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0)
+        );
         $tax       = $taxCalcBy === 'percent' ? round($taxBase * ($taxRaw / 100), 2) : $taxRaw;
 
         $deductOther  = (float) (
@@ -245,7 +258,7 @@ class SalaryReportService
                     // attendance-based absent deduction at all — that's computed here
                     // unconditionally (not gated behind a "looks fully paid" guess) so an
                     // employee with absent days is never summed as paid in full.
-                    $absentBase   = ($factoryNo === 1 || $factoryNo === 2) ? $sd['basic'] : $sd['gross'];
+                    $absentBase   = self::complianceBase($factoryNo, (float) $sd['basic'], (float) $sd['gross']);
                     $deductAbsent = $absentDays > 0 ? round(($absentBase / $deductionMonthDays) * $absentDays, 2) : 0;
 
                     $deductAmount = (float) ($sd['total_deduct'] ?? 0) + $deductAbsent;
@@ -579,7 +592,7 @@ class SalaryReportService
                     $otAmount = (float) ($sd['ot'] ?? 0);
                     $extraFacility = (float) ($sd['extra_facility'] ?? 0);
 
-                    $absentBase = ($factoryNo === 1 || $factoryNo === 2) ? $sd['basic'] : $sd['gross'];
+                    $absentBase = self::complianceBase($factoryNo, (float) $sd['basic'], (float) $sd['gross']);
                     $deductAbsent = $absentDays > 0 ? round(($absentBase / $deductionMonthDays) * $absentDays, 2) : 0;
                     $looksLikeNoPresentFullPay = $presentDays === 0
                         && $absentDays > 0

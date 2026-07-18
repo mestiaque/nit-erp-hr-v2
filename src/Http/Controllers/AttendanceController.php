@@ -229,7 +229,7 @@ class AttendanceController extends Controller
             $outTime = Carbon::parse($attendance->out_time);
             $shiftEnd = Carbon::parse($shift->end_time);
             if ($outTime->gt($shiftEnd)) {
-                $attendance->total_ot_minute = $shiftEnd->diffInMinutes($outTime);
+                $attendance->total_ot_minute = max(0, (int) $shiftEnd->diffInMinutes($outTime));
             } else {
                 $attendance->total_ot_minute = 0;
             }
@@ -289,7 +289,7 @@ class AttendanceController extends Controller
             if ($attendance->out_time && $shift) {
                 $outTime  = Carbon::parse($attendance->out_time);
                 $shiftEnd = Carbon::parse($shift->end_time);
-                $attendance->total_ot_minute = $outTime->gt($shiftEnd) ? $shiftEnd->diffInMinutes($outTime) : 0;
+                $attendance->total_ot_minute = $outTime->gt($shiftEnd) ? max(0, (int) $shiftEnd->diffInMinutes($outTime)) : 0;
             } else {
                 $attendance->total_ot_minute = 0;
             }

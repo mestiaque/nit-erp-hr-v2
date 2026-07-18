@@ -88,6 +88,7 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/reports/gate-pass-report-print', [HrReportController::class, 'gatePassReportPrint'])->name('reports.gate-pass-report-print');
 		Route::get('/reports/asset-report', [HrReportController::class, 'assetReportScreen'])->name('reports.asset-report');
 		Route::get('/reports/asset-report-print', [HrReportController::class, 'assetReportPrint'])->name('reports.asset-report-print');
+		Route::get('/reports/bonus-sheet/{category}', [HrReportController::class, 'bonusSheetByCategory'])->name('reports.bonus-sheet.category');
 		Route::get('/reports/{report}', [HrReportController::class, 'show'])->name('reports.show');
 		Route::post('/reports/monthly/lock-increment', [HrReportController::class, 'lockMonthlyIncrement'])->name('reports.monthly.lock-increment');
 		Route::post('/reports/job-card-report/lock', [HrReportController::class, 'applyJobCardLock'])->name('reports.job-card-report.lock');

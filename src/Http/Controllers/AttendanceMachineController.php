@@ -502,14 +502,17 @@ class AttendanceMachineController extends Controller
             return 0;
         }
 
-        // Cap OT at out_time_start if defined
-        $otCap = $shift->out_time_start
+        // Cap OT at out_time_start if defined — but only when it's actually a sensible
+        // cap (after shift end). A misconfigured shift with out_time_start earlier than
+        // end_time would otherwise clamp $effectiveOut backward past $shiftEnd, turning
+        // a positive OT span into a large negative one.
+        $otCap = ($shift->out_time_start && Carbon::parse($inTime->toDateString() . ' ' . $shift->out_time_start, 'Asia/Dhaka')->gt($shiftEnd))
             ? Carbon::parse($inTime->toDateString() . ' ' . $shift->out_time_start, 'Asia/Dhaka')
             : $outTime;
 
         $effectiveOut = $outTime->lt($otCap) ? $outTime : $otCap;
 
-        return (int) $shiftEnd->diffInMinutes($effectiveOut);
+        return max(0, (int) $shiftEnd->diffInMinutes($effectiveOut));
     }
 
     private function toCarbon(?string $date, $timeValue): ?Carbon

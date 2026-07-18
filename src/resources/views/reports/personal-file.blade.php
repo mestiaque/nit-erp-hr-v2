@@ -73,15 +73,6 @@
                                 </div>
 
                                 <div class="mb-2 col-md-3">
-                                    <label class="mb-1">Subsection</label>
-                                    <select name="subsection[]" class="form-control form-control-sm select2" multiple>
-                                        @foreach($options['subsections'] as $item)
-                                            <option value="{{ $item->id }}" @selected(in_array((string) $item->id, (array) $request->subsection))>{{ $item->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="mb-2 col-md-3">
                                     <label class="mb-1">Shift</label>
                                     <select name="shift[]" class="form-control form-control-sm select2" multiple>
                                         @foreach($options['shifts'] as $item)
@@ -128,47 +119,13 @@
                                     @enderror
                                 </div>
 
-                                <div class="d-flex align-items-center mb-2 col-md-3 float-right">
-                                    <button type="submit" class="btn btn-secondary btn-sm w-100 mr-1">Filter</button>
-                                    <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm w-100">Reset</a>
-                                    <button type="button" id="personalFilePrintBtn" class="btn btn-primary btn-sm w-100 mr-1 no-loader">Print </button>
+                                <div class="d-flex align-items-center mb-2 col-md-3 gap-2">
+                                    <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                                    <button type="button" id="personalFilePrintBtn" class="btn btn-primary btn-sm w-50 no-loader"><i class="fa-solid fa-print"></i> Print</button>
                                 </div>
                             </div>
 
                         </form>
-                    </div>
-                </div>
-
-                <div class="col-lg-12">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Employee ID</th>
-                                    <th>Name</th>
-                                    <th>Department</th>
-                                    <th>Section</th>
-                                    <th>Shift</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($employees as $employee)
-                                    <tr>
-                                        <td>{{ $employee->employee_id }}</td>
-                                        <td>{{ $employee->name }}</td>
-                                        <td>{{ optional($employee->department)->name }}</td>
-                                        <td>{{ optional($employee->section)->name }}</td>
-                                        <td>{{ optional($employee->shift)->name }}</td>
-                                        <td>{{ ucfirst((string) ($employee->employment_status ?? 'regular')) }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center">No employee found.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>

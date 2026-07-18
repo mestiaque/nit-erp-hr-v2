@@ -112,10 +112,9 @@
                         </select>
                     </div>
                     <div class="col-md-3 align-self-end mb-3">
-                        <div class="">
-                            <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-                            <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm">Reset</a>
-                            <button type="submit" name="print" value="1" class="btn btn-primary btn-sm" formtarget="_blank">Open Print</button>
+                        <div class="w-100 d-flex gap-2">
+                            <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" name="print" value="1" class="btn btn-primary btn-sm w-50" formtarget="_blank"><i class="fa-solid fa-print"></i> Print</button>
                         </div>
                     </div>
                 </div>

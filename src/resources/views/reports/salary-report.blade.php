@@ -67,7 +67,7 @@
                         <input type="date" name="to" class="form-control form-control-sm" value="{{ $request->to }}">
                     </div>
 
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="mb-1">Employee ID(s) <small class="text-muted">(use , for multiple)</small></label>
                         <input type="text" name="employee_ids" class="form-control form-control-sm" value="{{ $request->employee_ids }}" placeholder="B00144,B00145">
                     </div>
@@ -168,6 +168,7 @@
                         </select>
                     </div>
 
+                    {{-- Payment Mode filter — not needed, kept for possible future use.
                     <div class="col-md-3 mb-3">
                         <label class="mb-1">Payment Mode</label>
                         <div>
@@ -181,8 +182,7 @@
                             @endforeach
                         </div>
                     </div>
-
-
+                    --}}
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-1 d-block">With Picture</label>
@@ -212,13 +212,14 @@
                         </select>
                     </div>
 
-                    <div class="col-12 mb-3">
-                        <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
-                        <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-light btn-sm">Reset</a>
-                        <button type="submit" id="printSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
-                                formtarget="_blank" class="btn btn-primary btn-sm">
-                            Report
-                        </button>
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="w-100 d-flex gap-2">
+                            <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" id="printSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
+                                    formtarget="_blank" class="btn btn-primary btn-sm w-50">
+                                <i class="fa-solid fa-print"></i> Print
+                            </button>
+                        </div>
                     </div>
 
                 </div>
