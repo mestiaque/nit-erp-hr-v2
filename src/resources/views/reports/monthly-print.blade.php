@@ -57,6 +57,7 @@
         border-color: #e0a2a2;
         color: #8b1f1f;
     }
+    .section-title { font-size:11px; font-weight:700; background:#dde6f0; padding:3px 6px; margin:10px 0 2px; }
 </style>
 @endpush
 
@@ -87,6 +88,10 @@
 
 @if($reportType === 'recruitment')
     <div class="sub"><strong>Employee Recruitment Report-{{ $fromLabel }} To {{ $toLabel }}</strong></div>
+    @forelse($groups as $groupKey => $groupRows)
+    @if($groupBy !== 'none')
+        <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+    @endif
     <table class="table-report">
         <thead>
             <tr>
@@ -104,7 +109,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($data['rows'] as $row)
+            @foreach($groupRows as $row)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $row['employee_id'] }}</td>
@@ -118,11 +123,12 @@
                     <td>{{ $row['grade'] }}</td>
                     <td class="text-right">{{ $fmtMoney($row['gross_salary']) }}</td>
                 </tr>
-            @empty
-                <tr><td colspan="11" class="text-center">No data found.</td></tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
+    @empty
+        <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
+    @endforelse
 
     <div class="sub"><strong>Employee Recruitment Summary- {{ $fromLabel }} To {{ $toLabel }}</strong></div>
     <table class="table-report">
@@ -155,6 +161,10 @@
     </table>
 @elseif($reportType === 'migration')
     <div class="sub"><strong>Employee Migration Report-{{ $fromLabel }} To {{ $toLabel }}</strong></div>
+    @forelse($groups as $groupKey => $groupRows)
+    @if($groupBy !== 'none')
+        <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+    @endif
     <table class="table-report">
         <thead>
             <tr>
@@ -170,7 +180,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($data['rows'] as $row)
+            @foreach($groupRows as $row)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $row['employee_id'] }}</td>
@@ -182,13 +192,18 @@
                     <td>{{ $row['migration_date'] }}</td>
                     <td>{{ $row['remarks'] }}</td>
                 </tr>
-            @empty
-                <tr><td colspan="9" class="text-center">No data found.</td></tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
+    @empty
+        <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
+    @endforelse
 @elseif($reportType === 'long-absent')
     <div class="sub"><strong>Long absent Report ({{ $fromLabel }} To {{ $toLabel }})</strong></div>
+    @forelse($groups as $groupKey => $groupRows)
+    @if($groupBy !== 'none')
+        <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+    @endif
     <table class="table-report">
         <thead>
             <tr>
@@ -205,7 +220,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($data['rows'] as $row)
+            @foreach($groupRows as $row)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $row['employee_id'] }}</td>
@@ -218,11 +233,12 @@
                     <td>{{ $row['absent_date'] }}</td>
                     <td>{{ $row['remarks'] }}</td>
                 </tr>
-            @empty
-                <tr><td colspan="10" class="text-center">No data found.</td></tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
+    @empty
+        <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
+    @endforelse
 @elseif($reportType === 'increment')
     <div class="sub"><strong>Salary Increment ({{ $fromLabel }} To {{ $toLabel }})</strong></div>
     <form method="post" action="{{ route('hr-center.reports.monthly.lock-increment') }}" class="sub" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
@@ -244,6 +260,10 @@
         <input id="effective_date" type="date" name="effective_date" value="{{ $request->effective_date }}" required style="height:30px;">
         <button type="submit" style="height:30px;padding:0 10px;">Lock Increment</button>
     </form>
+    @forelse($groups as $groupKey => $groupRows)
+    @if($groupBy !== 'none')
+        <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+    @endif
     <table class="table-report">
         <thead>
             <tr>
@@ -268,7 +288,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($data['rows'] as $row)
+            @foreach($groupRows as $row)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $row['employee_id'] }}</td>
@@ -289,13 +309,18 @@
                     <td class="text-right">{{ $fmtMoney($row['inc_value']) }}</td>
                     <td class="text-right">{{ $fmtMoney($row['final_gross']) }}</td>
                 </tr>
-            @empty
-                <tr><td colspan="18" class="text-center">No data found.</td></tr>
-            @endforelse
+            @endforeach
         </tbody>
     </table>
+    @empty
+        <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
+    @endforelse
 @else
     <div class="sub"><strong>Salary Increment Report({{ $fromLabel }} To {{ $toLabel }})</strong></div>
+    @forelse($groups as $groupKey => $groupRows)
+    @if($groupBy !== 'none')
+        <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+    @endif
     <table class="table-report">
         <thead>
             <tr>
@@ -322,7 +347,7 @@
             </tr>
         </thead>
         <tbody>
-            @forelse($data['rows'] as $row)
+            @foreach($groupRows as $row)
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $row['employee_id'] }}</td>
@@ -345,9 +370,14 @@
                     <td>{{ $row['effective_date'] }}</td>
                     <td>{{ $row['remarks'] }}</td>
                 </tr>
-            @empty
-                <tr><td colspan="20" class="text-center">No data found.</td></tr>
-            @endforelse
+            @endforeach
+        </tbody>
+    </table>
+    @empty
+        <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
+    @endforelse
+    <table class="table-report">
+        <tbody>
             <tr class="summary-row">
                 <td colspan="15">Grand Total</td>
                 <td class="text-right">Employee: {{ $data['summary']['employee_count'] ?? 0 }}</td>

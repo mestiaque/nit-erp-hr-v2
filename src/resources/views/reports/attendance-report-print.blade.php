@@ -37,13 +37,15 @@
 <div class="sub-title">Attendance Report &mdash; {{ $dateLabel }}</div>
 
 @php
-    $bySection = $employees->groupBy('section_id');
+    $bySection = $groups;
     $grandPresent = $grandAbsent = $grandLate = $grandLeave = $grandWeekend = $grandHoliday = 0;
     $grandOt = 0;
 @endphp
 
 @forelse($bySection as $sectionId => $sectionEmps)
-    <div class="section-title">Section: {{ $sectionMap->get($sectionId, 'N/A') }}</div>
+    @if($groupBy !== 'none')
+        <div class="section-title">{{ $groupLabel((string) $sectionId) }}</div>
+    @endif
 
     @php
         $secPresent = $secAbsent = $secLate = $secLeave = $secWeekend = $secHoliday = 0;

@@ -51,6 +51,7 @@
     .text-center {
         text-align: center;
     }
+    .section-title { font-size:11px; font-weight:700; background:#dde6f0; padding:3px 6px; margin:10px 0 2px; }
 </style>
 @endpush
 
@@ -99,6 +100,10 @@
     <strong>Print Date:</strong> {{ now()->format('d-m-Y h:i A') }}
     <span style="margin-left: 18px;"><strong>Total Employee:</strong> {{ $employees->count() }}</span>
 </div>
+@forelse($groups as $groupKey => $groupRows)
+@if($groupBy !== 'none')
+    <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+@endif
 <table class="report-table database-table">
     <thead>
         <tr>
@@ -176,7 +181,7 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($employees as $employee)
+        @foreach($groupRows as $employee)
             @php
                 // Parse other_information JSON (stored as text in DB)
                 $other = is_array($employee->other_information)
@@ -304,11 +309,10 @@
                 <td>{{ $employee->nominee_relation ?? 'N/A' }}</td>
                 <td>{{ $employee->nominee_age ?? 'N/A' }}</td>
             </tr>
-        @empty
-            <tr>
-                <td colspan="62" class="text-center">No employee found.</td>
-            </tr>
-        @endforelse
+        @endforeach
     </tbody>
 </table>
+@empty
+    <p style="text-align:center;color:#888;padding:12px 0;">No employee found.</p>
+@endforelse
 @endsection

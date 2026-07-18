@@ -5,7 +5,7 @@
         $isBangla = $language === 'bn';
         $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
         $totalDays = count($dates);
-        $bySection = $employees->groupBy('section_id');
+        $bySection = $groups ?? $employees->groupBy('section_id');
         $getAtt = fn($uid, $date) => ($attendanceMap->get($uid . '_' . $date) ?? collect())->first();
         $fmtNum = fn($n) => $isBangla ? en2bnNumber($n) : $n;
         $fmtDate = fn($d) => $isBangla ? bn_date($d) : $d;
@@ -32,7 +32,9 @@
         </div>
 
         <div class="sub-title">{{ $t('উপস্থিতি সারাংশ', 'Attendance Summary') }} ({{ $isBangla ? bn_date($fromLabel) : $fromLabel }} {{ $t('থেকে', 'To') }} {{ $isBangla ? bn_date($toLabel) : $toLabel }})</div>
-        <div class="section-title">{{ $t('সেকশন', 'Section') }}: {{ $section }}</div>
+        @if(($groupBy ?? 'section') !== 'none')
+        <div class="section-title">{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $t('সেকশন', 'Section') . ': ' . $section }}</div>
+        @endif
 
         <div style="">
         <table class="t">

@@ -79,7 +79,7 @@
     $address = hr_factory('address') ?? '';
     $fromLabel = \Carbon\Carbon::parse($from)->format('d/m/Y');
     $toLabel = \Carbon\Carbon::parse($to)->format('d/m/Y');
-    $sectionGroups = $employees->groupBy('section_id');
+    $sectionGroups = $groups ?? $employees->groupBy('section_id');
 @endphp
 
 <div class="report-wrap">
@@ -97,7 +97,9 @@
     <div class="sub-date">Dated from&nbsp; {{ $fromLabel }} &nbsp;&nbsp; to {{ $toLabel }}</div>
 
     @forelse($sectionGroups as $sectionId => $sectionEmployees)
-        <div class="section-line">Section :&nbsp;&nbsp;{{ $sectionMap->get($sectionId, 'N/A') }}</div>
+        @if(($groupBy ?? 'section') !== 'none')
+        <div class="section-line">{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $sectionMap->get($sectionId, 'N/A') }}</div>
+        @endif
 
         <table class="t">
             <thead>

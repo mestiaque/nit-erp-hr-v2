@@ -53,10 +53,14 @@ class HrReportController extends Controller
         }
 
         if ($request->boolean('print')) {
-            return view('hr::reports.pro-job-card-print', compact('reportKey', 'reportTitle', 'options', 'request', 'columns', 'rows'));
+            $groupBy = $this->resolveGroupBy($request);
+            $optionMaps = $this->groupByOptionMaps($options);
+            [$groups, $groupLabel] = $this->groupEmployeeRows(collect($rows), $groupBy, $optionMaps, fn (array $row) => $row['employee']);
+            return view('hr::reports.pro-job-card-print', compact('reportKey', 'reportTitle', 'options', 'request', 'columns', 'rows', 'groups', 'groupLabel', 'groupBy'));
         }
 
-        return view('hr::reports.pro-job-card', compact('reportKey', 'reportTitle', 'options', 'request', 'columns', 'rows', 'showTable'));
+        $groupByOptions = self::GROUP_BY_OPTIONS;
+        return view('hr::reports.pro-job-card', compact('reportKey', 'reportTitle', 'options', 'request', 'columns', 'rows', 'showTable', 'groupByOptions'));
     }
 
     public function lockMonthlyIncrement(Request $request)
@@ -282,6 +286,13 @@ class HrReportController extends Controller
                 return $this->attendanceWithOtReportScreen($request, 'attendance-with-ot');
             }
 
+            // Every report_type here produces per-employee rows carrying an 'employee' key
+            // (recruitment's summary_rows table and increment's grand-total row are the two
+            // exceptions — both are pre-aggregated and stay untouched by grouping).
+            $groupBy = $this->resolveGroupBy($request);
+            $optionMaps = $this->groupByOptionMaps($options);
+            [$groups, $groupLabel] = $this->groupEmployeeRows(collect($data['rows'] ?? []), $groupBy, $optionMaps, fn (array $row) => $row['employee']);
+
             return view('hr::reports.monthly-print', [
                 'reportKey' => $report,
                 'reportTitle' => config('hr.reports.' . $report),
@@ -290,6 +301,9 @@ class HrReportController extends Controller
                 'request' => $request,
                 'options' => $options,
                 'data' => $data,
+                'groups' => $groups,
+                'groupLabel' => $groupLabel,
+                'groupBy' => $groupBy,
                 'incrementPercent' => $incrementPercent,
                 'effectiveDate' => $effectiveDate,
             ]);
@@ -302,6 +316,7 @@ class HrReportController extends Controller
             'options' => $options,
             'reportTypes' => $reportTypes,
             'reportType' => $reportType,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'incrementPercent' => $incrementPercent,
             'effectiveDate' => $effectiveDate,
         ]);
@@ -338,6 +353,7 @@ class HrReportController extends Controller
 
         $detailRows = $rows->map(function (HrEmployee $employee) use ($classificationMap, $departmentMap, $sectionMap, $designationMap, $gradeMap) {
             return [
+                'employee' => $employee,
                 'employee_id' => $employee->employee_id,
                 'name' => $employee->name,
                 'department' => $departmentMap->get($employee->department_id, 'N/A'),
@@ -414,6 +430,7 @@ class HrReportController extends Controller
                 $status = (string) ($employee->employment_status ?? 'N/A');
 
                 return [
+                    'employee' => $employee,
                     'employee_id' => $employee->employee_id,
                     'name' => $employee->name,
                     'department' => $departmentMap->get($employee->department_id, 'N/A'),
@@ -529,6 +546,7 @@ class HrReportController extends Controller
                 $other = is_array($employee->other_information) ? $employee->other_information : [];
 
                 return [
+                    'employee' => $employee,
                     'employee_id' => $employee->employee_id,
                     'name' => $employee->name,
                     'doj' => optional($employee->join_date)->format('d-M-Y'),
@@ -680,6 +698,7 @@ class HrReportController extends Controller
                 }
 
                 $row = [
+                    'employee' => $employee,
                     'employee_row_id' => $employee->id,
                     'employee_id' => $employee->employee_id,
                     'name' => $employee->name,
@@ -837,17 +856,27 @@ class HrReportController extends Controller
             if (! array_key_exists($reportType, $reportTypes)) {
                 $reportType = 'database';
             }
+            $groupBy = $this->resolveGroupBy($request);
+            $optionMaps = $this->groupByOptionMaps($options);
 
             if ($reportType === 'database') {
+                [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
                 return view('hr::reports.employee-database-print', [
                     'employees' => $employees,
+                    'groups' => $groups,
+                    'groupLabel' => $groupLabel,
+                    'groupBy' => $groupBy,
                     'request' => $request,
                     'options' => $options,
                 ]);
             } elseif ($reportType === 'details') {
                 $detailsRows = $this->employeeDetailsRows($employees, $options);
+                [$groups, $groupLabel] = $this->groupEmployeeRows($detailsRows, $groupBy, $optionMaps, fn ($row) => $row['employee']);
                 return view('hr::reports.employee-details-print', [
                     'detailsRows' => $detailsRows,
+                    'groups' => $groups,
+                    'groupLabel' => $groupLabel,
+                    'groupBy' => $groupBy,
                     'request' => $request,
                     'options' => $options,
                 ]);
@@ -879,6 +908,7 @@ class HrReportController extends Controller
             'employees' => $employees,
             'options' => $options,
             'reportTypes' => $reportTypes,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request' => $request,
             'language' => $language,
         ]);
@@ -943,6 +973,7 @@ class HrReportController extends Controller
 
             $rows->push([
                 'sl'               => $serial++,
+                'employee'         => $employee,
                 'working_place'    => $workingPlaceMap->get(data_get($profile, 'working_place_id') ?? $employee->working_place_id, 'N/A'),
                 'name'             => $employee->name,
                 'employee_id'      => $employee->employee_id,
@@ -1159,6 +1190,101 @@ class HrReportController extends Controller
                 ['id' => 'Cheque', 'name' => 'Cheque'],
             ]),
         ];
+    }
+
+    /**
+     * Shared "Group By" option list used across report print screens — org-unit axes
+     * an employee row can be grouped by. 'none' is always the flat/ungrouped case.
+     */
+    private const GROUP_BY_OPTIONS = [
+        'none'                    => 'None (Flat List)',
+        'classification'          => 'Classification',
+        'department'              => 'Department',
+        'section'                 => 'Section',
+        'sub_section'             => 'Sub-Section',
+        'designation'             => 'Designation',
+        'shift'                   => 'Shift',
+        'department_section'      => 'Department + Section',
+        'department_designation'  => 'Department + Designation',
+    ];
+
+    /**
+     * Resolves the requested group_by value against the known option list, falling
+     * back to $default (per-report — 'none' for reports with no prior grouping,
+     * or an already-hardcoded axis like 'section' for reports being made configurable
+     * without changing their default appearance).
+     */
+    private function resolveGroupBy(Request $request, string $default = 'none'): string
+    {
+        $groupBy = (string) $request->input('group_by');
+        return array_key_exists($groupBy, self::GROUP_BY_OPTIONS) ? $groupBy : $default;
+    }
+
+    private function groupByOptionMaps(array $options): array
+    {
+        return [
+            'classification' => collect($options['classifications'] ?? [])->pluck('name', 'id')->all(),
+            'department'      => collect($options['departments'] ?? [])->pluck('name', 'id')->all(),
+            'section'         => collect($options['sections'] ?? [])->pluck('name', 'id')->all(),
+            'sub_section'     => collect($options['subSections'] ?? [])->pluck('name', 'id')->all(),
+            'designation'     => collect($options['designations'] ?? [])->pluck('name', 'id')->all(),
+            'shift'           => collect($options['shifts'] ?? [])->pluck('name', 'id')->all(),
+        ];
+    }
+
+    /**
+     * Groups a collection of rows by the selected org-unit axis and returns
+     * [groups, groupLabel closure]. $employeeResolver pulls the employee-like object
+     * (with department_id/section_id/etc.) out of each row — rows may be the employee
+     * model itself, an array with an 'employee' key, or an object with an ->employee
+     * relation, depending on the report. 'none' collapses everything into a single
+     * key 'all', so the caller's existing flat/ungrouped output is unchanged when no
+     * grouping is selected — this is what keeps the rollout purely additive.
+     */
+    private function groupEmployeeRows($rows, string $groupBy, array $optionMaps, callable $employeeResolver): array
+    {
+        $keyOf = function ($row) use ($groupBy, $employeeResolver) {
+            if ($groupBy === 'none') {
+                return 'all';
+            }
+            $emp = $employeeResolver($row);
+            $dept = (string) ($emp?->department_id ?? '');
+            return match ($groupBy) {
+                'classification' => (string) ($emp?->classification_id ?? ''),
+                'department' => $dept,
+                'section' => (string) ($emp?->section_id ?? ''),
+                'sub_section' => (string) ($emp?->sub_section_id ?? ''),
+                'designation' => (string) ($emp?->designation_id ?? ''),
+                'shift' => (string) ($emp?->shift_id ?? ''),
+                'department_section' => $dept . '|' . ($emp?->section_id ?? ''),
+                'department_designation' => $dept . '|' . ($emp?->designation_id ?? ''),
+                default => 'all',
+            };
+        };
+
+        $groups = $rows->groupBy($keyOf);
+
+        return [$groups, $this->groupLabelResolver($groupBy, $optionMaps)];
+    }
+
+    /**
+     * The label half of groupEmployeeRows(), split out so callers that already have
+     * their own group keys (e.g. SalaryReportService's own department/section loop)
+     * can resolve display labels without needing groupEmployeeRows()'s row-grouping.
+     */
+    private function groupLabelResolver(string $groupBy, array $optionMaps): \Closure
+    {
+        return function (string $key) use ($groupBy, $optionMaps) {
+            if (str_contains($key, '|')) {
+                [$a, $b] = explode('|', $key, 2);
+                return match ($groupBy) {
+                    'department_section' => ($optionMaps['department'][$a] ?? 'N/A') . ' — ' . ($optionMaps['section'][$b] ?? 'N/A'),
+                    'department_designation' => ($optionMaps['department'][$a] ?? 'N/A') . ' — ' . ($optionMaps['designation'][$b] ?? 'N/A'),
+                    default => 'N/A',
+                };
+            }
+            return $optionMaps[$groupBy][$key] ?? 'N/A';
+        };
     }
 
     private function employeeManpowerSummaryRows($employees, array $options)
@@ -1634,6 +1760,7 @@ class HrReportController extends Controller
                 : json_decode($employee->other_information ?? '{}', true);
 
             return [
+                'employee'           => $employee,
                 'line_number'        => $employee->floor_line_id,
                 'employee_id'        => $employee->employee_id,
                 'name'               => $employee->name,
@@ -1749,7 +1876,7 @@ class HrReportController extends Controller
         if ($request->boolean('print')) {
             $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
             $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
-            $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'job-card'));
+            $reportType = (string) $request->input('report_type', 'job-card');
             if (!array_key_exists($reportType, $reportTypes)) {
                 $reportType = 'job-card';
             }
@@ -1786,15 +1913,27 @@ class HrReportController extends Controller
             ]);
             $shiftMap = HrShift::query()->pluck('name', 'id');
 
+            // 'job-card'/'job-card-lock' had no grouping at all before (plain per-employee
+            // page-per-employee list) — default 'none' there. The other four report_types
+            // were always hardcoded Section-grouped (ot-summary additionally nests
+            // Designation inside that, kept as-is) — default 'section' for those, so their
+            // appearance is unchanged unless the user picks a different axis.
+            $groupByDefault = in_array($reportType, ['job-card', 'job-card-lock'], true) ? 'none' : 'section';
+            $groupBy = $this->resolveGroupBy($request, $groupByDefault);
+            $optionMaps = $this->groupByOptionMaps($options);
+            [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
+
             return view('hr::reports.job-card-report-print', compact(
                 'request', 'employees', 'attendanceMap', 'dates',
                 'from', 'to', 'reportType', 'reportTypes',
                 'departmentMap', 'sectionMap', 'subSectionMap',
-                'designationMap', 'classificationMap', 'lineMap', 'shiftMap'
+                'designationMap', 'classificationMap', 'lineMap', 'shiftMap',
+                'groups', 'groupLabel', 'groupBy'
             ) + [
                 'fromLabel' => \Carbon\Carbon::parse($from)->format('d-M-Y'),
                 'toLabel'   => \Carbon\Carbon::parse($to)->format('d-M-Y'),
                 'reportTypeLabel' => $reportTypes[$reportType],
+                'groupByAxisLabel' => self::GROUP_BY_OPTIONS[$groupBy] === 'None (Flat List)' ? 'Group' : self::GROUP_BY_OPTIONS[$groupBy],
             ]);
         }
 
@@ -1803,6 +1942,7 @@ class HrReportController extends Controller
             'reportTitle' => config('hr.reports.' . $report),
             'options'     => $options,
             'reportTypes' => $reportTypes,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request'     => $request,
         ]);
     }
@@ -1920,6 +2060,12 @@ class HrReportController extends Controller
             ]);
             $workingPlaceMap = collect($options['workingPlaces'] ?? [])->pluck('name', 'id');
 
+            // This report was always hardcoded Section-grouped — default 'section' here
+            // (rather than 'none') keeps that exact appearance unless the user picks a
+            // different axis, per the "existing grouping becomes the default" rule.
+            $groupBy = $this->resolveGroupBy($request, 'section');
+            $optionMaps = $this->groupByOptionMaps($options);
+
             $dateLabel = \Carbon\Carbon::parse($from)->format('d-M-Y') . ' to ' . \Carbon\Carbon::parse($to)->format('d-M-Y');
 
             if ($type === 'A') {
@@ -1957,6 +2103,7 @@ class HrReportController extends Controller
                         $workingPlaceId = data_get($profile, 'working_place_id') ?? $employee->working_place_id;
 
                         return [
+                            'employee' => $employee,
                             'section_id' => $employee->section_id,
                             'employee_id' => $employee->employee_id,
                             'name' => $employee->name,
@@ -1992,6 +2139,7 @@ class HrReportController extends Controller
                                 }
 
                                 return [
+                                    'employee' => $employee,
                                     'section_id' => $employee->section_id,
                                     'employee_id' => $employee->employee_id,
                                     'name' => $employee->name,
@@ -2020,8 +2168,11 @@ class HrReportController extends Controller
                         ->values();
                 }
 
+                [$groups, $groupLabel] = $this->groupEmployeeRows($rows, $groupBy, $optionMaps, fn (array $row) => $row['employee']);
+
                 return view('hr::reports.absent-report-print', compact(
-                    'request', 'rows', 'sectionMap', 'fromDate', 'toDate', 'isSingleDay'
+                    'request', 'rows', 'sectionMap', 'fromDate', 'toDate', 'isSingleDay',
+                    'groups', 'groupLabel', 'groupBy'
                 ));
             }
 
@@ -2045,10 +2196,12 @@ class HrReportController extends Controller
                     $emp = $employeeMap->get($record->employee_id);
                     return $emp ? $emp->section_id : 'unknown';
                 });
+                [$groups, $groupLabel] = $this->groupEmployeeRows($attendanceRecords, $groupBy, $optionMaps, fn ($record) => $employeeMap->get($record->employee_id));
 
                 return view('hr::reports.attendance-missing-report-print', compact(
                     'request', 'employees', 'attendanceRecords', 'attendanceBySection', 'sectionMap',
-                    'designationMap', 'lineMap', 'workingPlaceMap', 'employeeMap', 'from', 'to'
+                    'designationMap', 'lineMap', 'workingPlaceMap', 'employeeMap', 'from', 'to',
+                    'groups', 'groupLabel', 'groupBy'
                 ));
             }
 
@@ -2107,14 +2260,20 @@ class HrReportController extends Controller
                     ];
                 });
 
+                [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
+
                 return view('hr::reports.attendance-status-report-print', compact(
-                    'request', 'employees', 'from', 'to', 'sectionMap', 'days', 'attendanceStatusByEmployee'
+                    'request', 'employees', 'from', 'to', 'sectionMap', 'days', 'attendanceStatusByEmployee',
+                    'groups', 'groupLabel', 'groupBy'
                 ));
             }
 
+            [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
+
             return view('hr::reports.attendance-report-print', compact(
                 'request', 'employees', 'from', 'to',
-                'sectionMap', 'subSectionMap', 'designationMap', 'shiftMap', 'attendanceByEmployee', 'dateLabel'
+                'sectionMap', 'subSectionMap', 'designationMap', 'shiftMap', 'attendanceByEmployee', 'dateLabel',
+                'groups', 'groupLabel', 'groupBy'
             ));
         }
 
@@ -2123,6 +2282,7 @@ class HrReportController extends Controller
             'reportTitle'      => config('hr.reports.' . $report),
             'options'          => $options,
             'attendanceTypes'  => $attendanceTypes,
+            'groupByOptions'   => self::GROUP_BY_OPTIONS,
             'request'          => $request,
         ]);
     }
@@ -2138,20 +2298,10 @@ class HrReportController extends Controller
     {
         return view('hr::reports.daily-attendance-report', [
             'options' => $this->employeeReportOptions(),
-            'groupByOptions' => self::DAILY_ATTENDANCE_GROUP_BY,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request' => $request,
         ]);
     }
-
-    private const DAILY_ATTENDANCE_GROUP_BY = [
-        'none'                    => 'None (Flat List)',
-        'classification'          => 'Classification',
-        'department'              => 'Department',
-        'section'                 => 'Section',
-        'designation'             => 'Designation',
-        'department_section'      => 'Department + Section',
-        'department_designation'  => 'Department + Designation',
-    ];
 
     /**
      * Route: GET /reports/daily-attendance-report-print
@@ -2161,15 +2311,10 @@ class HrReportController extends Controller
         $from = $request->input('from') ?: now()->toDateString();
         $to = $request->input('to') ?: $from;
         $isRange = $from !== $to;
-        $groupBy = array_key_exists($request->input('group_by'), self::DAILY_ATTENDANCE_GROUP_BY)
-            ? $request->input('group_by')
-            : 'none';
+        $groupBy = $this->resolveGroupBy($request);
 
         $options = $this->employeeReportOptions();
-        $departmentMap = collect($options['departments'])->pluck('name', 'id');
-        $sectionMap = collect($options['sections'])->pluck('name', 'id');
-        $designationMap = collect($options['designations'])->pluck('name', 'id');
-        $classificationMap = collect($options['classifications'])->pluck('name', 'id');
+        $optionMaps = $this->groupByOptionMaps($options);
 
         $employees = $this->employeeReportQuery($request)
             ->with(['designation:id,name,bn_name'])
@@ -2191,13 +2336,19 @@ class HrReportController extends Controller
 
         $employeeRows = $employees->map(function (HrEmployee $employee) use ($from, $to, $normalizeStatus) {
             $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
-            $days = collect($pack['attendance'] ?? [])->map(fn ($d) => [
-                'date' => $d['date'] ?? '-',
-                'in_time' => $d['in_time'] ?? '-',
-                'out_time' => $d['out_time'] ?? '-',
-                'status' => $normalizeStatus($d['status'] ?? 'N/A'),
-                'ot_hours' => $d['compliance_ot'] ?? 0,
-            ]);
+            $days = collect($pack['attendance'] ?? [])
+                // 'not_employed' days (past the employee's exit date) aren't real
+                // attendance to report on — drop them so a resigned employee doesn't
+                // show up as a row for dates after they left.
+                ->filter(fn ($d) => ($d['status_key'] ?? null) !== 'not_employed')
+                ->map(fn ($d) => [
+                    'date' => $d['date'] ?? '-',
+                    'in_time' => $d['in_time'] ?? '-',
+                    'out_time' => $d['out_time'] ?? '-',
+                    'status' => $normalizeStatus($d['status'] ?? 'N/A'),
+                    'ot_hours' => $d['compliance_ot'] ?? 0,
+                ])
+                ->values();
             $firstDay = $days->first() ?? [];
 
             return [
@@ -2211,17 +2362,7 @@ class HrReportController extends Controller
                 'status' => $firstDay['status'] ?? 'N/A',
                 'ot_hours' => $firstDay['ot_hours'] ?? 0,
             ];
-        });
-
-        $groupKey = match ($groupBy) {
-            'classification' => fn (array $row) => (string) $row['employee']->classification_id,
-            'department' => fn (array $row) => (string) $row['employee']->department_id,
-            'section' => fn (array $row) => (string) $row['employee']->section_id,
-            'designation' => fn (array $row) => (string) $row['employee']->designation_id,
-            'department_section' => fn (array $row) => $row['employee']->department_id . '|' . $row['employee']->section_id,
-            'department_designation' => fn (array $row) => $row['employee']->department_id . '|' . $row['employee']->designation_id,
-            default => fn (array $row) => 'all',
-        };
+        })->filter(fn (array $row) => $row['days']->isNotEmpty())->values();
 
         // Report-wide summary — a simple total across every employee-day shown below,
         // in a fixed, predictable status order (rather than sorted by count, which would
@@ -2232,36 +2373,23 @@ class HrReportController extends Controller
         foreach ($employeeRows as $row) {
             foreach ($row['days'] as $day) {
                 $status = $day['status'];
-                $statusCounts[$status] = ($statusCounts[$status] ?? 0) + 1;
+                // 'N/A' marks a day past the employee's resignation date (not_employed) —
+                // not a real attendance state, so it's excluded from the summary entirely
+                // rather than showing up as its own stray column.
+                if ($status === 'N/A' || !array_key_exists($status, $statusCounts)) {
+                    continue;
+                }
+                $statusCounts[$status]++;
                 $totalOtHours += (float) ($day['ot_hours'] ?? 0);
             }
         }
         $summary = [
-            'total_employees' => $employees->count(),
+            'total_employees' => $employeeRows->count(),
             'status_counts'   => $statusCounts,
             'total_ot_hours'  => round($totalOtHours, 2),
         ];
 
-        $groups = $employeeRows->groupBy($groupKey);
-
-        $groupLabel = function (string $key) use ($groupBy, $departmentMap, $sectionMap, $designationMap, $classificationMap) {
-            if (str_contains($key, '|')) {
-                [$a, $b] = explode('|', $key, 2);
-                return match ($groupBy) {
-                    'department_section' => $departmentMap->get($a, 'N/A') . ' — ' . $sectionMap->get($b, 'N/A'),
-                    'department_designation' => $departmentMap->get($a, 'N/A') . ' — ' . $designationMap->get($b, 'N/A'),
-                    default => 'N/A',
-                };
-            }
-
-            return match ($groupBy) {
-                'classification' => $classificationMap->get($key, 'N/A'),
-                'department' => $departmentMap->get($key, 'N/A'),
-                'section' => $sectionMap->get($key, 'N/A'),
-                'designation' => $designationMap->get($key, 'N/A'),
-                default => null,
-            };
-        };
+        [$groups, $groupLabel] = $this->groupEmployeeRows($employeeRows, $groupBy, $optionMaps, fn (array $row) => $row['employee']);
 
         return view('hr::reports.daily-attendance-report-print', [
             'groups' => $groups,
@@ -2281,6 +2409,7 @@ class HrReportController extends Controller
     {
         return view('hr::reports.ot-summary-report', [
             'options' => $this->employeeReportOptions(),
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request' => $request,
         ]);
     }
@@ -2303,6 +2432,13 @@ class HrReportController extends Controller
             $cur->addDay();
         }
 
+        // Always hardcoded Section -> Designation grouped before — default 'section'
+        // preserves the outer level's appearance; Designation stays the fixed inner level.
+        $options = $this->employeeReportOptions();
+        $groupBy = $this->resolveGroupBy($request, 'section');
+        $optionMaps = $this->groupByOptionMaps($options);
+        [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
+
         return view('hr::reports.ot-summary-report-print', [
             'employees' => $employees,
             'from' => $from,
@@ -2312,6 +2448,10 @@ class HrReportController extends Controller
             'language' => $request->input('language', 'bn'),
             'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
             'toLabel'   => Carbon::parse($to)->format('d-M-Y'),
+            'groups' => $groups,
+            'groupLabel' => $groupLabel,
+            'groupBy' => $groupBy,
+            'groupByAxisLabel' => self::GROUP_BY_OPTIONS[$groupBy] === 'None (Flat List)' ? 'Group' : self::GROUP_BY_OPTIONS[$groupBy],
         ]);
     }
 
@@ -2463,6 +2603,7 @@ class HrReportController extends Controller
                 $employeeData = $employeeDataFn($employee, $request ?? null, null, null, null, null);
 
                 return [
+                    'employee' => $employee,
                     'section_id' => $employee->section_id,
                     'section' => $employeeData['section'] ?? $sectionMap->get($employee->section_id, 'N/A'),
                     'card_no' => $employee->employee_id,
@@ -2476,10 +2617,18 @@ class HrReportController extends Controller
                 ];
             });
 
+            // Always hardcoded Section-grouped before — default 'section' preserves that.
+            $groupBy = $this->resolveGroupBy($request, 'section');
+            $optionMaps = $this->groupByOptionMaps($options);
+            [$groups, $groupLabel] = $this->groupEmployeeRows($rows, $groupBy, $optionMaps, fn (array $row) => $row['employee']);
+
             return view('hr::reports.attendance-with-ot-print', [
                 'request' => $request,
                 'rows' => $rows,
                 'reportDate' => $reportDate,
+                'groups' => $groups,
+                'groupLabel' => $groupLabel,
+                'groupBy' => $groupBy,
             ]);
         }
 
@@ -2487,6 +2636,7 @@ class HrReportController extends Controller
             'reportKey' => $report,
             'reportTitle' => config('hr.reports.' . $report),
             'options' => $options,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request' => $request,
         ]);
     }
@@ -2580,6 +2730,7 @@ class HrReportController extends Controller
                 }
 
                 $lateByEmployee->push([
+                    'employee' => $employee,
                     'section_id' => $employee->section_id,
                     'section' => $employeeData['section'] ?? 'N/A',
                     'card_no' => $employee->employee_id,
@@ -2591,11 +2742,18 @@ class HrReportController extends Controller
                 ]);
             }
 
+            // Always hardcoded Section-grouped before — default 'section' preserves that.
+            $groupBy = $this->resolveGroupBy($request, 'section');
+            $optionMaps = $this->groupByOptionMaps($options);
+            [$groups, $groupLabel] = $this->groupEmployeeRows($lateByEmployee, $groupBy, $optionMaps, fn (array $row) => $row['employee']);
+
             return view('hr::reports.monthly-late-report-print', [
                 'request' => $request,
                 'from' => $from,
                 'to' => $to,
-                'lateBySection' => $lateByEmployee->groupBy('section_id'),
+                'lateBySection' => $groups,
+                'groupLabel' => $groupLabel,
+                'groupBy' => $groupBy,
             ]);
         }
 
@@ -2603,6 +2761,7 @@ class HrReportController extends Controller
             'reportKey' => $report,
             'reportTitle' => config('hr.reports.' . $report),
             'options' => $options,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request' => $request,
         ]);
     }
@@ -2734,7 +2893,10 @@ class HrReportController extends Controller
             if (!array_key_exists($mealType, $mealTypes)) {
                 $mealType = 'tiffin';
             }
-            $reportType = (string) ($request->input('report_type')[0] ?? $request->input('report_type', 'details'));
+            $reportType = (string) $request->input('report_type', 'details');
+            if (!array_key_exists($reportType, $reportTypes)) {
+                $reportType = 'details';
+            }
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
@@ -2756,13 +2918,20 @@ class HrReportController extends Controller
             // Meal eligibility: check shift meal options
             $shifts = HrShift::query()->get()->keyBy('id');
 
+            // Always hardcoded Section-grouped before — default 'section' preserves that.
+            $groupBy = $this->resolveGroupBy($request, 'section');
+            $optionMaps = $this->groupByOptionMaps($options);
+            [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
+
             return view('hr::reports.meal-report-print', compact(
                 'request', 'employees', 'attendanceMap', 'date',
                 'mealType', 'reportType', 'mealTypes', 'reportTypes',
-                'sectionMap', 'subSectionMap', 'designationMap', 'shiftMap', 'shifts', 'designationInfoMap'
+                'sectionMap', 'subSectionMap', 'designationMap', 'shiftMap', 'shifts', 'designationInfoMap',
+                'groups', 'groupLabel', 'groupBy'
             ) + [
                 'dateLabel'     => \Carbon\Carbon::parse($date)->format('d-M-Y'),
                 'mealTypeLabel' => $mealTypes[$mealType],
+                'groupByAxisLabel' => self::GROUP_BY_OPTIONS[$groupBy] === 'None (Flat List)' ? 'Group' : self::GROUP_BY_OPTIONS[$groupBy],
             ]);
         }
 
@@ -2772,6 +2941,7 @@ class HrReportController extends Controller
             'options'     => $options,
             'mealTypes'   => $mealTypes,
             'reportTypes' => $reportTypes,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request'     => $request,
         ]);
     }
@@ -2813,6 +2983,7 @@ class HrReportController extends Controller
             'bonusTitles'     => $bonusTitles,
             'bonusCategories' => $bonusCategories,
             'reportTypes'     => $reportTypes,
+            'groupByOptions'  => self::GROUP_BY_OPTIONS,
             'request'         => $request,
         ]);
     }
@@ -2870,6 +3041,11 @@ class HrReportController extends Controller
             ? 'hr::reports.bonus-sheet-production-print'
             : 'hr::reports.bonus-sheet-fixed-print';
 
+        // Always hardcoded Department-grouped before — default 'department' preserves that.
+        $groupBy = $this->resolveGroupBy($request, 'department');
+        $optionMaps = $this->groupByOptionMaps($options);
+        [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
+
         return view($view, [
             'request'        => $request,
             'employees'      => $employees,
@@ -2892,6 +3068,9 @@ class HrReportController extends Controller
             'fromLabel'      => \Carbon\Carbon::parse($fromDate)->format('d-M-Y'),
             'toLabel'        => \Carbon\Carbon::parse($toDate)->format('d-M-Y'),
             'categoryLabel'  => $bonusCategories[$category] ?? 'Fixed',
+            'groups'         => $groups,
+            'groupLabel'     => $groupLabel,
+            'groupBy'        => $groupBy,
         ]);
     }
 
@@ -3021,6 +3200,7 @@ class HrReportController extends Controller
             'bonusTitles'  => $bonusTitles,
             'reportTypes'  => self::SALARY_REPORT_TYPES,
             'paymentModes' => $paymentModes,
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
             'request'      => $request,
         ]);
     }
@@ -3088,9 +3268,16 @@ class HrReportController extends Controller
     public function bonusSalaryReportPrint(Request $request)
     {
         $payload = $this->salaryReportBasePayload($request, 'bonus');
+
+        // Always hardcoded Department-grouped before — default 'department' preserves that.
+        $options = $this->employeeReportOptions();
+        $groupBy = $this->resolveGroupBy($request, 'department');
+        $optionMaps = $this->groupByOptionMaps($options);
+
         $payload = array_merge(
             $payload,
-            SalaryReportService::buildBonusReportData($payload['employees'], $request, $payload['to'])
+            SalaryReportService::buildBonusReportData($payload['employees'], $request, $payload['to'], $groupBy),
+            ['groupLabel' => $this->groupLabelResolver($groupBy, $optionMaps), 'groupBy' => $groupBy]
         );
 
         return view('hr::reports.salary-report-print-bonus', $payload);
@@ -3102,9 +3289,14 @@ class HrReportController extends Controller
     public function wagesSalarySummaryReportPrint(Request $request)
     {
         $payload = $this->salaryReportBasePayload($request, 'wages-salary-summary');
+
+        // Only Department/Section are coherent rollup axes here — each summary row is
+        // already a pre-aggregated Department+Section bucket, not a single employee.
+        $groupBy = $this->resolveGroupBy($request, 'department');
+
         $payload = array_merge(
             $payload,
-            SalaryReportService::buildWagesSummaryData($payload['employees'], $payload['from'], $payload['to'], $request)
+            SalaryReportService::buildWagesSummaryData($payload['employees'], $payload['from'], $payload['to'], $request, $groupBy)
         );
 
         return view('hr::reports.salary-report-print-wages', $payload);
@@ -3120,10 +3312,20 @@ class HrReportController extends Controller
         $leaveInfos = HrLeaveInfo::where('status', 'active')
             ->whereNotIn('code', ['FL', 'GL'])
             ->orderBy('id')->get(['id', 'name', 'code']);
+
+        // Always hardcoded Department+Section grouped before — default 'department_section'
+        // preserves that exact bucketing/subtotal appearance.
+        $options = $this->employeeReportOptions();
+        $groupBy = $this->resolveGroupBy($request, 'department_section');
+        $optionMaps = $this->groupByOptionMaps($options);
+
         $payload = array_merge(
             $payload,
-            SalaryReportService::buildSalarySheetData($payload['employees'], $payload['from'], $payload['to'], $request, $leaveInfos),
-            ['leaveInfos' => $leaveInfos]
+            SalaryReportService::buildSalarySheetData($payload['employees'], $payload['from'], $payload['to'], $request, $leaveInfos, $groupBy),
+            [
+                'leaveInfos' => $leaveInfos,
+                'groupLabel' => $this->groupLabelResolver($groupBy, $optionMaps),
+            ]
         );
 
         return view($view, $payload);

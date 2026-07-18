@@ -115,7 +115,7 @@
     $company = hr_factory('name') ?? 'Company Name';
     $address = hr_factory('address') ?? '';
     $reportDateLabel = \Carbon\Carbon::parse($reportDate)->format('d/m/Y');
-    $rowsBySection = $rows->groupBy('section_id');
+    $rowsBySection = $groups ?? $rows->groupBy('section_id');
     $grandTotalOt = $rows->sum(fn ($row) => (float) ($row['ot_hours'] ?? 0));
 @endphp
 
@@ -130,13 +130,15 @@
 
     <div class="title-bar">Attendance Report With OT</div>
 
-    @forelse($rowsBySection as $sectionRows)
+    @forelse($rowsBySection as $groupKey => $sectionRows)
         @php
-            $sectionTitle = data_get($sectionRows->first(), 'section', 'N/A');
+            $sectionTitle = isset($groupLabel) ? $groupLabel((string) $groupKey) : data_get($sectionRows->first(), 'section', 'N/A');
         @endphp
 
         <div class="section-line">
-            <div>Section: {{ $sectionTitle }}</div>
+            @if(($groupBy ?? 'section') !== 'none')
+                <div>{{ $sectionTitle }}</div>
+            @endif
             <div>Date: {{ $reportDateLabel }}</div>
         </div>
 

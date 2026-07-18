@@ -109,7 +109,14 @@ class AttendanceController extends Controller
 
         $attendanceList = [];
         foreach ($employees as $emp) {
+            $exitedAt = $this->resolveExitedAt($emp);
             foreach ($dates as $date) {
+                // A resigned/lefty employee has no attendance to show or edit past
+                // their exit date — mirrors the cutoff already enforced in
+                // EmployeeAttendanceService::getEmployeeAttendanceByDate() for reports.
+                if ($exitedAt && Carbon::parse($date)->gt($exitedAt)) {
+                    continue;
+                }
                 $key = $emp->id . '_' . $date;
                 $attendance = $attendances[$key] ?? null;
                 $shift = $shiftMap[$emp->shift_id ?? null] ?? null;
@@ -123,22 +130,37 @@ class AttendanceController extends Controller
             }
         }
 
-        // Update Punch Missing/Absent status if needed
+        // Re-derive via calculateStatus() — the same single source of truth used on
+        // save — instead of a separate ad-hoc missing-field check. That ad-hoc check
+        // flagged "Punch Missing" the moment out_time was blank even for today/future
+        // dates, e.g. an employee who punched in this morning and simply hasn't left
+        // yet; calculateStatus() already knows to only call it Punch Missing once the
+        // date has actually passed.
         foreach ($attendanceList as &$row) {
             if (!$row['attendance']) {
                 $row['status'] = 'Absent';
-            } elseif (!$row['attendance']->in_time || !$row['attendance']->out_time) {
-                $row['status'] = 'Punch Missing';
+                continue;
             }
+            $row['status'] = $this->calculateStatus($row['attendance'], $row['shift']);
         }
         unset($row);
 
         // Apply the status filter here, against the derived status, now that every
-        // row's real Present/Late/Absent/Punch Missing value is known.
+        // row's real Present/Late/Absent/Punch Missing value is known. The dropdown only
+        // offers Present/Absent/Late — "Present" is a broad bucket covering any status
+        // that shows the employee had at least some punch data (in and/or out time),
+        // as opposed to a genuine no-show. This is a display-only filter on this list
+        // page; it doesn't touch the stored status value or any report.
         if ($status) {
+            $statusGroups = [
+                'Present' => ['Present', 'Late', 'Punch Missing', 'Early Exit', 'Late and Early Exit', 'Late and Punch Missing'],
+                'Absent'  => ['Absent'],
+                'Late'    => ['Late'],
+            ];
+            $allowedStatuses = $statusGroups[$status] ?? [$status];
             $attendanceList = array_values(array_filter(
                 $attendanceList,
-                fn ($row) => $row['status'] === $status
+                fn ($row) => in_array($row['status'], $allowedStatuses, true)
             ));
         }
 
@@ -155,6 +177,19 @@ class AttendanceController extends Controller
         $employee = HrEmployee::query()->findOrFail($userId);
         $shift = HrShift::find($employee->shift_id);
         return view('hr::attendances.edit', compact('attendance', 'employee', 'shift', 'date'));
+    }
+
+    /**
+     * Mirrors EmployeeAttendanceService::getEmployeeAttendanceByDate()'s cutoff —
+     * a resigned/lefty employee has no attendance past their exit date.
+     */
+    private function resolveExitedAt(HrEmployee $employee): ?Carbon
+    {
+        $status = strtolower((string) ($employee->employment_status ?? ''));
+        if (in_array($status, ['lefty', 'left', 'resign', 'resigned'], true) && !blank($employee->exited_at)) {
+            return Carbon::parse($employee->exited_at)->startOfDay();
+        }
+        return null;
     }
 
     /**
@@ -178,6 +213,10 @@ class AttendanceController extends Controller
         $existing = HrAttendance::where('employee_id', $userId)->where('date', $date)->first();
         if ($this->isAttendanceLocked($employee, $date, $existing)) {
             return back()->with('error', 'This date is locked — attendance cannot be edited until it is unlocked.');
+        }
+        $exitedAt = $this->resolveExitedAt($employee);
+        if ($exitedAt && Carbon::parse($date)->gt($exitedAt)) {
+            return back()->with('error', 'This employee exited on ' . $exitedAt->format('d-M-Y') . ' — attendance cannot be edited after that date.');
         }
         $attendance = $existing ?? new HrAttendance(['employee_id' => $userId, 'date' => $date]);
         $attendance->in_time = $request->input('in_time');
@@ -230,12 +269,16 @@ class AttendanceController extends Controller
         $shift    = HrShift::find($employee->shift_id);
         $rows     = $request->input('rows', []);
         $skippedLocked = 0;
+        $exitedAt = $this->resolveExitedAt($employee);
 
         foreach ($rows as $row) {
             $existing = HrAttendance::where('employee_id', $employeeId)->where('date', $row['date'])->first();
             if ($this->isAttendanceLocked($employee, $row['date'], $existing)) {
                 $skippedLocked++;
                 continue; // locked date — skip it, still save the rest of the batch
+            }
+            if ($exitedAt && Carbon::parse($row['date'])->gt($exitedAt)) {
+                continue; // employee had already exited by this date — nothing to save
             }
             $attendance = $existing ?? new HrAttendance(['employee_id' => $employeeId, 'date' => $row['date']]);
             $attendance->in_time  = $row['in_time']  ?: null;

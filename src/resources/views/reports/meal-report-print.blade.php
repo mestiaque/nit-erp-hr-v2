@@ -66,12 +66,14 @@
 <div class="sub-title">{{ $mealTypeLabel }} Report — {{ $dateLabel }}</div>
 
 @php
-    $bySection = $employees->groupBy('section_id');
+    $bySection = $groups ?? $employees->groupBy('section_id');
 @endphp
 
 @if($reportType === 'details')
     @forelse($bySection as $sectionId => $sectionEmps)
-        <div class="section-title">Section: {{ $sectionMap->get($sectionId, 'N/A') }}</div>
+        @if(($groupBy ?? 'section') !== 'none')
+        <div class="section-title">{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $sectionMap->get($sectionId, 'N/A') }}</div>
+        @endif
 
         <table class="t">
             <thead>
@@ -128,7 +130,7 @@
         <thead>
             <tr>
                 <th>SI</th>
-                <th>Section</th>
+                <th>{{ $groupByAxisLabel ?? 'Section' }}</th>
                 <th>Sub-Section</th>
                 <th>Total Employees</th>
                 <th>Present</th>
@@ -164,7 +166,7 @@
                     @endphp
                     <tr>
                         <td class="tc">{{ $sl++ }}</td>
-                        <td>{{ $sectionMap->get($sectionId, 'N/A') }}</td>
+                        <td>{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $sectionMap->get($sectionId, 'N/A') }}</td>
                         <td>{{ $subSectionMap->get($subId, 'N/A') }}</td>
                         <td class="tc">{{ $subEmps->count() }}</td>
                         <td class="tc">{{ $subPresent }}</td>

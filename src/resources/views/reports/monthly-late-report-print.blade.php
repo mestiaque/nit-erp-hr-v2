@@ -144,12 +144,14 @@
     <div class="title-bar">Monthly Late Report</div>
     <div class="date-bar">Dated from {{ $fromLabel }} to {{ $toLabel }}</div>
 
-    @forelse($lateBySection as $sectionRows)
+    @forelse($lateBySection as $groupKey => $sectionRows)
         @php
-            $sectionTitle = data_get($sectionRows->first(), 'section', 'N/A');
+            $sectionTitle = isset($groupLabel) ? $groupLabel((string) $groupKey) : data_get($sectionRows->first(), 'section', 'N/A');
         @endphp
 
-        <div class="section-title">Section <span class="colon">:</span> {{ $sectionTitle }}</div>
+        @if(($groupBy ?? 'section') !== 'none')
+        <div class="section-title">{{ $sectionTitle }}</div>
+        @endif
 
         @foreach($sectionRows as $empRow)
             <div class="emp-grid">

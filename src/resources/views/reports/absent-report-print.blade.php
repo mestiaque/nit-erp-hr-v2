@@ -72,7 +72,7 @@
         ? \Carbon\Carbon::parse($toDate)->format('d/m/Y')
         : \Carbon\Carbon::parse($fromDate)->format('d/m/Y') . ' to ' . \Carbon\Carbon::parse($toDate)->format('d/m/Y');
     $titleText = $isSingleDay ? 'Daily Absent Report' : 'Absent Report';
-    $bySection = collect($rows ?? [])->groupBy('section_id');
+    $bySection = $groups ?? collect($rows ?? [])->groupBy('section_id');
 @endphp
 
 <div class="report-shell">
@@ -87,9 +87,11 @@
     <div class="sub-title">{{ $titleText }} &mdash; {{ $dateText }}</div>
 
     @forelse($bySection as $sectionId => $sectionEmps)
+        @if(($groupBy ?? 'section') !== 'none')
         <div class="section-head">
-            Section: {{ $loop->iteration }}.{{ $sectionMap->get($sectionId, 'N/A') }}
+            {{ $loop->iteration }}. {{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $sectionMap->get($sectionId, 'N/A') }}
         </div>
+        @endif
 
         <div class="table-wrap">
             <table class="t">

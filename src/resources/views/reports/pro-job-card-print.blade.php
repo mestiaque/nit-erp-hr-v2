@@ -4,6 +4,12 @@
 @section('title', $reportTitle)
 
 
+@push('css')
+<style>
+.section-title { font-size:11px; font-weight:700; background:#dde6f0; padding:3px 6px; margin:10px 0 2px; }
+</style>
+@endpush
+
 @section('contents')
 
 
@@ -14,6 +20,10 @@
 
     {{-- Employee Summary Table --}}
     <div class="mb-4">
+        @forelse($groups as $groupKey => $groupRows)
+        @if($groupBy !== 'none')
+            <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+        @endif
         <table class="table table-bordered table-sm">
             <thead>
                 <tr>
@@ -34,7 +44,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse($rows as $row)
+                @foreach($groupRows as $row)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ is_array($row) ? ($row['name'] ?? null) : data_get($row, 'name') }}</td>
@@ -51,13 +61,12 @@
                         <td>{{ is_array($row) ? ($row['salary_type'] ?? null) : data_get($row, 'salary_type') }}</td>
                         <td>{{ is_array($row) ? ($row['employee_status'] ?? null) : data_get($row, 'employee_status') }}</td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="14" class="text-center">No data found.</td>
-                    </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
+        @empty
+            <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
+        @endforelse
     </div>
 
     {{-- Attendance Details Table (if available) --}}

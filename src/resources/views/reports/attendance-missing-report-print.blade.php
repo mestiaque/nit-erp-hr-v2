@@ -74,10 +74,12 @@
 
     <div class="date-info">From : {{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} To: {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }}</div>
 
-    @forelse($attendanceBySection as $sectionId => $sectionRecords)
+    @forelse(($groups ?? $attendanceBySection) as $sectionId => $sectionRecords)
+        @if(($groupBy ?? 'section') !== 'none')
         <div class="section-head">
-            Section &nbsp;&nbsp;{{ $loop->iteration }}.{{ $sectionMap->get($sectionId, 'N/A') }}
+            {{ $loop->iteration }}.&nbsp;&nbsp;{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $sectionMap->get($sectionId, 'N/A') }}
         </div>
+        @endif
 
         <div class="table-wrap">
             <table class="t">

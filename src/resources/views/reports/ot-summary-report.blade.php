@@ -93,6 +93,15 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
+                        <label class="mb-1">Group By <small class="text-muted">(outer level; Designation stays nested)</small></label>
+                        <select name="group_by" class="form-control form-control-sm">
+                            @foreach($groupByOptions as $key => $label)
+                                <option value="{{ $key }}" @selected(($request->group_by ?? 'section') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
                         <button type="submit" class="btn btn-primary btn-sm">Report</button>
                         <a href="{{ route('hr-center.reports.ot-summary') }}" class="btn btn-light btn-sm">Reset</a>
                     </div>

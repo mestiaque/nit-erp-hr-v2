@@ -137,6 +137,16 @@
                         </select>
                     </div>
 
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1">Group By <small class="text-muted">(leave blank for each report's default)</small></label>
+                        <select name="group_by" class="form-control form-control-sm">
+                            <option value="" @selected(!$request->filled('group_by'))>Default</option>
+                            @foreach($groupByOptions as $key => $label)
+                                <option value="{{ $key }}" @selected($request->group_by === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     {{-- Lock switch (visible only for lock report types) --}}
                     <div class="col-md-3 mb-3" id="lockSwitchWrap" style="display:none;">
                         <label class="mb-1">Lock Apply</label>

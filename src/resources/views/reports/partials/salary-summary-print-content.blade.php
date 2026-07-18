@@ -119,6 +119,10 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	</thead>
 	<tbody>
 		@php $sl = 1; @endphp
+		@php
+			$rollupMap = ($groupBy ?? 'department') === 'section' ? $sectionMap : $departmentMap;
+			$rollupLabel = fn ($key) => $rollupMap->get($key, 'N/A');
+		@endphp
 		@forelse($byDeptSummary as $deptId => $deptRows)
 			@php
 				$deptTotals = [
@@ -127,9 +131,11 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					'wh'=>0,'fl'=>0,'gl'=>0
 				];
 			@endphp
+			@if(($groupBy ?? 'department') !== 'none')
 			<tr class="dept-group-header">
-				<td colspan="18" class="tl">&nbsp;&nbsp;&#9658; {{ $departmentMap->get($deptId, 'N/A') }}</td>
+				<td colspan="18" class="tl">&nbsp;&nbsp;&#9658; {{ $rollupLabel($deptId) }}</td>
 			</tr>
+			@endif
 			@foreach($deptRows as $row)
 				@php
 					foreach (array_keys($deptTotals) as $k) {
@@ -158,7 +164,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				</tr>
 			@endforeach
 			<tr class="dept-subtotal">
-				<td colspan="3" class="tr">Sub-Total ({{ $departmentMap->get($deptId, '') }}):</td>
+				<td colspan="3" class="tr">Sub-Total ({{ ($groupBy ?? 'department') !== 'none' ? $rollupLabel($deptId) : 'All' }}):</td>
 				<td class="tc">{{ $deptTotals['emp'] }}</td>
 				<td class="tr">{{ $fmt($deptTotals['basic']) }}</td>
 				<td class="tr">{{ $fmt($deptTotals['house_rent']) }}</td>

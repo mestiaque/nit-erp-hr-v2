@@ -5,7 +5,7 @@
         $t = fn ($bn, $en) => $isBangla ? $bn : $en;
         $fmtNum = fn($n) => $isBangla ? en2bnNumber($n) : $n;
 
-        $bySection = $employees->groupBy('section_id');
+        $bySection = $groups ?? $employees->groupBy('section_id');
 
         // 🔥 ONE CALL → all attendance
         $attendanceData = \ME\Hr\Services\EmployeeAttendanceService::getSectionWiseAttendance(
@@ -29,24 +29,31 @@
     @foreach($bySection as $sectionId => $sectionEmps)
 
         @php
-            $sectionNameObj = $options['sections']->where('id', $sectionId)->first();
-            $sectionName = $sectionNameObj
-                ? ($isBangla ? $sectionNameObj->bn_name : $sectionNameObj->name)
-                : $t('প্রযোজ্য নয়', 'N/A');
+            if (isset($groupLabel) && ($groupBy ?? 'section') !== 'section') {
+                $sectionName = $groupLabel((string) $sectionId);
+            } else {
+                $sectionNameObj = $options['sections']->where('id', $sectionId)->first();
+                $sectionName = $sectionNameObj
+                    ? ($isBangla ? $sectionNameObj->bn_name : $sectionNameObj->name)
+                    : $t('প্রযোজ্য নয়', 'N/A');
+            }
+            $groupColLabel = ($groupBy ?? 'section') === 'section' ? $t('সেকশন', 'Section') : ($groupByAxisLabel ?? $t('সেকশন', 'Section'));
 
             $byDesignation = $sectionEmps->groupBy('designation_id');
         @endphp
 
+        @if(($groupBy ?? 'section') !== 'none')
         <div class="section-title">
-            {{ $t('সেকশন', 'Section') }}: {{ $sectionName }}
+            {{ $groupColLabel }}: {{ $sectionName }}
         </div>
+        @endif
 
         <table class="t t-ot-summary">
             <thead>
                 <tr>
                     <th style="width:3%;">{{ $t('ক্রমিক', 'SI') }}</th>
                     <th style="width:16%;">{{ $t('পদবী', 'Designation') }}</th>
-                    <th style="width:11%;">{{ $t('সেকশন', 'Section') }}</th>
+                    <th style="width:11%;">{{ $groupColLabel }}</th>
                     @foreach($dates as $d)
                         <th class="tc" style="width:{{ $otDayColWidth }}%;">{{ $isBangla ? en2bnNumber($d->format('d')) : $d->format('d') }}</th>
                     @endforeach
@@ -69,7 +76,10 @@
                             $dayTotals[$dateKey] = 0;
 
                             foreach($desigEmps as $emp){
-                                $empData = $attendanceData[$sectionId][$emp->id]['attendance'] ?? [];
+                                // Keyed by the employee's real section_id regardless of which
+                                // axis this report is currently grouped/displayed by — the
+                                // outer loop var below may now hold a department id etc.
+                                $empData = $attendanceData[$emp->section_id][$emp->id]['attendance'] ?? [];
 
                                 $row = collect($empData)->first(function($r) use ($dateKey){
                                     return \Carbon\Carbon::parse($r['date'])->format('Y-m-d') === $dateKey;

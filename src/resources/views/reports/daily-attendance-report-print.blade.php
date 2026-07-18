@@ -17,11 +17,9 @@
 .status-present { color:green; font-weight:700; }
 .status-absent  { color:red; font-weight:700; }
 .status-late    { color:#b8860b; font-weight:700; }
-.summary-title { font-size:11px; font-weight:700; margin:6px 0 4px; }
-.stat-bar { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
-.stat-box { flex:1; min-width:80px; border:1px solid #2e6da4; border-radius:3px; padding:5px 8px; text-align:center; background:#f0f6fc; }
-.stat-box .val { font-size:14px; font-weight:700; color:#1a3a5c; display:block; }
-.stat-box .lbl { font-size:8.5px; color:#555; text-transform:uppercase; letter-spacing:.4px; }
+.summary-title { font-size:11px; font-weight:700; margin:14px 0 4px; }
+.t-summary th, .t-summary td { text-align:center; }
+.t-summary td.val { font-size:11px; font-weight:700; color:#1a3a5c; }
 </style>
 @endpush
 
@@ -40,24 +38,6 @@
 </div>
 
 <div class="sub-title">Daily Attendance Report &mdash; {{ $dateLabel }}</div>
-
-<div class="summary-title">Summary</div>
-<div class="stat-bar">
-    <div class="stat-box">
-        <span class="val">{{ $summary['total_employees'] }}</span>
-        <span class="lbl">Total Employees</span>
-    </div>
-    @foreach($summary['status_counts'] as $statusLabel => $count)
-        <div class="stat-box">
-            <span class="val">{{ $count }}</span>
-            <span class="lbl">{{ $statusLabel }}</span>
-        </div>
-    @endforeach
-    <div class="stat-box">
-        <span class="val">{{ number_format($summary['total_ot_hours'], 2) }}</span>
-        <span class="lbl">Total OT Hrs</span>
-    </div>
-</div>
 
 @forelse($groups as $groupKey => $groupRows)
     @if($groupBy !== 'none')
@@ -127,4 +107,26 @@
 @empty
     <p style="text-align:center;color:#888;padding:12px 0;">No employees found.</p>
 @endforelse
+
+<div class="summary-title">Summary</div>
+<table class="t t-summary">
+    <thead>
+        <tr>
+            <th>Total Employees</th>
+            @foreach($summary['status_counts'] as $statusLabel => $count)
+                <th>{{ $statusLabel }}</th>
+            @endforeach
+            <th>Total OT Hrs</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="val">{{ $summary['total_employees'] }}</td>
+            @foreach($summary['status_counts'] as $statusLabel => $count)
+                <td class="val">{{ $count }}</td>
+            @endforeach
+            <td class="val">{{ number_format($summary['total_ot_hours'], 2) }}</td>
+        </tr>
+    </tbody>
+</table>
 @endsection

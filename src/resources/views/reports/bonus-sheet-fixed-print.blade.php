@@ -24,7 +24,7 @@
     $company = hr_factory('name') ?? 'Company Name';
     $address = hr_factory('address') ?? '';
     $fmt     = fn($v) => number_format((float)$v, 2);
-    $byDept  = $employees->groupBy('department_id');
+    $byDept  = $groups ?? $employees->groupBy('department_id');
 @endphp
 
 <div class="report-head">
@@ -42,7 +42,9 @@
 </div>
 
 @forelse($byDept as $deptId => $deptEmps)
-    <div class="dept-title">Department: {{ $departmentMap->get($deptId, 'N/A') }}</div>
+    @if(($groupBy ?? 'department') !== 'none')
+    <div class="dept-title">{{ isset($groupLabel) ? $groupLabel((string) $deptId) : ('Department: ' . $departmentMap->get($deptId, 'N/A')) }}</div>
+    @endif
 
     <table class="t">
         <thead>

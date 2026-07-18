@@ -23,7 +23,7 @@ return [
                     'title'      => 'Basic Info.',
                     'icon'       => 'fa-solid fa-gear',
                     'icon_color' => 'text-info',
-                    'permission' => '',
+                    'permission' => 'hr_factory',
                     'children'   => [
                         [
                             'title'      => 'Classification',

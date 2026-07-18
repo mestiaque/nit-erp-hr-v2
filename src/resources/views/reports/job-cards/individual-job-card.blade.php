@@ -15,7 +15,11 @@
     };
 @endphp
 
-@foreach($employees as $employee)
+@foreach($groups as $groupKey => $groupRows)
+@if($groupBy !== 'none')
+    <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+@endif
+@foreach($groupRows as $employee)
     @php
         $factoryNo = hr_factory('factory_no');
         $attendancePack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
@@ -165,6 +169,7 @@
     </table>
 
     <div class="page-break"></div>
+@endforeach
 @endforeach
 
 @endif

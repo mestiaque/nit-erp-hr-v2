@@ -138,6 +138,14 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1">Group By <small class="text-muted">(Database/Details print)</small></label>
+                        <select name="group_by" class="form-control form-control-sm">
+                            @foreach($groupByOptions as $key => $label)
+                                <option value="{{ $key }}" @selected(($request->group_by ?? 'none') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="col-md-3 align-self-end mb-3">
                         <div class="">
                             <button type="submit" class="btn btn-secondary btn-sm">Filter</button>

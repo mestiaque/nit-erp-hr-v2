@@ -97,7 +97,7 @@
                         <label class="mb-1">Status</label>
                         <select name="status" class="form-control form-control-sm">
                             <option value="">All</option>
-                            @foreach(['Present','Absent','Late','Punch Missing','Early Exit','Late and Early Exit','Late and Punch Missing'] as $s)
+                            @foreach(['Present','Absent','Late'] as $s)
                                 <option value="{{ $s }}" @if(request('status')==$s) selected @endif>{{ $s }}</option>
                             @endforeach
                         </select>

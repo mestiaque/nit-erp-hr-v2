@@ -126,7 +126,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			@foreach($sheetRows as $group)
 				<tr class="sheet-sec-row">
 					<td colspan="{{ $totalCols }}" class="tl">
-						{{ $departmentMap->get($group['dept_id'], 'N/A') }} &mdash; {{ $sectionMap->get($group['sec_id'], 'N/A') }}
+						{{ isset($groupLabel) ? $groupLabel($group['group_key']) : ($departmentMap->get($group['dept_id'] ?? null, 'N/A') . ' — ' . $sectionMap->get($group['sec_id'] ?? null, 'N/A')) }}
 					</td>
 				</tr>
 				@foreach($group['rows'] as $row)
@@ -145,7 +145,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						@endif
 						<td class="tc">{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d-M-Y') : '-' }}</td>
 						<td>{{ $desigEntry['name'] ?? 'N/A' }}</td>
-						<td>{{ $sectionMap->get($group['sec_id'], 'N/A') }}</td>
+						<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
 						<td class="tc">{{ $desigEntry['grade'] ?? '-' }}</td>
 
 						<td class="tr">{{ number_format($row['basic']) }}</td>
@@ -184,7 +184,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				@endforeach
 
 				<tr class="sheet-sec-total">
-					<td colspan="{{ $labelCols }}" class="tl">{{ $departmentMap->get($group['dept_id'], 'N/A') }} &mdash; {{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
+					<td colspan="{{ $labelCols }}" class="tl">{{ isset($groupLabel) ? $groupLabel($group['group_key']) : ($departmentMap->get($group['dept_id'] ?? null, 'N/A') . ' — ' . $sectionMap->get($group['sec_id'] ?? null, 'N/A')) }} Total</td>
 					<td class="tr">{{ number_format($group['totals']['basic']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['house']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['medical']) }}</td>

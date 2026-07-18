@@ -138,7 +138,7 @@
 			@foreach($sheetRows as $group)
 				<tr class="sheet-sec-row">
 					<td colspan="{{ $totalCols }}" class="tl">
-						{{ $departmentMap->get($group['dept_id'], 'N/A') }} &mdash; {{ $sectionMap->get($group['sec_id'], 'N/A') }}
+						{{ isset($groupLabel) ? $groupLabel($group['group_key']) : ($departmentMap->get($group['dept_id'] ?? null, 'N/A') . ' — ' . $sectionMap->get($group['sec_id'] ?? null, 'N/A')) }}
 					</td>
 				</tr>
 				@foreach($group['rows'] as $row)
@@ -205,7 +205,7 @@
 				@endforeach
 
 				<tr class="sheet-sec-total">
-					<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">{{ $departmentMap->get($group['dept_id'], 'N/A') }} &mdash; {{ $sectionMap->get($group['sec_id'], 'N/A') }} Total</td>
+					<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">{{ isset($groupLabel) ? $groupLabel($group['group_key']) : ($departmentMap->get($group['dept_id'] ?? null, 'N/A') . ' — ' . $sectionMap->get($group['sec_id'] ?? null, 'N/A')) }} Total</td>
 					<td class="tr">{{ number_format($group['totals']['gross']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['basic']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['house']) }}</td>

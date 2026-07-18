@@ -217,7 +217,7 @@ class SalaryReportService
     /**
      * Aggregated department/section totals for the Wages & Salary Summary report.
      */
-    public static function buildWagesSummaryData($employees, string $from, string $to, $request): array
+    public static function buildWagesSummaryData($employees, string $from, string $to, $request, string $groupBy = 'department'): array
     {
         $employeeDataFn = HrOptionsService::getOptionsForEmployee();
         $byDept = $employees->groupBy('department_id');
@@ -274,16 +274,27 @@ class SalaryReportService
             }
         }
 
+        // Each $summaryData row is already a pre-aggregated Department+Section bucket
+        // (spanning many employees), not a single employee — so only Department/Section
+        // are coherent rollup axes here; anything else falls back to Department.
+        $effectiveGroupBy = in_array($groupBy, ['section', 'none'], true) ? $groupBy : 'department';
+        $rollupKey = match ($effectiveGroupBy) {
+            'section' => 'sec_id',
+            'none' => null,
+            default => 'dept_id',
+        };
+
         return [
-            'byDeptSummary' => collect($summaryData)->groupBy('dept_id'),
+            'byDeptSummary' => $rollupKey ? collect($summaryData)->groupBy($rollupKey) : collect(['all' => collect($summaryData)]),
             'grandTotals' => $grandTotals,
+            'groupBy' => $effectiveGroupBy,
         ];
     }
 
     /**
      * Per-employee bonus amounts (grouped by department) for the Bonus report.
      */
-    public static function buildBonusReportData($employees, $request, string $to): array
+    public static function buildBonusReportData($employees, $request, string $to, string $groupBy = 'department'): array
     {
         $bonusPolicies = collect();
         $bonusTitle = null;
@@ -304,9 +315,24 @@ class SalaryReportService
         if ($bonusPolicies->isNotEmpty()) {
             $bonusReferenceDate = \Carbon\Carbon::parse($request->input('up_to_date') ?: $to);
 
-            foreach ($employees->groupBy('department_id') as $deptId => $deptEmps) {
+            // Always hardcoded Department-grouped before — default 'department' preserves
+            // that; $bonusGrandTotal/$bonusGrandEmp accumulate across every employee
+            // regardless of bucket, so the grand total is identical no matter the axis.
+            $groupKeyFn = match ($groupBy) {
+                'none' => fn ($emp) => 'all',
+                'classification' => fn ($emp) => (string) $emp->classification_id,
+                'section' => fn ($emp) => (string) $emp->section_id,
+                'sub_section' => fn ($emp) => (string) $emp->sub_section_id,
+                'designation' => fn ($emp) => (string) $emp->designation_id,
+                'shift' => fn ($emp) => (string) $emp->shift_id,
+                'department_section' => fn ($emp) => $emp->department_id . '|' . $emp->section_id,
+                'department_designation' => fn ($emp) => $emp->department_id . '|' . $emp->designation_id,
+                default => fn ($emp) => (string) $emp->department_id, // department
+            };
+
+            foreach ($employees->groupBy($groupKeyFn) as $groupKey => $groupEmps) {
                 $rows = [];
-                foreach ($deptEmps as $emp) {
+                foreach ($groupEmps as $emp) {
                     $bd = self::computeEmployeeBonus($emp, $bonusPolicies, $bonusReferenceDate);
                     if ($bd['policy'] === null) {
                         continue;
@@ -319,7 +345,7 @@ class SalaryReportService
                     }
                 }
                 if (!empty($rows)) {
-                    $bonusByDept[$deptId] = $rows;
+                    $bonusByDept[(string) $groupKey] = $rows;
                 }
             }
         }
@@ -407,7 +433,7 @@ class SalaryReportService
      * Shared by both 'fixed' and 'production' report types, and by both the SFL and non-SFL
      * salary-sheet blade layouts — the row data is identical, only the column layout differs.
      */
-    public static function buildSalarySheetData($employees, string $from, string $to, $request, $leaveInfos): array
+    public static function buildSalarySheetData($employees, string $from, string $to, $request, $leaveInfos, string $groupBy = 'department_section'): array
     {
         $employeeDataFn = HrOptionsService::getOptionsForEmployee();
 
@@ -514,9 +540,25 @@ class SalaryReportService
         $grand = $grandBase;
         $sheetRows = [];
 
-        foreach ($employees->groupBy('department_id') as $deptId => $deptEmps) {
-            foreach ($deptEmps->groupBy('section_id') as $secId => $secEmps) {
-                $secEmps = self::sortEmployeesByNaturalId($secEmps);
+        // Bucketing axis for the sub-header rows/subtotals below — 'department_section'
+        // (Department + Section, one bucket per unique pair) is the original, always-on
+        // behavior this report had before Group By existed; other axes are additive.
+        // $grand accumulates across every employee regardless of bucket, so the grand
+        // total is identical no matter which axis is chosen here.
+        $groupKeyFn = match ($groupBy) {
+            'none' => fn ($emp) => 'all',
+            'classification' => fn ($emp) => (string) $emp->classification_id,
+            'department' => fn ($emp) => (string) $emp->department_id,
+            'section' => fn ($emp) => (string) $emp->section_id,
+            'sub_section' => fn ($emp) => (string) $emp->sub_section_id,
+            'designation' => fn ($emp) => (string) $emp->designation_id,
+            'shift' => fn ($emp) => (string) $emp->shift_id,
+            'department_designation' => fn ($emp) => $emp->department_id . '|' . $emp->designation_id,
+            default => fn ($emp) => $emp->department_id . '|' . $emp->section_id, // department_section
+        };
+
+        foreach ($employees->groupBy($groupKeyFn) as $groupKey => $groupEmps) {
+                $secEmps = self::sortEmployeesByNaturalId($groupEmps);
                 $rows = [];
                 $secTotals = $grandBase;
 
@@ -606,9 +648,8 @@ class SalaryReportService
                 }
 
                 if (!empty($rows)) {
-                    $sheetRows[] = ['dept_id' => $deptId, 'sec_id' => $secId, 'rows' => $rows, 'totals' => $secTotals];
+                    $sheetRows[] = ['group_key' => (string) $groupKey, 'rows' => $rows, 'totals' => $secTotals];
                 }
-            }
         }
 
         return [
@@ -619,6 +660,7 @@ class SalaryReportService
             'weekendCount' => $weekendCount,
             'otherHolidayCount' => $otherHolidayCount,
             'inWords' => self::numberToWords((int) round($grand['net'])),
+            'groupBy' => $groupBy,
         ];
     }
 

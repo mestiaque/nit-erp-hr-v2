@@ -100,7 +100,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			$deptBonusTotal = collect($deptRows)->sum(fn ($r) => $r['bd']['bonus']);
 			$sl = 1;
 		@endphp
-		<div class="dept-title">&nbsp;Department: {{ $departmentMap->get($deptId, 'N/A') }}</div>
+		<div class="dept-title">&nbsp;{{ isset($groupLabel) ? $groupLabel((string) $deptId) : ('Department: ' . $departmentMap->get($deptId, 'N/A')) }}</div>
 		<table class="t">
 			<thead>
 				<tr class="hdr1">
@@ -160,7 +160,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					$totalColspan = $totalCols - 3;
 				@endphp
 				<tr class="summary-row">
-					<td colspan="{{ $totalColspan }}" class="tr">Dept. Bonus Total:</td>
+					<td colspan="{{ $totalColspan }}" class="tr">{{ (($groupBy ?? 'department') === 'department' ? 'Dept.' : 'Group') }} Bonus Total:</td>
 					<td class="tr">{{ $fmt($deptBonusTotal) }}</td>
 					<td></td>
 					<td></td>

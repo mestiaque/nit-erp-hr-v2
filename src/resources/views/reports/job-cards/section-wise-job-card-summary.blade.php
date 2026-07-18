@@ -3,7 +3,7 @@
         $language = $language ?? data_get($request ?? null, 'language', 'bn');
         $isBangla = $language === 'bn';
         $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
-        $bySection = $employees->groupBy('section_id');
+        $bySection = $groups ?? $employees->groupBy('section_id');
     @endphp
 
     @forelse($bySection as $sectionId => $sectionEmps)
@@ -33,7 +33,9 @@
             {{ $t('জব কার্ড সারাংশ', 'Job Card Summary') }} {{ $reportType === 'job-card-summary-lock' ? $t('(লক)', '(Lock)') : '' }}
             ({{ $isBangla ? bn_date($fromLabel) : $fromLabel }} {{ $t('থেকে', 'To') }} {{ $isBangla ? bn_date($toLabel) : $toLabel }})
         </div>
-        <div class="section-title">{{ $t('সেকশন', 'Section') }}: {{ $section }}</div>
+        @if(($groupBy ?? 'section') !== 'none')
+        <div class="section-title">{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $t('সেকশন', 'Section') . ': ' . $section }}</div>
+        @endif
 
         <div style="">
         <table class="t">

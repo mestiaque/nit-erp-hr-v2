@@ -36,6 +36,7 @@
     .text-center {
         text-align: center;
     }
+    .section-title { font-size:11px; font-weight:700; background:#dde6f0; padding:3px 6px; margin:10px 0 2px; }
 </style>
 @endpush
 
@@ -52,6 +53,10 @@
     <strong>Print Date:</strong> {{ now()->format('d-m-Y h:i A') }}
     <span style="margin-left: 18px;"><strong>Total Employee:</strong> {{ $detailsRows->count() }}</span>
 </div>
+@forelse($groups as $groupKey => $groupRows)
+@if($groupBy !== 'none')
+    <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
+@endif
 <table class="report-table">
     <thead>
         <tr>
@@ -78,7 +83,7 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($detailsRows as $row)
+        @foreach($groupRows as $row)
             <tr>
                 <td>{{ $row['sl'] }}</td>
                 <td>{{ $row['working_place'] ?? 'N/A' }}</td>
@@ -101,11 +106,10 @@
                 <td>{{ $row['weekend'] ?? 'N/A' }}</td>
                 <td class="text-right">{{ number_format((float) ($row['gross_salary'] ?? 0), 2) }}</td>
             </tr>
-        @empty
-            <tr>
-                <td colspan="20" class="text-center">No employee found.</td>
-            </tr>
-        @endforelse
+        @endforeach
     </tbody>
 </table>
+@empty
+    <p style="text-align:center;color:#888;padding:12px 0;">No employee found.</p>
+@endforelse
 @endsection

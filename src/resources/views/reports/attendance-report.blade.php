@@ -116,6 +116,15 @@
                         </select>
                     </div>
 
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1">Group By</label>
+                        <select name="group_by" class="form-control form-control-sm">
+                            @foreach($groupByOptions as $key => $label)
+                                <option value="{{ $key }}" @selected(($request->group_by ?? 'section') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="col-12 mb-3">
                         <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
                         <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm">Reset</a>

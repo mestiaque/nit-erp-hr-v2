@@ -7,7 +7,7 @@
         $isBangla = $language === 'bn';
         $t = fn ($bn, $en) => $isBangla ? $bn : $en;
         $fmtNum = fn($n) => $isBangla ? en2bnNumber($n) : $n;
-        $bySection = $employees->groupBy('section_id');
+        $bySection = $groups ?? $employees->groupBy('section_id');
         $language = $language ?? data_get($request ?? null, 'language', 'bn');
         $isBangla = $language === 'bn';
         $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
@@ -31,7 +31,9 @@
         </div>
 
         <div class="sub-title mt-0">{{ $t('ওটি বিস্তারিত', 'OT Details') }} ({{ $isBangla ? bn_date($fromLabel) : $fromLabel }} {{ $t('থেকে', 'To') }} {{ $isBangla ? bn_date($toLabel) : $toLabel }})</div>
-        <div class="section-title">{{ $t('সেকশন', 'Section') }}: {{ $section }}</div>
+        @if(($groupBy ?? 'section') !== 'none')
+        <div class="section-title">{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $t('সেকশন', 'Section') . ': ' . $section }}</div>
+        @endif
 
         <table class="t mb-4" style="margin-bottom: 3rem">
             <thead>
