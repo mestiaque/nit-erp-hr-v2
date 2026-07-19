@@ -57,7 +57,7 @@
     .id-card-company {
         margin: 0.2mm 0 0.5mm;
         text-align: center;
-        font-size: 3.9mm;
+        font-size: 0.85rem;
     }
     .id-card-address {
         margin: 0;
