@@ -1529,10 +1529,10 @@ class HrReportController extends Controller
 
         if ($request->boolean('print')) {
             $validated = $request->validate([
-                'report_type' => 'required|array|min:1',
+                'report_type' => 'required|string',
             ]);
 
-            $reportType = (string) ($validated['report_type'][0] ?? 'database');
+            $reportType = (string) $validated['report_type'];
             abort_unless(array_key_exists($reportType, $reportTypes), 422);
 
             return view('hr::reports.personal-file-print', [
@@ -1546,7 +1546,7 @@ class HrReportController extends Controller
         }
 
         if ($request->filled('report_type')) {
-            $reportType = (string) ($request->input('report_type')[0] ?? $request->report_type);
+            $reportType = (string) $request->input('report_type');
             abort_unless(array_key_exists($reportType, $reportTypes), 422);
         }
 

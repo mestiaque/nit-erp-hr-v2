@@ -38,6 +38,8 @@ use ME\Hr\Models\HrEmployeeSeparation;
 use ME\Hr\Models\HrEmployeeFinalSettlement;
 use ME\Hr\Models\HrEmployeeOtherTransaction;
 use ME\Hr\Models\HrEmployeeDocument;
+use ME\Hr\Models\HrEmployeeGatePass;
+use ME\Hr\Models\HrEmployeeAsset;
 use Illuminate\Support\Facades\Storage;
 
 class HrEmployeeController extends Controller
@@ -1393,6 +1395,12 @@ class HrEmployeeController extends Controller
         // Documents
         $documents = HrEmployeeDocument::where('employee_id', $employee->id)->latest()->get();
 
+        // Gate passes
+        $gatePasses = HrEmployeeGatePass::where('employee_id', $employee->id)->latest('out_time')->get();
+
+        // Assets
+        $assets = HrEmployeeAsset::with('category')->where('employee_id', $employee->id)->latest('issued_date')->get();
+
         // Attendance — last 60 days
         $attendanceDateFrom = now()->subDays(59)->toDateString();
         $attendanceDateTo   = now()->toDateString();
@@ -1430,7 +1438,8 @@ class HrEmployeeController extends Controller
             'transactions', 'documents', 'attendances',
             'attendanceDateFrom', 'attendanceDateTo', 'options',
             'txnTotalAdvance', 'txnTotalEarnings', 'txnTotalDeductions', 'txnTotalOt',
-            'attPresent', 'attAbsent', 'attLate', 'attTotal', 'totalOtMin', 'totalWkMin'
+            'attPresent', 'attAbsent', 'attLate', 'attTotal', 'totalOtMin', 'totalWkMin',
+            'gatePasses', 'assets'
         ));
     }
 

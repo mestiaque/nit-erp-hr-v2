@@ -507,7 +507,6 @@ return [
                 //             'icon_color' => 'text-warning',
                 //             'permission' => 'hr_production_rate_zipper',
                 //         ],
-
                 //     ]
                 // ],
 
@@ -525,8 +524,6 @@ return [
                 //         ],
                 //     ]
                 // ]
-
-
 
             ]
         ],

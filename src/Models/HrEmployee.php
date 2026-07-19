@@ -178,6 +178,16 @@ class HrEmployee extends BaseHrModel
         return $this->hasMany(HrEmployeeDocument::class, 'employee_id');
     }
 
+    public function gatePasses(): HasMany
+    {
+        return $this->hasMany(HrEmployeeGatePass::class, 'employee_id');
+    }
+
+    public function assets(): HasMany
+    {
+        return $this->hasMany(HrEmployeeAsset::class, 'employee_id');
+    }
+
     public function otherInfo(): array
     {
         return [

@@ -1,22 +1,25 @@
 @extends('admin.layouts.app')
 
+@php
+    $bonusCategory = $request->bonus_category ?? 'fixed';
+    $isFixed = $bonusCategory === 'fixed';
+    $bonusCategoryLabel = $bonusCategories[$bonusCategory] ?? ucfirst($bonusCategory);
+    $bonusPageTitle = $bonusCategoryLabel . ' Bonus Sheet';
+@endphp
+
 @section('title')
-<title>{{ $reportTitle }}</title>
+<title>{{ $bonusPageTitle }}</title>
 @endsection
 
 @section('contents')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">{{ $reportTitle }}</h4>
+            <h4 class="mb-0">{{ $bonusPageTitle }}</h4>
             <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm">Back</a>
         </div>
         <div class="card-body">
 @php
-    $bonusCategory = $request->bonus_category ?? 'fixed';
-    $isFixed = $bonusCategory === 'fixed';
-    $bonusCategoryLabel = $bonusCategories[$bonusCategory] ?? ucfirst($bonusCategory);
-
     // Use central HR options service for all lookups
     $hrOptions = \ME\Hr\Services\HrOptionsService::getOptions();
     $departmentMap = collect($hrOptions['departments'])->pluck('name', 'id');
@@ -27,10 +30,6 @@
 
             <form method="get" action="{{ route('hr-center.reports.bonus-sheet.category', $bonusCategory) }}">
                 <div class="row">
-
-                    <div class="col-12 mb-2">
-                        <span class="badge bg-primary fs-6">{{ $bonusCategoryLabel }} Bonus</span>
-                    </div>
 
                     {{-- Fixed: up to date --}}
                     <div class="col-md-3 mb-3 bonus-fixed-field" style="{{ $isFixed ? '' : 'display:none;' }}">

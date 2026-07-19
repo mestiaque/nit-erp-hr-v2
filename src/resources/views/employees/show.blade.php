@@ -100,6 +100,10 @@
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-transactions">Advance / Txn <span class="badge badge-light ml-1">{{ count($transactions) }}</span></a></li>
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-documents">Documents <span class="badge badge-light ml-1">{{ count($documents) }}</span></a></li>
         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-attendance">Attendance <span class="badge badge-light ml-1">{{ count($attendances) }}</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-separation">Separation @if($employee->separation)<span class="badge badge-danger ml-1">1</span>@endif</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-settlement">Final Settlement @if($employee->finalSettlement)<span class="badge badge-light ml-1">1</span>@endif</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-gate-pass">Gate Pass <span class="badge badge-light ml-1">{{ count($gatePasses) }}</span></a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tab-assets">Assets <span class="badge badge-light ml-1">{{ count($assets) }}</span></a></li>
     </ul>
 
     <div class="tab-content card border-top-0 rounded-0 rounded-bottom">
@@ -122,6 +126,7 @@
                             <tr><th>Sub Section</th><td>: {{ optional($employee->subSection)->name ?? '—' }}</td></tr>
                             <tr><th>Designation</th><td>: {{ optional($employee->designation)->name ?? '—' }}</td></tr>
                             <tr><th>Shift</th><td>: {{ optional($employee->shift)->name ?? '—' }}</td></tr>
+                            <tr><th>Grade</th><td>: {{ $employee->grade ?? '—' }}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
@@ -315,14 +320,18 @@
                             <tr><th>Car & Fuel</th><td>: {{ number_format((float)($si?->car_fuel ?? 0), 2) }}</td></tr>
                             <tr><th>Phone & Internet</th><td>: {{ number_format((float)($si?->phone_internet ?? 0), 2) }}</td></tr>
                             <tr><th>Extra Facility</th><td>: {{ number_format((float)($si?->extra_facility ?? 0), 2) }}</td></tr>
+                            <tr><th>Meal Payment Way</th><td>: {{ $si?->payment_way ?? '—' }}</td></tr>
+                            <tr><th>Weekend Allowance</th><td>: {{ $si?->weekend_allowance_count ?? '—' }}</td></tr>
+                            <tr><th>Holiday Allowance</th><td>: {{ number_format((float)($si?->holiday_allowance ?? 0), 2) }}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
                         <table class="table table-sm table-borderless info-table">
                             <tr><th>Attendance Bonus</th><td>: {{ number_format((float)($si?->attendance_bonus ?? 0), 2) }}</td></tr>
-                            <tr><th>Tiffin Allowance</th><td>: {{ number_format((float)($si?->tiffin_allowance ?? 0), 2) }}</td></tr>
-                            <tr><th>Night Allowance</th><td>: {{ number_format((float)($si?->night_allowance ?? 0), 2) }}</td></tr>
-                            <tr><th>Dinner Allowance</th><td>: {{ number_format((float)($si?->dinner_allowance ?? 0), 2) }}</td></tr>
+                            <tr><th>Attendance Bonus (Comp)</th><td>: {{ number_format((float)($si?->attendance_bonus_com ?? 0), 2) }}</td></tr>
+                            <tr><th>Tiffin Allowance</th><td>: {{ number_format((float)($si?->tiffin_allowance ?? 0), 2) }} <small class="text-muted">(min {{ $si?->min_tiffin_hour ?? 0 }}h)</small></td></tr>
+                            <tr><th>Night Allowance</th><td>: {{ number_format((float)($si?->night_allowance ?? 0), 2) }} <small class="text-muted">(min {{ $si?->min_night_hour ?? 0 }}h)</small></td></tr>
+                            <tr><th>Dinner Allowance</th><td>: {{ number_format((float)($si?->dinner_allowance ?? 0), 2) }} <small class="text-muted">(min {{ $si?->min_dinner_hour ?? 0 }}h)</small></td></tr>
                             <tr><th>Tax</th><td>: {{ number_format((float)($si?->tax ?? 0), 2) }} ({{ $si?->tax_calculate_by ?? '%' }})</td></tr>
                             <tr><th>Effective Date</th><td>: {{ $si?->effective_date ?? '—' }}</td></tr>
                             <tr><th>Status</th><td>: {{ ucfirst($si?->salary_info_status ?? 'active') }}</td></tr>
@@ -621,6 +630,123 @@
                     </table>
                 </div>
                 <small class="text-muted">Showing attendance from <strong>{{ $attendanceDateFrom }}</strong> to <strong>{{ $attendanceDateTo }}</strong></small>
+            </div>
+
+            {{-- ===== TAB 12: SEPARATION ===== --}}
+            <div class="tab-pane tab-section" id="tab-separation">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">Separation / Resignation</div>
+                </div>
+                @php $sep = $employee->separation; @endphp
+                @if($sep)
+                <table class="table table-sm table-borderless info-table" style="max-width:450px">
+                    <tr><th>Status</th><td>: <span class="badge badge-danger">{{ ucfirst($sep->status ?? '—') }}</span></td></tr>
+                    <tr><th>Effective Date</th><td>: {{ $sep->effective_date ? \Carbon\Carbon::parse($sep->effective_date)->format('d M Y') : '—' }}</td></tr>
+                    <tr><th>Final Settlement</th><td>: {{ $sep->final_settlement ?? '—' }}</td></tr>
+                    <tr><th>With Paid</th><td>: {{ $sep->with_paid ? 'Yes' : 'No' }}</td></tr>
+                    <tr><th>Remarks</th><td>: {{ $sep->remarks ?? '—' }}</td></tr>
+                </table>
+                @else
+                    <div class="text-muted text-center py-4"><i class="fa-solid fa-person-walking-arrow-right fa-2x mb-2 d-block"></i>No separation record found.</div>
+                @endif
+            </div>
+
+            {{-- ===== TAB 13: FINAL SETTLEMENT ===== --}}
+            <div class="tab-pane tab-section" id="tab-settlement">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">Final Settlement</div>
+                </div>
+                @php $fs = $employee->finalSettlement; @endphp
+                @if($fs)
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless info-table">
+                            <tr><th>Absent Date</th><td>: {{ $fs->absent_date ?? '—' }}</td></tr>
+                            <tr><th>1st Letter Date</th><td>: {{ $fs->first_letter_date ?? '—' }}</td></tr>
+                            <tr><th>2nd Letter Date</th><td>: {{ $fs->second_letter_date ?? '—' }}</td></tr>
+                            <tr><th>3rd Letter Date</th><td>: {{ $fs->third_letter_date ?? '—' }}</td></tr>
+                            <tr><th>Last Basic Salary</th><td>: {{ number_format((float)($fs->last_basic_salary ?? 0), 2) }}</td></tr>
+                            <tr><th>Last Gross Salary</th><td>: {{ number_format((float)($fs->last_gross_salary ?? 0), 2) }}</td></tr>
+                            <tr><th>Service Years</th><td>: {{ $fs->service_years ?? '—' }}</td></tr>
+                            <tr><th>Unpaid Salary</th><td>: {{ $fs->unpaid_salary_days ?? 0 }} days — {{ number_format((float)($fs->unpaid_salary_amount ?? 0), 2) }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless info-table">
+                            <tr><th>Leave Encashment</th><td>: {{ $fs->leave_encashment_days ?? 0 }} days — {{ number_format((float)($fs->leave_encashment_amount ?? 0), 2) }}</td></tr>
+                            <tr><th>Gratuity</th><td>: {{ number_format((float)($fs->gratuity_amount ?? 0), 2) }}</td></tr>
+                            <tr><th>Advance Deduction</th><td>: {{ number_format((float)($fs->advance_deduction ?? 0), 2) }}</td></tr>
+                            <tr><th>Other Earnings</th><td>: {{ number_format((float)($fs->other_earnings ?? 0), 2) }}</td></tr>
+                            <tr><th>Other Deductions</th><td>: {{ number_format((float)($fs->other_deductions ?? 0), 2) }}</td></tr>
+                            <tr><th>Net Payable</th><td>: <strong>{{ number_format((float)($fs->net_payable ?? 0), 2) }}</strong></td></tr>
+                            <tr><th>Status</th><td>: <span class="badge badge-secondary">{{ ucfirst($fs->settlement_status ?? 'draft') }}</span></td></tr>
+                            <tr><th>Notes</th><td>: {{ $fs->calculation_notes ?? '—' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                @else
+                    <div class="text-muted text-center py-4"><i class="fa-solid fa-file-invoice-dollar fa-2x mb-2 d-block"></i>No final settlement record found.</div>
+                @endif
+            </div>
+
+            {{-- ===== TAB 14: GATE PASS ===== --}}
+            <div class="tab-pane tab-section" id="tab-gate-pass">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">Gate Pass Records</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="thead-light">
+                            <tr><th>#</th><th>Pass No.</th><th>Out Time</th><th>In Time</th><th>Duration</th><th>Reason</th><th>Status</th><th>Remarks</th></tr>
+                        </thead>
+                        <tbody>
+                        @forelse($gatePasses as $i => $gp)
+                            <tr>
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $gp->pass_no ?? '—' }}</td>
+                                <td>{{ $gp->out_time?->format('d M Y h:i A') ?? '—' }}</td>
+                                <td>{{ $gp->in_time?->format('d M Y h:i A') ?? '—' }}</td>
+                                <td>{{ $gp->duration_minutes ? floor($gp->duration_minutes/60).'h '.($gp->duration_minutes%60).'m' : '—' }}</td>
+                                <td>{{ $gp->reason ?? '—' }}</td>
+                                <td><span class="badge badge-{{ $gp->status === 'Active' ? 'success' : 'secondary' }}">{{ $gp->status ?? '—' }}</span></td>
+                                <td>{{ $gp->remarks ?? '—' }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="8" class="text-center text-muted">No gate pass records found.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- ===== TAB 15: ASSETS ===== --}}
+            <div class="tab-pane tab-section" id="tab-assets">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0">Issued Assets</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="thead-light">
+                            <tr><th>#</th><th>Asset No.</th><th>Category</th><th>Description</th><th>Brand / Model</th><th>Issued Date</th><th>Return Date</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                        @forelse($assets as $i => $asset)
+                            <tr>
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $asset->asset_no ?? '—' }}</td>
+                                <td>{{ optional($asset->category)->name ?? '—' }}</td>
+                                <td>{{ $asset->asset_description ?? '—' }}</td>
+                                <td>{{ trim(($asset->brand ?? '').' '.($asset->model ?? '')) ?: '—' }}</td>
+                                <td>{{ $asset->issued_date ?? '—' }}</td>
+                                <td>{{ $asset->return_date ?? '—' }}</td>
+                                <td><span class="badge badge-{{ $asset->status === 'Active' ? 'success' : 'secondary' }}">{{ $asset->status ?? '—' }}</span></td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="8" class="text-center text-muted">No assets issued.</td></tr>
+                        @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
     </div>
