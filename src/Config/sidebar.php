@@ -307,9 +307,9 @@ return [
                                     'permission' => 'hr_daily_attendance_report',
                                 ],
                                 [
-                                    'title'      => 'Tiffin / Diner / Night',
+                                    'title'      => 'Tiffin / Dinner / Night',
                                     'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/meal-report',
+                                    'route'      => '/admin/hr-center/reports/tiffin-dinner-night',
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_meal_report',
                                 ],

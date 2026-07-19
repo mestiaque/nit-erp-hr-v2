@@ -111,19 +111,19 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label class="mb-1">Report Type</label>
-                        <select name="report_type" class="form-control form-control-sm">
-                            @foreach($reportTypes as $key => $label)
-                                <option value="{{ $key }}" @selected(($request->report_type ?? 'details') === $key)>{{ $label }}</option>
+                        <label class="mb-1">Group By</label>
+                        <select name="group_by" class="form-control form-control-sm">
+                            @foreach($groupByOptions as $key => $label)
+                                <option value="{{ $key }}" @selected(($request->group_by ?? 'section') === $key)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label class="mb-1">Group By</label>
-                        <select name="group_by" class="form-control form-control-sm">
-                            @foreach($groupByOptions as $key => $label)
-                                <option value="{{ $key }}" @selected(($request->group_by ?? 'section') === $key)>{{ $label }}</option>
+                        <label class="mb-1">Report Type</label>
+                        <select name="report_type" class="form-control form-control-sm">
+                            @foreach($reportTypes as $key => $label)
+                                <option value="{{ $key }}" @selected(($request->report_type ?? 'details') === $key)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>

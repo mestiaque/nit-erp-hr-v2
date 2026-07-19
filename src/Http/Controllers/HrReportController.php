@@ -200,6 +200,10 @@ class HrReportController extends Controller
             return $this->mealReportScreen($request, $report);
         }
 
+        if ($report === 'tiffin-dinner-night') {
+            return $this->tiffinDinerNightReportScreen($request, $report);
+        }
+
         if ($report === 'bonus-sheet') {
             return $this->bonusSheetScreen($request, $report);
         }
@@ -2942,6 +2946,105 @@ class HrReportController extends Controller
             'mealTypes'   => $mealTypes,
             'reportTypes' => $reportTypes,
             'groupByOptions' => self::GROUP_BY_OPTIONS,
+            'request'     => $request,
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // TIFFIN / DINNER / NIGHT
+    // ──────────────────────────────────────────────────────────────────
+
+    /**
+     * Eligibility and amounts come from EmployeeAttendanceService::getEmployeeAttendanceByDate()'s
+     * 'meal' pack — the same engine used for salary/OT calculations — so this report never
+     * duplicates the Daily-vs-Monthly eligibility rule; it only presents what that engine
+     * already computed per the employee's Designation config (allowance, minimum hour, payment way).
+     */
+    private function tiffinDinerNightReportScreen(Request $request, string $report)
+    {
+        $options = $this->employeeReportOptions();
+        $reportTypes = [
+            'tiffin' => 'Tiffin',
+            'dinner' => 'Dinner',
+            'night'  => 'Night',
+        ];
+
+        if ($request->boolean('print')) {
+            $reportType = (string) $request->input('report_type', 'tiffin');
+            if (!array_key_exists($reportType, $reportTypes)) {
+                $reportType = 'tiffin';
+            }
+
+            $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+            $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+
+            $employees = $this->employeeReportQuery($request)
+                ->with(['designation', 'department', 'section'])
+                ->orderBy('section_id')
+                ->naturalOrderById()
+                ->get();
+
+            $eligibleKey = $reportType . '_eligible';
+            $amountKey   = $reportType . '_amount';
+            $daysKey     = $reportType . '_eligible_days';
+            $totalKey    = $reportType . '_total';
+
+            $dailyRows   = collect();
+            $monthlyRows = collect();
+
+            foreach ($employees as $employee) {
+                $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate($employee->id, $from, $to);
+                $meal = $pack['meal'] ?? [];
+                $amount = (float) ($meal[$amountKey] ?? 0);
+
+                // Not configured for this allowance type at all — nothing to report.
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $paymentWay = $meal['payment_way'] ?? 'daily';
+
+                if ($paymentWay === 'monthly') {
+                    $monthlyRows->push([
+                        'employee'      => $employee,
+                        'eligible_days' => (int) ($meal[$daysKey] ?? 0),
+                        'rate'          => $amount,
+                        'total'         => (float) ($meal[$totalKey] ?? 0),
+                    ]);
+                } else {
+                    foreach (($pack['attendance'] ?? []) as $day) {
+                        if (!empty($day[$eligibleKey])) {
+                            $dailyRows->push([
+                                'employee'     => $employee,
+                                'date'         => $day['date'],
+                                'day'          => $day['day'],
+                                'worked_hours' => $day['worked_hours'],
+                                'amount'       => $amount,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            return view('hr::reports.tiffin-dinner-night-print', [
+                'request'         => $request,
+                'reportType'      => $reportType,
+                'reportTypeLabel' => $reportTypes[$reportType],
+                'from'            => $from,
+                'to'              => $to,
+                'dateLabel'       => \Carbon\Carbon::parse($from)->format('d-M-Y') . ' to ' . \Carbon\Carbon::parse($to)->format('d-M-Y'),
+                'dailyRows'       => $dailyRows,
+                'monthlyRows'     => $monthlyRows,
+                'dailyTotal'      => round($dailyRows->sum('amount'), 2),
+                'monthlyTotal'    => round($monthlyRows->sum('total'), 2),
+            ]);
+        }
+
+        return view('hr::reports.tiffin-dinner-night', [
+            'reportKey'   => $report,
+            'reportTitle' => config('hr.reports.' . $report),
+            'options'     => $options,
+            'reportTypes' => $reportTypes,
             'request'     => $request,
         ]);
     }

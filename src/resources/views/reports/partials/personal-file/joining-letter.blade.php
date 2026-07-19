@@ -72,7 +72,7 @@
 
         .title {
             text-align: center;
-            text-decoration: underline;
+            /* text-decoration: underline; */
             font-size: 20px;
             font-weight: bold;
             margin: 20px 0;
@@ -86,7 +86,8 @@
         .content { line-height: 2; text-align: justify; }
 
         .input-line {
-            border-bottom: 1px dotted #000;
+            /* border-bottom: 1px dotted #000; */
+            text-decoration: underline dotted;
             display: inline-block;
             padding: 0 10px;
             font-weight: 600;
@@ -103,7 +104,7 @@
             padding-top: 5px;
             width: 200px;
             text-align: center;
-            margin-top: 80px;
+            margin-top: 30px;
         }
 
         .authority-sign {
@@ -123,7 +124,7 @@
 
 <div class="letter-container">
     <div class="header-top">
-        <div class="date-section">তারিখঃ <span class="input-line">০৮/০৪/২০২৪</span></div>
+        <div class="date-section">তারিখঃ <span class="input-line">{{ $joiningDate }}</span></div>
     </div>
 
 
@@ -156,16 +157,32 @@
     </div>
 
     <div class="footer">
-        <div>
+        {{-- <div class="authority-sign">
             <div class="signature-area">
                 স্বাক্ষর: <span style="font-weight: bold;">{{ $employeeName }}</span>
             </div>
-            <p style="margin-top: 10px;">আপনাকে কাজে যোগদানের অনুমতি প্রদান করা হল।</p>
+            
         </div>
 
         <div class="authority-sign">
+            <p style="margin-bottom: 10px;">আপনাকে কাজে যোগদানের অনুমতি প্রদান করা হল।</p>
             <p style="border-top: 1px solid #000; width: 150px; text-align: center;">কর্তৃপক্ষের স্বাক্ষর</p>
-        </div>
+        </div> --}}
+        <table>
+            <tr>
+                <td style="text-align: right; padding-bottom: 50px;" colspan="2">
+                    আপনাকে কাজে যোগদানের অনুমতি প্রদান করা হল।
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 35%;">
+                    <p style="border-top: 1px solid #000; text-align: center;">স্বাক্ষর: <span style="font-weight: bold;">{{ $employeeName }}</span></p>
+                </td>
+                <td style="text-align: right;">
+                    <p style="border-top: 1px solid #000; width: 200px; text-align: center; float: right;">কর্তৃপক্ষের স্বাক্ষর</p>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
 

@@ -79,14 +79,6 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="mb-1">Report Type</label>
-                        <select name="report_type" id="monthlyReportType" class="form-control form-control-sm">
-                            @foreach($reportTypes as $key => $label)
-                                <option value="{{ $key }}" @selected($reportType === $key)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
                     <div class="col-md-3 mb-3" id="minAbsentDaysWrap" style="display:none;">
                         <label class="mb-1">Min. Consecutive Absent Days</label>
                         <input type="number" min="1" name="min_absent_days" class="form-control form-control-sm" value="{{ $request->input('min_absent_days', 3) }}" placeholder="3">
@@ -108,6 +100,14 @@
                         <select name="group_by" class="form-control form-control-sm">
                             @foreach($groupByOptions as $key => $label)
                                 <option value="{{ $key }}" @selected(($request->group_by ?? 'none') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1">Report Type</label>
+                        <select name="report_type" id="monthlyReportType" class="form-control form-control-sm">
+                            @foreach($reportTypes as $key => $label)
+                                <option value="{{ $key }}" @selected($reportType === $key)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>

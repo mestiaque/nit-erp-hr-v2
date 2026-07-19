@@ -129,15 +129,6 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
-                        <label class="mb-1">Report Type</label>
-                        <select name="report_type" id="jobCardReportType" class="form-control form-control-sm">
-                            @foreach($reportTypes as $key => $label)
-                                <option value="{{ $key }}" @selected(($request->report_type ?? 'job-card') === $key)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-md-3 mb-3">
                         <label class="mb-1">Group By <small class="text-muted">(leave blank for each report's default)</small></label>
                         <select name="group_by" class="form-control form-control-sm">
                             <option value="" @selected(!$request->filled('group_by'))>Default</option>
@@ -157,6 +148,15 @@
                                 <span class="ml-2">Enable Lock</span>
                             </label>
                         </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1">Report Type</label>
+                        <select name="report_type" id="jobCardReportType" class="form-control form-control-sm">
+                            @foreach($reportTypes as $key => $label)
+                                <option value="{{ $key }}" @selected(($request->report_type ?? 'job-card') === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
                     </div>
 
                     <div class="col-md-3 mb-3 d-flex align-items-end">

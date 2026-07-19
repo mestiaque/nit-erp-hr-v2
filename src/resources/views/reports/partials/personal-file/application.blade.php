@@ -49,7 +49,7 @@
         .page {
             width: 210mm;
             min-height: 297mm;
-            padding: 15mm 20mm;
+            padding: 5mm 7mm;
             margin: auto;
             background: white;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -69,7 +69,7 @@
             width: 120px;
             height: 140px;
             border: 1px solid #000;
-            margin-top: -40px;
+            margin-top: -35px;
         }
 
         .photo-area img {
@@ -140,6 +140,7 @@
 <div style="font-family: 'Nikosh', 'Arial', sans-serif; max-width: 800px; margin: auto; color: #000; line-height: 1.6;">
 
 <div class="page">
+    <h2 class="text-center">চাকুরীর জন্য আবেদন</h2>
     <div class="photo-area">
         <!-- এখানে প্রার্থীর ছবি বসবে -->
         @if($employeePhoto !== $na)
@@ -165,25 +166,25 @@
 
     <table class="info-table">
         <tr>
-            <td class="label">০১। নাম</td><td class="colon">ঃ</td><td class="data">{{ $employeeName }}</td>
+            <td class="label">০১। নামঃ</td><td class="colon"></td><td class="data">{{ $employeeName }}</td>
         </tr>
         <tr>
-            <td class="label">০২। পিতার নাম</td><td class="colon" >ঃ</td><td class="data">{{ $fatherName }}</td>
+            <td class="label">০২। পিতার নামঃ </td><td class="colon" ></td><td class="data">{{ $fatherName }}</td>
         </tr>
         <tr>
-            <td class="label">০৩। মাতার নাম</td><td class="colon">ঃ</td><td class="data">{{ $motherName }}</td>
+            <td class="label">০৩। মাতার নামঃ </td><td class="colon"></td><td class="data">{{ $motherName }}</td>
         </tr>
         <tr>
-            <td class="label">০৪। স্বামী/স্ত্রীর নাম</td><td class="colon">ঃ</td><td class="data">{{ $spouseName }}</td>
+            <td class="label">০৪। স্বামী/স্ত্রীর নামঃ </td><td class="colon"></td><td class="data">{{ $spouseName }}</td>
         </tr>
         <tr>
-            <td class="label">০৫। স্থায়ী ঠিকানা</td><td class="colon">ঃ</td>
+            <td class="label">০৫। স্থায়ী ঠিকানাঃ </td><td class="colon"></td>
             <td class="data">
                {{ $permanentAddressFull }}
             </td>
         </tr>
         <tr>
-            <td class="label">০৬। বর্তমান ঠিকানা</td><td class="colon">ঃ</td>
+            <td class="label">০৬। বর্তমান ঠিকানাঃ </td><td class="colon"></td>
             <td class="data">
                 {{ $presentAddressFull }}
             </td>
@@ -191,24 +192,24 @@
         <tr>
             <td colspan="3">
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="width: 45%;">০৭। জন্ম তারিখ ঃ <span class="data">{{ $birthDate }}</span></div>
-                    <div style="width: 45%;">০৮। বয়স ঃ <span class="data">{{ $t(en2bnNumber($employeeAge), $employeeAge ) }}</span></div>
+                    <div style="width: 45%;">০৭। জন্ম তারিখঃ  <span class="data">{{ $birthDate }}</span></div>
+                    <div style="width: 45%;">০৮। বয়সঃ  <span class="data">{{ $t(en2bnNumber($employeeAge), $employeeAge ) }}</span></div>
                 </div>
             </td>
         </tr>
         <tr>
             <td colspan="3">
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="width: 45%;">০৯। শিক্ষাগত যোগ্যতা ঃ <span class="data">{{ $education }}</span></div>
-                    <div style="width: 45%;">১০। লিঙ্গ ঃ <span class="data">{{ $gender }}</span></div>
+                    <div style="width: 45%;">০৯। শিক্ষাগত যোগ্যতাঃ <span class="data">{{ $education }}</span></div>
+                    <div style="width: 45%;">১০। লিঙ্গঃ <span class="data">{{ $gender }}</span></div>
                 </div>
             </td>
         </tr>
         <tr>
             <td colspan="3">
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="width: 45%;">১১। জাতীয়তা ঃ <span class="data">বাংলাদেশী (জন্ম সূত্রে)</span></div>
-                    <div style="width: 45%;">১২। ধর্ম ঃ <span class="data">{{ $religion }}</span></div>
+                    <div style="width: 45%;">১১। জাতীয়তাঃ <span class="data">বাংলাদেশী (জন্ম সূত্রে)</span></div>
+                    <div style="width: 45%;">১২। ধর্মঃ <span class="data">{{ $religion }}</span></div>
                 </div>
             </td>
         </tr>
@@ -218,21 +219,21 @@
         <tr>
             <td colspan="3">
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="width: 45%;">১৪। বৈবাহিক অবস্থা ঃ <span class="data">{{ $maritalStatus }}</span></div>
-                    <div style="width: 45%;">১৫। সন্তান সংখ্যা ঃ {{ en2bnNumber($girls + $boys) }} (ছেলে: {{ en2bnNumber($boys) }}, মেয়ে: {{ en2bnNumber($girls) }})</div>
+                    <div style="width: 45%;">১৪। বৈবাহিক অবস্থাঃ <span class="data">{{ $maritalStatus }}</span></div>
+                    <div style="width: 45%;">১৫। সন্তান সংখ্যাঃ {{ en2bnNumber($girls + $boys) }} (ছেলে: {{ en2bnNumber($boys) }}, মেয়ে: {{ en2bnNumber($girls) }})</div>
                 </div>
             </td>
         </tr>
         <tr>
             <td colspan="3">
                 <div style="display: flex; justify-content: space-between;">
-                    <div style="width: 45%;">১৬। মোবাইল নম্বর ঃ <span class="data">{{ en2bnNumber($mobileNumber) }}</span></div>
-                    <div style="width: 45%;">১৭। রক্তের গ্রুপ ঃ <span class="data">{{ $bloodGroup }}</span></div>
+                    <div style="width: 45%;">১৬। মোবাইল নম্বরঃ <span class="data">{{ en2bnNumber($mobileNumber) }}</span></div>
+                    <div style="width: 45%;">১৭। রক্তের গ্রুপঃ <span class="data">{{ $bloodGroup }}</span></div>
                 </div>
             </td>
         </tr>
         <tr>
-            <td class="label">১৮। জরুরী মোবাইল নম্বর</td><td class="colon">ঃ</td><td class="data">{{ en2bnNumber($emergencyMobile) }}</td>
+            <td class="label">১৮। জরুরী মোবাইল নম্বরঃ</td><td class="colon"></td><td class="data">{{ en2bnNumber($emergencyMobile) }}</td>
         </tr>
     </table>
 

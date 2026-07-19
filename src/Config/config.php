@@ -528,6 +528,7 @@ return [
         'personal-file'           => 'Personal File',
         'attendance'              => 'Attendance',
         'tiffin-night-dinner'     => 'Tiffin / Night / Dinner',
+        'tiffin-dinner-night'     => 'Tiffin / Dinner / Night',
         'pro-job-card'            => 'Production Job Card A',
         'bonus-salary-fixed'      => 'Bonus Salary Fixed',
         'bonus-salary-production' => 'Bonus Salary Production',
