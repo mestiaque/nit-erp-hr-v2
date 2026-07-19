@@ -143,7 +143,7 @@
           </tr>
           <tr>
               <td colspan="2">
-                  ৯। দৈহিক সক্ষমতা <span class="bb-dot">{{ $ageYearsSfl }}</span>
+                  ৯। দৈহিক সক্ষমতা <span class="bb-dot">{{ $physicalAbilitySfl }}</span>
               </td>
               <td colspan="2" style="height: 20mm;">
                   <p></p>
@@ -151,7 +151,7 @@
           </tr>
           <tr>
               <td colspan="2" >
-                 ১০। সনাক্তকরণ/চিহ্ন <span class="bb-dot">{{ $ageYearsSfl }}</span>
+                 ১০। সনাক্তকরণ/চিহ্ন <span class="bb-dot">{{ $identificationMarkSfl }}</span>
               </td>
               <td colspan="2" style="height: 20mm;">
                   <p></p>

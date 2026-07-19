@@ -2,7 +2,7 @@
     $language = $language ?? data_get($request ?? null, 'language', 'en');
     $isBangla = $language === 'bn';
     $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
-    $na = $t('প্রযোজ্য নয়', 'N/A');
+    $na = $t('--', '--');
 
     $companyName = $isBangla
         ? (hr_factory('bn_name') ?? hr_factory('name') ?? general()->name ?? $na)

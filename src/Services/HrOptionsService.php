@@ -209,8 +209,9 @@ class HrOptionsService
 
             $qualification = data_get($employee, 'qualification', data_get($profile, 'qualification', $na));
             $birthDate = data_get($employee, 'date_of_birth', data_get($employee, 'dob'));
-            $employeeAge = isset($employeeOthers['age_verification']['verified_age'])
-                ? $employeeOthers['age_verification']['verified_age']
+            $verifiedAge = $employeeOthers['age_verification']['age_years'] ?? null;
+            $employeeAge = filled($verifiedAge)
+                ? $verifiedAge
                 : \Illuminate\Support\Carbon::parse($birthDate)->age;
             $employeePhoto = method_exists($employee, 'image') ? $employee->image() : null;
 

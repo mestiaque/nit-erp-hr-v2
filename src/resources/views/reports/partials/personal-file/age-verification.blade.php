@@ -33,7 +33,13 @@
     $joiningDate = $employeeData['joining_date'];
     $employeeId = $employeeData['employee_id'];
     $gender = $employeeData['gender'];
-    $physicalAbility = $employee->otherInfo()['age_verification']['physical_ability'] ?? null;
+    $avInfo = $employee->otherInfo()['age_verification'] ?? [];
+    $physicalAbility = $isBangla
+        ? ($avInfo['physical_ability_bn'] ?? $avInfo['physical_ability'] ?? null)
+        : ($avInfo['physical_ability'] ?? null);
+    $identificationMark = $isBangla
+        ? ($avInfo['identification_mark_bn'] ?? $avInfo['identification_mark'] ?? $employee->distinguished_mark)
+        : ($avInfo['identification_mark'] ?? $employee->distinguished_mark);
 @endphp
 
 @if(ENV('FACTORY') == 'SFL')
@@ -50,7 +56,7 @@
         </div>
 
         <div class="form-title">
-            <strong style="position: absolute; right: 2mm;">{{ $t('ফরম', 'Form') }} - {{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</strong>
+            <strong style="position: absolute; right: 2mm;">{{ $t('ফরম', 'Form') }} - {{ $isBangla ? en2bnNumber($employee->employee_id) : $employee->employee_id }}</strong>
             <h2>বয়স ও সক্ষমতার প্রত্যয়নপত্র</h2>
             <span>[ধারা ৩৪, ৩৬, ৩৭ ও ২৭৭ এবং বিধি- ৩৪(১) ও ৩৩৬(৪) দ্রষ্টব্য]</span>
         </div>
@@ -58,7 +64,7 @@
         <div class="main-content" style="min-height: 150mm">
             <!-- অফিস কপি / সংক্ষিপ্ত তথ্য -->
             <div class="left-panel">
-                <div class="info-row"><label>ক্রমিক নং:</label><div class="fill-gap">{{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</div></div>
+                <div class="info-row"><label>ক্রমিক নং:</label><div class="fill-gap">{{ $isBangla ? en2bnNumber($employee->employee_id) : $employee->employee_id }}</div></div>
                 <div class="info-row"><label>তারিখ:</label><div class="fill-gap">{{ $joiningDate }}</div></div>
                 <div class="info-row"><label>নাম:</label><div class="fill-gap">{{ $employeeName }}</div></div>
                 <div class="info-row"><label>পিতার নাম:</label><div class="fill-gap">{{ $fatherName }}</div></div>
@@ -67,7 +73,7 @@
                 <div class="info-row"><label>স্থায়ী ঠিকানা:</label><div class="fill-gap">{{ $permanentAddressFull }}</div></div>
                 <div class="info-row"><label>জন্ম তারিখ:</label><div class="fill-gap">{{ $birthDate }}</div></div>
                 <div class="info-row"><label>শারীরিক সক্ষমতা:</label><div class="fill-gap">{{ $physicalAbility }}</div></div>
-                <div class="info-row"><label>শনাক্তকরণ চিহ্ন:</label><div class="fill-gap">{{ $employee->distinguished_mark }}</div></div>
+                <div class="info-row"><label>শনাক্তকরণ চিহ্ন:</label><div class="fill-gap">{{ $identificationMark }}</div></div>
 
                 <div style="font-size: 9px; display: inline-flex; position: absolute; bottom: 0mm; ">
                     <div class="sig-box">
@@ -76,7 +82,7 @@
                     </div>
                     <div class="sig-box">
                         <div class="sig-line"></div>
-                        কর্তৃপক্ষের স্বাক্ষর
+                        রেজিস্টার্ড চিকিৎসকের স্বাক্ষর
                     </div>
                 </div>
             </div>
@@ -91,7 +97,7 @@
                     <div class="info-row"><label>স্থায়ী ঠিকানা:</label><div class="fill-gap">{{ $permanentAddressFull }}</div></div>
                     কে আমি ব্যক্তিগতভাবে পরীক্ষা করিয়াছি। <br><br>
                     তিনি অত্র প্রতিষ্ঠানে নিযুক্ত হইতে ইচ্ছুক। আমার পরীক্ষা মতে তাহার বর্তমান বয়স <span class="dotted-line" style="min-width: 60px;">{{ $employeeAge }}</span> বছর এবং তিনি এই প্রতিষ্ঠানের <span class="dotted-line" style="min-width: 150px;">{{ $designation }}</span> কাজে প্রাপ্ত বয়স্ক হিসেবে নিযুক্ত হওয়ার যোগ্য। <br><br>
-                    তাহার সনাক্তকরণের চিহ্ন: <span class="dotted-line" style="min-width: 180px;">{{ $employee->distinguished_mark }}</span>
+                    তাহার সনাক্তকরণের চিহ্ন: <span class="dotted-line" style="min-width: 180px;">{{ $identificationMark }}</span>
                 </div>
                 <div style="font-size: 9px; display: inline-flex; position: absolute; bottom: 0mm; ">
                     <div class="sig-box">
@@ -100,7 +106,7 @@
                     </div>
                     <div class="sig-box">
                         <div class="sig-line"></div>
-                        কর্তৃপক্ষের স্বাক্ষর
+                        রেজিস্টার্ড চিকিৎসকের স্বাক্ষর
                     </div>
                 </div>
             </div>
@@ -109,6 +115,16 @@
     </div>
 
     <style>
+        .containerX {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 5mm 7mm !important;
+            margin: auto;
+            /* background: white; */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
         body {
             font-family: 'Siyam Rupali', 'SolaimanLipi', Arial, sans-serif;
             margin: 0;
@@ -192,6 +208,8 @@
         @media print {
             body { background: none; padding: 0; }
             button { display: none; }
+            .containerX { box-shadow: none; margin: 0; }
+
         }
     </style>
 
