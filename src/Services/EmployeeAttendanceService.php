@@ -9,6 +9,42 @@ use ME\Hr\Models\HrRegularToWeekend as RegularToWeekend;
 
 class EmployeeAttendanceService
 {
+    /**
+     * OT only starts counting once the employee has worked past shift end by more than
+     * the factory's configured grace period (Basic -> Factory -> "OT Count After Shift
+     * End (min)") — e.g. a 30-minute grace means leaving 20 minutes late shows 0 OT,
+     * and leaving 40 minutes late shows only 10 (the excess beyond the grace window).
+     * Single source of truth for this rule — every OT-writing/reading site in the
+     * system should call this rather than reimplementing the subtraction.
+     */
+    public static function calculateOvertimeMinutes(?\ME\Hr\Models\HrShift $shift, string $dateStr, ?string $inTime, ?string $outTime): int
+    {
+        if (!$shift || !$shift->end_time || !$outTime) {
+            return 0;
+        }
+
+        $shiftEnd = Carbon::parse($dateStr . ' ' . $shift->end_time, 'Asia/Dhaka');
+        $out      = Carbon::parse($dateStr . ' ' . $outTime, 'Asia/Dhaka');
+
+        if ($out->lte($shiftEnd)) {
+            return 0;
+        }
+
+        // Cap OT at out_time_start if defined — but only when it's actually a sensible
+        // cap (after shift end). A misconfigured shift with out_time_start earlier than
+        // end_time would otherwise clamp $effectiveOut backward past $shiftEnd, turning
+        // a positive OT span into a large negative one.
+        $otCap = ($shift->out_time_start && Carbon::parse($dateStr . ' ' . $shift->out_time_start, 'Asia/Dhaka')->gt($shiftEnd))
+            ? Carbon::parse($dateStr . ' ' . $shift->out_time_start, 'Asia/Dhaka')
+            : $out;
+        $effectiveOut = $out->lt($otCap) ? $out : $otCap;
+
+        $graceMinutes        = (int) (hr_factory('ot_grace_minutes') ?? 0);
+        $minutesPastShiftEnd = (int) $shiftEnd->diffInMinutes($effectiveOut);
+
+        return max(0, $minutesPastShiftEnd - $graceMinutes);
+    }
+
     private static function normalizeLeaveType($leave): string
     {
         $code = strtolower((string) data_get($leave, 'leaveType.code', ''));
@@ -115,6 +151,15 @@ class EmployeeAttendanceService
             $exitedAt = Carbon::parse($employee->exited_at)->startOfDay();
         }
 
+        // A day that hasn't happened yet obviously has no attendance row either — without
+        // this, every future date inside an in-progress month's range (e.g. requesting the
+        // whole current month on the 19th) fell through to the "no attendance row" branch
+        // below and was counted as Absent, wrongly inflating absent-day counts and any
+        // deduction/earn-days math derived from them. Reuses the same 'not_employed'
+        // exclusion as the resignation cutoff above — a day that hasn't occurred yet is
+        // just as much "not counted" as a day after the employee left.
+        $today = Carbon::today();
+
         // ── Designation effectiveness: OT flags & meal allowances ──────────
         $designation = $employee->designation
             ?? \ME\Hr\Models\HrDesignation::find($employee->designation_id);
@@ -194,7 +239,7 @@ class EmployeeAttendanceService
         foreach ($dates as $d) {
             $dateStr = $d->format('Y-m-d');
 
-            if ($exitedAt && $d->gt($exitedAt)) {
+            if (($exitedAt && $d->gt($exitedAt)) || $d->gt($today)) {
                 $result[] = [
                     'date'            => $d->format('d-m-Y'),
                     'day'             => $d->format('l'),
@@ -278,12 +323,14 @@ class EmployeeAttendanceService
             }
 
             // ── In/Out visibility + OT, by day type and factory compliance mode ────
-            // OT is only ever counted from after shift end — never negative. Clamped here
-            // (not just at write time) so any already-stored bad value is never displayed.
-            $otMinRaw = $att ? max(0, (int) ($att->overtime_minutes ?? 0)) : 0;
-            if (!$otEnabled) {
-                $otMinRaw = 0;
-            }
+            // Recomputed live from the shift end time + the factory's OT grace period,
+            // rather than trusting the stored total_ot_minute column — every report that
+            // shares this engine (Job Card, Salary, Wages Summary, OT Summary, ...) must
+            // reflect the current grace-period setting immediately, including for
+            // attendance rows that were synced/saved before the setting was changed.
+            $otMinRaw = $otEnabled
+                ? self::calculateOvertimeMinutes($resolvedShift, $dateStr, $att->in_time ?? null, $att->out_time ?? null)
+                : 0;
 
             if ($isWeekend) {
                 // A genuine (unconverted) weekly holiday. Compliance modes never show

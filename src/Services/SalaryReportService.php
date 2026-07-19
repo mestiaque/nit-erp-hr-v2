@@ -198,6 +198,7 @@ class SalaryReportService
             'ot_rate'              => $otRate,
             'present'              => $present,
             'absent'               => $absent,
+            'leave'                => $leaveDays,
             'wh'                   => (int) ($leave['weekly']   ?? 0),
             'fh'                   => (int) ($leave['festival'] ?? 0),
             'fl'                   => (int) ($leave['holiday_festival'] ?? 0),
@@ -582,6 +583,7 @@ class SalaryReportService
                     $otRate = (float) ($sd['ot_rate'] ?? 0);
                     $presentDays = (int) ($sd['present'] ?? 0);
                     $absentDays = (int) ($sd['absent'] ?? 0);
+                    $leaveDays = (int) ($sd['leave'] ?? 0);
                     $attBonus = (float) ($sd['att_bonus'] ?? 0);
                     $loan = (float) ($sd['loan'] ?? 0);
                     $tax = (float) ($sd['tax'] ?? 0);
@@ -592,23 +594,20 @@ class SalaryReportService
                     $otAmount = (float) ($sd['ot'] ?? 0);
                     $extraFacility = (float) ($sd['extra_facility'] ?? 0);
 
-                    $absentBase = self::complianceBase($factoryNo, (float) $sd['basic'], (float) $sd['gross']);
-                    $deductAbsent = $absentDays > 0 ? round(($absentBase / $deductionMonthDays) * $absentDays, 2) : 0;
-                    $looksLikeNoPresentFullPay = $presentDays === 0
-                        && $absentDays > 0
-                        && (float) ($sd['net'] ?? 0) >= (float) ($sd['gross'] ?? 0);
-                    if ($looksLikeNoPresentFullPay && $deductAbsent <= 0 && $deductionMonthDays > 0) {
-                        $deductAbsent = round(($absentBase / $deductionMonthDays) * $absentDays, 2);
-                    }
+                    // Deduct for every day not actually earned — not just marked "Absent".
+                    // getEmployeeSalaryData()'s own 'net' never applies an attendance-based
+                    // deduction at all, and gating this on $absentDays alone let a mid-month
+                    // resignation (or an in-progress month's not-yet-happened days) slip
+                    // through fully paid, since those days are 'not_employed', not 'absent'.
+                    $earnDays   = $presentDays + ($sd['wh'] ?? 0) + ($sd['fh'] ?? 0) + $leaveDays;
+                    $unpaidDays = max(0, $totalMonthDays - $earnDays);
 
-                    $payableSalary = max(0, ($salaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);
-                    $deductionTotal = (float) ($sd['total_deduct'] ?? 0);
-                    if ($looksLikeNoPresentFullPay) {
-                        $deductionTotal = max($deductionTotal, $deductAbsent + $loan + $tax + $stamp + $deductOther);
-                    }
-                    $netSalary = $looksLikeNoPresentFullPay
-                        ? max(0, $payableSalary + $otAmount + $extraFacility - ($loan + $tax + $stamp + $deductOther))
-                        : (float) ($sd['net'] ?? 0);
+                    $absentBase   = self::complianceBase($factoryNo, (float) $sd['basic'], (float) $sd['gross']);
+                    $deductAbsent = $unpaidDays > 0 ? round(($absentBase / $deductionMonthDays) * $unpaidDays, 2) : 0;
+
+                    $payableSalary  = max(0, ($salaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);
+                    $deductionTotal = (float) ($sd['total_deduct'] ?? 0) + $deductAbsent;
+                    $netSalary      = max(0, $payableSalary + $otAmount + $extraFacility - ($loan + $tax + $stamp + $deductOther));
 
                     $row = [
                         'emp' => $emp,
@@ -623,8 +622,12 @@ class SalaryReportService
                         'fh' => $sd['fh'] ?? 0,
                         'fl' => $sd['fl'] ?? 0,
                         'gl' => $sd['gl'] ?? 0,
-                        'ab' => $absentDays,
-                        'earn_days' => $totalMonthDays - $absentDays,
+                        // Matches what Absent TK actually deducts for (every unearned day —
+                        // genuine absences plus any post-resignation/not-yet-happened days),
+                        // not just the raw attendance-status "Absent" count, so the two
+                        // columns on the printed sheet stay consistent with each other.
+                        'ab' => $unpaidDays,
+                        'earn_days' => $earnDays,
                         'att_bonus' => $attBonus,
                         'deduct_absent' => $deductAbsent,
                         'loan' => $loan,

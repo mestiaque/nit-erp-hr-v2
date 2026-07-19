@@ -512,7 +512,14 @@ class AttendanceMachineController extends Controller
 
         $effectiveOut = $outTime->lt($otCap) ? $outTime : $otCap;
 
-        return max(0, (int) $shiftEnd->diffInMinutes($effectiveOut));
+        // OT only starts counting once the employee has worked past shift end by more
+        // than the configured grace period — e.g. a 30-minute grace means someone who
+        // leaves 20 minutes late shows 0 OT, and someone who leaves 40 minutes late
+        // shows only 10 (the excess beyond the grace window, not the full 40).
+        $graceMinutes = (int) (hr_factory('ot_grace_minutes') ?? 0);
+        $minutesPastShiftEnd = (int) $shiftEnd->diffInMinutes($effectiveOut);
+
+        return max(0, $minutesPastShiftEnd - $graceMinutes);
     }
 
     private function toCarbon(?string $date, $timeValue): ?Carbon

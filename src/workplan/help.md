@@ -30,3 +30,19 @@ er mane hocche
 but 8:11 AM to 04:44 PM porjonto punch korle oita attendance e add hobe na intime/outtime konotatei dekhabe na  
 
 bises kore machine log er khetre eita valo kore check korbe 
+
+
+
+
+Basic->factory te ekta column add koro 'ot count after shift end (min)'
+ei column er kaj hobe ot jekhane jekhane dekhay sekhane oi min por ot calculate hobe
+dhoro
+ot count after shift end (min) = 30
+shift end time 5:00 PM
+ekhon employee er 
+    exit time jodi hoy 6:10 PM tahole tar ot dekhabe 40 min
+    exit time jodi hoy 5:20 PM tahole tar ot dekhabe 00 min
+    exit time jodi hoy 5:30 PM tahole tar ot dekhabe 00 min
+    exit time jodi hoy 5:40 PM tahole tar ot dekhabe 10 min
+
+    full system e eita apply koro, bises kore jekhane jekhane ot calculate hoy and show hoy 

@@ -311,6 +311,7 @@ return [
                 'weekend' => ['label' => 'Weekend', 'type' => 'text', 'rules' => 'nullable|string|max:50'],
                 'roster_day' => ['label' => 'Roster Day', 'type' => 'text', 'rules' => 'nullable|string|max:50'],
                 'allow_ot_hour' => ['label' => 'Allow OT Hour', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.01'],
+                'ot_grace_minutes' => ['label' => 'OT Count After Shift End (min)', 'type' => 'number', 'rules' => 'nullable|integer|min:0'],
                 'ot_rate' => ['label' => 'OT Rate', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.0001'],
                 'stamp_amount' => ['label' => 'Stamp Amount', 'type' => 'number', 'rules' => 'nullable|numeric|min:0', 'step' => '0.01'],
                 'attendance_bonus_late_days_more_than' => ['label' => 'Attendance Bonus Cut After Late Days', 'type' => 'number', 'rules' => 'nullable|integer|min:0'],

@@ -224,12 +224,14 @@ class AttendanceController extends Controller
         $attendance->remarks = $request->input('remarks');
         $attendance->status = $this->calculateStatus($attendance, $shift);
         
-        // Calculate overtime minutes: out_time - shift closing time if out_time is after shift end
+        // Calculate overtime minutes: out_time - shift closing time if out_time is after shift end,
+        // minus the factory's configured OT grace period (minutes past shift end before OT starts counting).
         if ($attendance->out_time && $shift) {
             $outTime = Carbon::parse($attendance->out_time);
             $shiftEnd = Carbon::parse($shift->end_time);
             if ($outTime->gt($shiftEnd)) {
-                $attendance->total_ot_minute = max(0, (int) $shiftEnd->diffInMinutes($outTime));
+                $graceMinutes = (int) (hr_factory('ot_grace_minutes') ?? 0);
+                $attendance->total_ot_minute = max(0, (int) $shiftEnd->diffInMinutes($outTime) - $graceMinutes);
             } else {
                 $attendance->total_ot_minute = 0;
             }
@@ -289,7 +291,12 @@ class AttendanceController extends Controller
             if ($attendance->out_time && $shift) {
                 $outTime  = Carbon::parse($attendance->out_time);
                 $shiftEnd = Carbon::parse($shift->end_time);
-                $attendance->total_ot_minute = $outTime->gt($shiftEnd) ? max(0, (int) $shiftEnd->diffInMinutes($outTime)) : 0;
+                if ($outTime->gt($shiftEnd)) {
+                    $graceMinutes = (int) (hr_factory('ot_grace_minutes') ?? 0);
+                    $attendance->total_ot_minute = max(0, (int) $shiftEnd->diffInMinutes($outTime) - $graceMinutes);
+                } else {
+                    $attendance->total_ot_minute = 0;
+                }
             } else {
                 $attendance->total_ot_minute = 0;
             }
