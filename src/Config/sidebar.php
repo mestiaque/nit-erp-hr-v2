@@ -359,7 +359,7 @@ return [
                                     'permission' => 'hr_salary_report_production',
                                 ],
                                 [
-                                    'title'      => 'Wages & Salary Summary',
+                                    'title'      => 'Salary Summary',
                                     'icon'       => 'fa-solid fa-arrow-right',
                                     'route'      => '/admin/hr-center/reports/wages-salary-summary',
                                     'icon_color' => 'text-warning',
