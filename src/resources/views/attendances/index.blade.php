@@ -186,12 +186,14 @@
                                         @php
                                             $carbon  = \Carbon\Carbon::parse($row['date']);
                                             $dayName = $carbon->format('l');
-                                            $isWeekend = in_array($dayName, ['Friday']);
+                                            $isWeekend = strtolower($dayName) === strtolower($emp->weekend ?? 'friday');
 
                                             $st = $row['status'];
                                             $badgeClass = match(true) {
                                                 $st === 'Present'                  => 'badge-present',
                                                 $st === 'Absent'                   => 'badge-absent',
+                                                $st === 'Weekend'                  => 'badge-default',
+                                                $st === 'Holiday'                  => 'badge-early',
                                                 str_contains($st, 'Late') && str_contains($st, 'Punch') => 'badge-punch',
                                                 str_contains($st, 'Late') && str_contains($st, 'Early') => 'badge-default',
                                                 str_contains($st, 'Late')          => 'badge-late',

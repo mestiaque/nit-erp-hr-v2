@@ -14,6 +14,7 @@ use ME\Hr\Models\HrSection;
 use ME\Hr\Models\HrSubSection;
 use ME\Hr\Models\HrClassification;
 use ME\Hr\Models\HrDesignation;
+use ME\Hr\Models\HrHoliday;
 
 use Illuminate\Routing\Controller;
 use function view;
@@ -106,6 +107,7 @@ class AttendanceController extends Controller
         });
 
         $shiftMap = HrShift::all()->keyBy('id');
+        $holidays = HrHoliday::orderBy('from_date')->get();
 
         $attendanceList = [];
         foreach ($employees as $emp) {
@@ -137,6 +139,27 @@ class AttendanceController extends Controller
         // yet; calculateStatus() already knows to only call it Punch Missing once the
         // date has actually passed.
         foreach ($attendanceList as &$row) {
+            $noPunch = !$row['attendance'] || (!$row['attendance']->in_time && !$row['attendance']->out_time);
+
+            // A weekend/holiday day with no punch at all isn't a genuine no-show — it's
+            // an off day, so it shouldn't read as Absent/Punch Missing. If the employee
+            // DID punch in on their day off (a swapped/worked weekend), fall through to
+            // the normal derivation below so their real Present/Late status still shows.
+            if ($noPunch) {
+                $dayOfWeek = strtolower(Carbon::parse($row['date'])->format('l'));
+                $empWeekend = strtolower($row['employee']->weekend ?? 'friday');
+                $isHoliday = $holidays->contains(fn ($h) => $row['date'] >= $h->from_date && $row['date'] <= $h->to_date);
+
+                if ($isHoliday) {
+                    $row['status'] = 'Holiday';
+                    continue;
+                }
+                if ($dayOfWeek === $empWeekend) {
+                    $row['status'] = 'Weekend';
+                    continue;
+                }
+            }
+
             if (!$row['attendance']) {
                 $row['status'] = 'Absent';
                 continue;
@@ -335,6 +358,14 @@ class AttendanceController extends Controller
         if (!$attendance->in_time || !$attendance->out_time) {
             $inMissing  = !$attendance->in_time;
             $outMissing = !$attendance->out_time;
+
+            // No punch data at all (neither in nor out) is a genuine no-show, not a
+            // partial/glitched punch — report it as Absent, same as if no attendance row
+            // existed for the day at all. "Punch Missing" is reserved below for the case
+            // where exactly one side of the punch was actually recorded.
+            if ($inMissing && $outMissing) {
+                return 'Absent';
+            }
 
             // Today (or a future date) isn't over yet — a missing out_time just means the
             // employee hasn't left yet, same as a fresh machine punch. Only call it a genuine
