@@ -547,27 +547,46 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
+        // Post/Redirect/Get: don't return the print view directly from this PUT handler
+        // — reloading the resulting tab would re-submit the same PUT and trigger the
+        // browser's "Confirm Form Resubmission" prompt. Redirect to the GET twin instead.
         if ($request->routeIs('hr-center.employees.final-settlement.print')) {
-            $designationBn = null;
-            $designationEn = null;
-
-            if (!empty($employee->designation_id)) {
-                if (Schema::hasTable((new HrDesignation())->getTable())) {
-                    $designationRow = HrDesignation::query()->find($employee->designation_id);
-                    $designationBn = data_get($designationRow, 'bn_name');
-                    $designationEn = data_get($designationRow, 'name');
-                }
-            }
-
-            return view('hr::employees.print.final-settlement', [
-                'employee' => $employee,
-                'settlement' => $payload,
-                'designation_bn' => $designationBn,
-                'designation_en' => $designationEn,
-            ]);
+            return redirect()->route('hr-center.employees.final-settlement.print.show', $employee);
         }
 
         return redirect()->route('hr-center.employees.index')->with('success', 'Final settlement info updated.');
+    }
+
+    public function showFinalSettlementLetter(HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        $designationBn = null;
+        $designationEn = null;
+        if (!empty($employee->designation_id) && Schema::hasTable((new HrDesignation())->getTable())) {
+            $designationRow = HrDesignation::query()->find($employee->designation_id);
+            $designationBn = data_get($designationRow, 'bn_name');
+            $designationEn = data_get($designationRow, 'name');
+        }
+
+        // The view expects the old request-payload key names (letter_1_date, etc.), not
+        // the model's actual column names (first_letter_date, etc.) — map them across so
+        // the view doesn't need to change.
+        $fs = $employee->finalSettlement;
+        $settlement = [
+            'final_settlement_option' => $fs?->selected_letter_print,
+            'absent_date' => $fs?->absent_date,
+            'letter_1_date' => $fs?->first_letter_date,
+            'letter_2_date' => $fs?->second_letter_date,
+            'letter_3_date' => $fs?->third_letter_date,
+        ];
+
+        return view('hr::employees.print.final-settlement', [
+            'employee' => $employee,
+            'settlement' => $settlement,
+            'designation_bn' => $designationBn,
+            'designation_en' => $designationEn,
+        ]);
     }
 
     /**
@@ -603,6 +622,17 @@ class HrEmployeeController extends Controller
         $this->upsertFinalSettlement($employee, $payload);
         $employee->setTypes('employee');
         $employee->save();
+
+        // Post/Redirect/Get: this PUT handler only saves the form data — the actual
+        // print view is served from a separate GET route. Returning the view directly
+        // from a PUT response means reloading the printed tab re-submits the same PUT
+        // request, triggering the browser's "Confirm Form Resubmission" prompt.
+        return redirect()->route('hr-center.employees.final-settlement.statement.show', $employee);
+    }
+
+    public function showFinalSettlementStatement(HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
 
         $designationBn = null;
         $designationEn = null;

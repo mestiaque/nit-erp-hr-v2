@@ -43,7 +43,9 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::put('/employees/{employee}/resign', [HrEmployeeController::class, 'updateResign'])->name('employees.resign.update');
 		Route::put('/employees/{employee}/final-settlement', [HrEmployeeController::class, 'updateFinalSettlement'])->name('employees.final-settlement.update');
 		Route::put('/employees/{employee}/final-settlement/print', [HrEmployeeController::class, 'updateFinalSettlement'])->name('employees.final-settlement.print');
+		Route::get('/employees/{employee}/final-settlement/print', [HrEmployeeController::class, 'showFinalSettlementLetter'])->name('employees.final-settlement.print.show');
 		Route::put('/employees/{employee}/final-settlement/statement', [HrEmployeeController::class, 'printFinalSettlementStatement'])->name('employees.final-settlement.statement');
+		Route::get('/employees/{employee}/final-settlement/statement', [HrEmployeeController::class, 'showFinalSettlementStatement'])->name('employees.final-settlement.statement.show');
 
 		Route::put('/employees/{employee}/basic-info', [HrEmployeeController::class, 'updateBasicInfo'])->name('employees.basic-info.update');
 		Route::get('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsPage'])->name('employees.increments.page');

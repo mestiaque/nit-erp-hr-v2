@@ -749,4 +749,60 @@ class SalaryReportService
 
         return trim(implode(' ', $parts));
     }
+
+    /**
+     * Bangla word-spelling of an integer, using the South Asian lakh/crore grouping
+     * (হাজার/লক্ষ/কোটি) rather than English's thousand/million/billion — this is the
+     * grouping Bangladeshi financial documents (cheques, settlement statements, etc.)
+     * are conventionally written in, not a direct translation of numberToWords().
+     */
+    public static function numberToWordsBn(int $number): string
+    {
+        if ($number === 0) {
+            return 'শূন্য';
+        }
+
+        $words = [
+            '', 'এক', 'দুই', 'তিন', 'চার', 'পাঁচ', 'ছয়', 'সাত', 'আট', 'নয়', 'দশ',
+            'এগারো', 'বারো', 'তেরো', 'চৌদ্দ', 'পনেরো', 'ষোলো', 'সতেরো', 'আঠারো', 'উনিশ', 'বিশ',
+            'একুশ', 'বাইশ', 'তেইশ', 'চব্বিশ', 'পঁচিশ', 'ছাব্বিশ', 'সাতাশ', 'আটাশ', 'ঊনত্রিশ', 'ত্রিশ',
+            'একত্রিশ', 'বত্রিশ', 'তেত্রিশ', 'চৌত্রিশ', 'পঁয়ত্রিশ', 'ছত্রিশ', 'সাঁইত্রিশ', 'আটত্রিশ', 'ঊনচল্লিশ', 'চল্লিশ',
+            'একচল্লিশ', 'বিয়াল্লিশ', 'তেতাল্লিশ', 'চুয়াল্লিশ', 'পঁয়তাল্লিশ', 'ছেচল্লিশ', 'সাতচল্লিশ', 'আটচল্লিশ', 'ঊনপঞ্চাশ', 'পঞ্চাশ',
+            'একান্ন', 'বাহান্ন', 'তিপ্পান্ন', 'চুয়ান্ন', 'পঞ্চান্ন', 'ছাপ্পান্ন', 'সাতান্ন', 'আটান্ন', 'ঊনষাট', 'ষাট',
+            'একষট্টি', 'বাষট্টি', 'তেষট্টি', 'চৌষট্টি', 'পঁয়ষট্টি', 'ছেষট্টি', 'সাতষট্টি', 'আটষট্টি', 'ঊনসত্তর', 'সত্তর',
+            'একাত্তর', 'বাহাত্তর', 'তিয়াত্তর', 'চুয়াত্তর', 'পঁচাত্তর', 'ছিয়াত্তর', 'সাতাত্তর', 'আটাত্তর', 'ঊনআশি', 'আশি',
+            'একাশি', 'বিরাশি', 'তিরাশি', 'চুরাশি', 'পঁচাশি', 'ছিয়াশি', 'সাতাশি', 'আটাশি', 'ঊননব্বই', 'নব্বই',
+            'একানব্বই', 'বিরানব্বই', 'তিরানব্বই', 'চুরানব্বই', 'পঁচানব্বই', 'ছিয়ানব্বই', 'সাতানব্বই', 'আটানব্বই', 'নিরানব্বই',
+        ];
+
+        $convertBelowHundred = fn ($n) => $words[$n] ?? '';
+
+        $convertBelowThousand = function ($n) use ($words, $convertBelowHundred) {
+            $hundreds = intdiv($n, 100);
+            $rest = $n % 100;
+            $text = $hundreds > 0 ? $words[$hundreds] . ' শত' : '';
+            if ($rest > 0) {
+                $text .= ($text !== '' ? ' ' : '') . $convertBelowHundred($rest);
+            }
+            return trim($text);
+        };
+
+        $scales = [10000000 => 'কোটি', 100000 => 'লক্ষ', 1000 => 'হাজার', 1 => ''];
+        $parts = [];
+        foreach ($scales as $base => $label) {
+            if ($number >= $base) {
+                $chunk = intdiv($number, $base);
+                $number %= $base;
+                if ($chunk > 0) {
+                    $piece = $convertBelowThousand($chunk);
+                    if ($label !== '') {
+                        $piece .= ' ' . $label;
+                    }
+                    $parts[] = trim($piece);
+                }
+            }
+        }
+
+        return trim(implode(' ', $parts));
+    }
 }

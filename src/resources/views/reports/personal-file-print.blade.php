@@ -274,7 +274,7 @@
         @else
 
             @include('hr::reports.partials.personal-file-report-blocks')
-        @endif
+        @endif  
     </div>
 @empty
     <p>{{ $label('প্রিন্টের জন্য কোনো কর্মচারী পাওয়া যায়নি।', 'No employee found for print.') }}</p>
