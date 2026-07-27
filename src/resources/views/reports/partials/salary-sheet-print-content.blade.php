@@ -27,6 +27,7 @@
 	.sheet-table .tr { text-align:right; }
 	.sheet-table .tl { text-align:left; }
 
+	.sheet-group-header td { background:#ffffff; padding:6px 4px; font-size:10.5px; color:#1a3a5c; border-top:2px solid #1a3a5c; }
 	.sheet-sec-row td { background:#f4f4f4; color:#0b4f6c; font-weight:700; }
 	.sheet-sec-total td { background:#fafafa; font-weight:700; }
 	.sheet-grand td { background:#ececec; font-weight:700; font-size:10px; }
@@ -36,6 +37,7 @@
 	@media print {
 		@page { size: A4 landscape; margin: 7mm; }
 		body { margin: 0; }
+		.sheet-table + .sheet-table { page-break-before: always; }
 	}
 </style>
 @endpush
@@ -81,61 +83,21 @@
 @if(empty($sheetRows))
 	<p style="text-align:center;color:#888;padding:10px 0;">No employees found.</p>
 @else
-	<table class="sheet-table">
-		<thead>
-			<tr class="grp">
-				<th rowspan="2">S.N</th>
-				@if($withPicture)<th rowspan="2">Photo</th>@endif
-				<th rowspan="2">Emp.<br>ID</th>
-				<th rowspan="2">Name</th>
-				<th rowspan="2">Designation</th>
-				<th rowspan="2">Grade</th>
-				<th rowspan="2">Joining Date</th>
-				<th rowspan="2">Gross<br>Salary</th>
-				<th colspan="6">Salary Components</th>
-				<th rowspan="2">Month<br>Days</th>
-				<th rowspan="2">Present</th>
-				<th colspan="{{ $leaveCols }}">Leave</th>
-				<th rowspan="2">Absent</th>
-				<th rowspan="2">Earn<br>Days</th>
-				<th rowspan="2">Att.<br>Bonus</th>
-				<th colspan="4">Deduction</th>
-				<th rowspan="2">Others<br>Deduct.</th>
-				<th colspan="2">WP &amp; HP</th>
-				<th rowspan="2">Others<br>Earning</th>
-				<th rowspan="2">Payable<br>Salary</th>
-				<th colspan="3">Over Time</th>
-				<th rowspan="2">Extra<br>Facility</th>
-				<th rowspan="2">Net Payable<br>Salary</th>
-				<th rowspan="2">Signature<br>&amp; Stamp</th>
-			</tr>
-			<tr class="sub">
-				<th>Basic</th>
-				<th>House<br>Rent</th>
-				<th>Medical</th>
-				<th>Lunch</th>
-				<th>Trans.</th>
-				<th>Total</th>
-				<th>WH</th>
-				<th>FL</th>
-				<th>GL</th>
-				@foreach($leaveInfos as $li)
-					<th>{{ $li->code }}</th>
-				@endforeach
-				<th>Abs<br>Amt</th>
-				<th>Adv<br>Amt</th>
-				<th>Tax</th>
-				<th>Stamp</th>
-				<th>Days</th>
-				<th>Amt</th>
-				<th>OT/H</th>
-				<th>Rate</th>
-				<th>Amt</th>
-			</tr>
-		</thead>
-		<tbody>
-			@php $sl = 1; @endphp
-			@foreach($sheetRows as $group)
+	@php $sl = 1; @endphp
+	@foreach($sheetRows as $group)
+		<table class="sheet-table">
+			<thead>
+				<tr class="sheet-group-header">
+					<td colspan="{{ $totalCols }}" class="tc">
+						@if(!blank(optional(general())->logo()))
+							<img src="{{ asset(optional(general())->logo()) }}" alt="Logo" style="max-height:28px;vertical-align:middle;margin-right:6px;">
+						@endif
+						<strong>{{ $company }}</strong> &mdash; {{ $address }}
+					</td>
+				</tr>
+				@include('hr::reports.partials.salary-sheet-print-thead-rows')
+			</thead>
+			<tbody>
 				<tr class="sheet-sec-row">
 					<td colspan="{{ $totalCols }}" class="tl">
 						{{ isset($groupLabel) ? $groupLabel($group['group_key']) : ($departmentMap->get($group['dept_id'] ?? null, 'N/A') . ' — ' . $sectionMap->get($group['sec_id'] ?? null, 'N/A')) }}
@@ -240,8 +202,15 @@
 					<td class="tr">{{ number_format($group['totals']['net']) }}</td>
 					<td></td>
 				</tr>
-			@endforeach
+			</tbody>
+		</table>
+	@endforeach
 
+	<table class="sheet-table">
+		<thead>
+			@include('hr::reports.partials.salary-sheet-print-thead-rows')
+		</thead>
+		<tbody>
 			<tr class="sheet-grand">
 				<td colspan="{{ $withPicture ? 7 : 6 }}" class="tl">Grand Total Amount :</td>
 				<td class="tr">{{ number_format($grand['gross']) }}</td>

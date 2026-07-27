@@ -77,6 +77,10 @@
     }
 @endphp
 
+@if(ENV('FACTORY') === 'SFL')
+    @include('hr::reports.partials.personal-file.appraisal-letter-sfl')
+@else
+
 <div class="appraisal-header">
     <h3 style="margin:0;">{{ $companyName }}</h3>
     <div>{{ $companyAddress }}</div>
@@ -149,3 +153,4 @@
     <div style="float:left; width:33%; text-align:center;">------------------------------<br>{{ $t('অনুমোদনকারী', 'Approving Authority') }}</div>
     <div style="clear:both;"></div>
 </div>
+@endif

@@ -12,6 +12,7 @@ use ME\Hr\Models\HrAttendanceMachineLog;
 use ME\Hr\Models\HrEmployee;
 use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrShift;
+use ME\Hr\Services\EmployeeAttendanceService;
 
 class AttendanceMachineController extends Controller
 {
@@ -423,7 +424,7 @@ class AttendanceMachineController extends Controller
             $outForCalc = $currentOut->lt($currentIn) ? $currentOut->copy()->addDay() : $currentOut;
 
             $attendance->total_working_minute = (int) $currentIn->diffInMinutes($outForCalc);
-            $attendance->total_ot_minute      = $this->resolveOvertimeMinutes($shift, $currentIn, $outForCalc);
+            $attendance->total_ot_minute      = $this->resolveOvertimeMinutes($shift, $currentIn, $outForCalc, $employee);
         }
 
         $attendance->save();
@@ -490,7 +491,7 @@ class AttendanceMachineController extends Controller
         return $inTime->gt($lateThreshold) ? 'Late' : 'Present';
     }
 
-    private function resolveOvertimeMinutes(?HrShift $shift, Carbon $inTime, Carbon $outTime): int
+    private function resolveOvertimeMinutes(?HrShift $shift, Carbon $inTime, Carbon $outTime, ?HrEmployee $employee = null): int
     {
         if (!$shift || !$shift->end_time) {
             return 0;
@@ -516,10 +517,11 @@ class AttendanceMachineController extends Controller
         // than the configured grace period — e.g. a 30-minute grace means someone who
         // leaves 20 minutes late shows 0 OT, and someone who leaves 40 minutes late
         // shows only 10 (the excess beyond the grace window, not the full 40).
-        $graceMinutes = (int) (hr_factory('ot_grace_minutes') ?? 0);
+        $graceMinutes = EmployeeAttendanceService::resolveOtGraceMinutes($employee);
         $minutesPastShiftEnd = (int) $shiftEnd->diffInMinutes($effectiveOut);
+        $minutesPastGrace = max(0, $minutesPastShiftEnd - $graceMinutes);
 
-        return max(0, $minutesPastShiftEnd - $graceMinutes);
+        return EmployeeAttendanceService::applyMinimumOtBucketing($minutesPastGrace);
     }
 
     private function toCarbon(?string $date, $timeValue): ?Carbon

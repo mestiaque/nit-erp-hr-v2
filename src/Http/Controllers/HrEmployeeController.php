@@ -1458,7 +1458,20 @@ class HrEmployeeController extends Controller
         $attAbsent  = $attendances->where('status', 'Absent')->count();
         $attLate    = $attendances->where('status', 'Late')->count();
         $attTotal   = $attendances->count();
-        $totalOtMin = (int) $attendances->sum('total_ot_minute');
+
+        // OT is recomputed live (grace period, minimum-OT bucketing, and designation
+        // overrides can change after these rows were saved) rather than trusted from the
+        // stored column, same as every other OT-showing report in the system.
+        $liveAttendanceSummary = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
+            $employee->id,
+            $attendanceDateFrom,
+            $attendanceDateTo
+        )['summary'] ?? [];
+        $factoryNoForOt = (int) (hr_factory('factory_no') ?? 0);
+        $totalOtHours = ($factoryNoForOt === 1 || $factoryNoForOt === 2)
+            ? (float) ($liveAttendanceSummary['totalComplianceOt'] ?? 0)
+            : (float) ($liveAttendanceSummary['totalOt'] ?? 0);
+        $totalOtMin = (int) round($totalOtHours * 60);
         $totalWkMin = (int) $attendances->sum('total_working_minute');
 
         $options = $this->options();

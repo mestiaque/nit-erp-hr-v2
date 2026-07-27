@@ -65,7 +65,7 @@
           <td class="num-col">৬.</td>
           <td>জন্ম তারিখঃদিন <span class="bb-dot">{{ $dobDaySfl }}</span> মাস <span class="bb-dot">{{ $dobMonthSfl }}</span> বছর <span class="bb-dot">{{ $dobYearSfl }}</span></td>
         </tr>
-        <tr><td class="num-col">৭.</td><td>সনাক্তকরণ চিহ্ন (যদি থাকে)ঃ<span class="bb-dot">{{ $identificationMarkSfl }}</span></td></tr>
+        <tr><td class="num-col">৭.</td><td>সনাক্তকরণ চিহ্ন (যদি থাকে):<span class="bb-dot">{{ $identificationMarkSfl }}</span></td></tr>
         <tr>
           <td class="num-col">৮.</td>
           <td>স্থায়ী ঠিকানাঃ গ্রামঃ<span class="bb-dot">{{ $permVillageSfl }}</span> , ডাকঘরঃ <span class="bb-dot">{{ $permPostOfficeSfl }}</span></td>

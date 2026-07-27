@@ -15,28 +15,27 @@
     $designation = $employeeData['designation'] ?? $na;
     $section = $employeeData['section'] ?? $na;
     $increments = $employeeData['getIncrements']();
-    // dd($increment);
     $factoryNo = hr_factory('factory_no');
-    $increment = $increment ?? '';
+    $increment = $increment ?? null;
     if($factoryNo == 1){
-        $newSalary = $increment->new_salary_comp_1 ?? 0;
-        $previousSalary = $increment->previous_salary_comp_1 ?? 0;
-        $incrementAmount = $increment->increment_amount ?? 0;
-        $effectiveDate = $increment->increment_date ?? 0;
+        $newSalary = $increment?->new_salary_comp_1 ?? 0;
+        $previousSalary = $increment?->previous_salary_comp_1 ?? 0;
+        $incrementAmount = $increment?->increment_amount ?? 0;
+        $effectiveDate = $increment?->increment_date ?? 0;
         $incrementPercent = $previousSalary > 0 ? round(($incrementAmount / $previousSalary) * 100, 2) : 0;
     }
     elseif($factoryNo == 2){
-        $newSalary = $increment->new_salary_comp_2 ?? 0;
-        $previousSalary = $increment->previous_salary_comp_2 ?? 0;
-        $incrementAmount = $increment->increment_amount ?? 0;
-        $effectiveDate = $increment->increment_date ?? 0;
+        $newSalary = $increment?->new_salary_comp_2 ?? 0;
+        $previousSalary = $increment?->previous_salary_comp_2 ?? 0;
+        $incrementAmount = $increment?->increment_amount ?? 0;
+        $effectiveDate = $increment?->increment_date ?? 0;
         $incrementPercent = $previousSalary > 0 ? round(($incrementAmount / $previousSalary) * 100, 2) : 0;
     }
     else{
-        $newSalary = $increment->new_salary ?? 0;
-        $previousSalary = $increment->previous_salary ?? 0;
-        $incrementAmount = $increment->increment_amount ?? 0;
-        $effectiveDate = $increment->increment_date ?? 0;
+        $newSalary = $increment?->new_salary ?? 0;
+        $previousSalary = $increment?->previous_salary ?? 0;
+        $incrementAmount = $increment?->increment_amount ?? 0;
+        $effectiveDate = $increment?->increment_date ?? 0;
         $incrementPercent = $previousSalary > 0 ? round(($incrementAmount / $previousSalary) * 100, 2) : 0;
     }
 
@@ -57,7 +56,7 @@
     <table style="width: 100%; margin-bottom: 20px;">
         <tr>
             <td><strong>{{ $t('সূত্র নং', 'Ref No') }}:</strong> {{ $employeeId }}/INC/{{ date('Y') }}</td>
-            <td style="text-align: right;"><strong>{{ $t('তারিখ', 'Date') }}:</strong> {{ $isBangla ? bn_date($increment  Date) : $incrementDate }}</td>
+            <td style="text-align: right;"><strong>{{ $t('তারিখ', 'Date') }}:</strong> {{ $isBangla ? bn_date($effectiveDate) : $effectiveDate }}</td>
         </tr>
     </table>
 
@@ -95,7 +94,7 @@
     </div>
 
     <div style="margin-bottom: 20px; text-align: justify;">
-          {{ $t('এই বর্ধিত বেতন', 'This increment is effective from') }} <strong>{{ $isBangla ? bn_date($incrementDate) : $incrementDate }}</strong>
+          {{ $t('এই বর্ধিত বেতন', 'This increment is effective from') }} <strong>{{ $isBangla ? bn_date($effectiveDate) : $effectiveDate }}</strong>
           {{ $t('ইং তারিখ থেকে কার্যকর হবে। আমরা আশা করি, ভবিষ্যতে আপনি আরও নিষ্ঠার সাথে প্রতিষ্ঠানের সাফল্যে অবদান রাখবেন।',
               ' onwards. We look forward to your continued dedication and commitment to the company.') }}
     </div>

@@ -45,3 +45,44 @@ Comp 2      8:00 AM     5:00 PM    0 Hour      0 Hour
 
 
 
+Bug fix 22-JUL-2026
+
+
+    
+    1.1 Designation :: rename input field label 
+            Weekend Allowance Count -> Weekend Allowance Count (Main)
+            Holiday Allowance -> Holiday Allowance (Main)
+
+    1.2 Designation :: Add new column 
+            Weekend Allowance Count and input label Weekend Allowance Count (Comp) [eigula complice mode e dekhabe]
+            Holiday Allowance and input label Holiday Allowance (Comp) [eigula complice mode e dekhabe]
+
+    1.1 & 1.2 description
+        eigular kaj holo weekend ba holiday te keo kaj korle tar oi diner parisromik kivabe hobe ta nirdharon kora ... example salary sheet er wp hp te eita dekhabe 
+
+    1.3 Factory :: Add minimum_ot_minutes 
+        apatoto eita anr e apply koro
+        eitar bisoy ta emon je eitar value jodi 0/null na hoy tahole eita kothao effective hobe na
+        OT Count After Shift End (min) eita alreay working
+
+        doro shift time end hocche 5 tay and ot coutn after shift end 10 min, tar mane ot 5:10 theke count hobe
+        and ot hour jodi hourly count kori tahole emon hobe 
+        5:11 - 6:10
+        6:11 - 7:10
+        7:11 - 8:10 eivabe  
+        eibar jodi minimum_ot_minutes er value 50 hoy tahole 5:11 teke minimum 50 min kaj korle 60 min ot hisebe dhora hobe ar jodi 50 min er kom hoy tahole 0 min count hobe
+
+        mane proti 1 ghontay min 50 min kaj korle 1 ghontar ot pabe, 
+
+    2.1 Add New Column 
+            OT Count After Shift End (min) 
+            ei same name ekta column factory table e ase, tumi designation eo add koro , jodi designation er valo 0 theke   boro hoy tahole designation er ta dhorei hisab hobe, factory er ta dhorte hobe na, ar jeta designation e 0 or null thakbe seta factory er ta dhorbe
+    3.1 Salary sheet e 
+        earn day / working day = total month day - total absent
+        factory holiday othoba weekend e te keo kaj korle ta salary report e WP & HP e days and amount dekhabe, amount er hisab hobe designation er Weekend Allowance Count theke and designation er baki field er condition o ager motoi bohal thakbe 
+
+    4.1 ANR salary sheet print e protita group e report header thakbe [factory info]
+
+    5.1 filter by shift (multiple) apply on all report 
+
+    

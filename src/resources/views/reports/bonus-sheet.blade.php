@@ -80,6 +80,15 @@
                         </select>
                     </div>
 
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1">Shift</label>
+                        <select name="shift[]" class="form-control form-control-sm select2" multiple>
+                            @foreach($options['shifts'] as $item)
+                                <option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->shift))>{{ $item->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="col-md-3 mb-3 bonus-production-field" style="{{ $isFixed ? 'display:none;' : '' }}">
                         <label class="mb-1">Group By</label>
                         <select name="group_by" class="form-control form-control-sm">

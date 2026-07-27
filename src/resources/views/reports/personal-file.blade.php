@@ -4,6 +4,7 @@
 <title>{{ $reportTitle }}</title>
 @endsection
 @section('contents')
+@include('hr::partials.report-loader')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -148,9 +149,15 @@
             if (typeof XLoader !== 'undefined' && typeof XLoader.hide === 'function') {
                 XLoader.hide();
             }
+            if (typeof HrLoader !== 'undefined' && typeof HrLoader.hide === 'function') {
+                HrLoader.hide();
+            }
         }
 
         function openPrintTab() {
+            if (typeof HrLoader !== 'undefined' && typeof HrLoader.showWithTimeout === 'function') {
+                HrLoader.showWithTimeout('Generating Report', 8000);
+            }
             try {
                 if (typeof reportForm.reportValidity === 'function' && !reportForm.reportValidity()) {
                     hideLoaderIfVisible();

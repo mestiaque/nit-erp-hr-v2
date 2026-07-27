@@ -583,7 +583,6 @@ class SalaryReportService
                     $otRate = (float) ($sd['ot_rate'] ?? 0);
                     $presentDays = (int) ($sd['present'] ?? 0);
                     $absentDays = (int) ($sd['absent'] ?? 0);
-                    $leaveDays = (int) ($sd['leave'] ?? 0);
                     $attBonus = (float) ($sd['att_bonus'] ?? 0);
                     $loan = (float) ($sd['loan'] ?? 0);
                     $tax = (float) ($sd['tax'] ?? 0);
@@ -594,13 +593,12 @@ class SalaryReportService
                     $otAmount = (float) ($sd['ot'] ?? 0);
                     $extraFacility = (float) ($sd['extra_facility'] ?? 0);
 
-                    // Deduct for every day not actually earned — not just marked "Absent".
-                    // getEmployeeSalaryData()'s own 'net' never applies an attendance-based
-                    // deduction at all, and gating this on $absentDays alone let a mid-month
-                    // resignation (or an in-progress month's not-yet-happened days) slip
-                    // through fully paid, since those days are 'not_employed', not 'absent'.
-                    $earnDays   = $presentDays + ($sd['wh'] ?? 0) + ($sd['fh'] ?? 0) + $leaveDays;
-                    $unpaidDays = max(0, $totalMonthDays - $earnDays);
+                    // Earn Days = Total Month Days - Total Absent. Post-exit/not-yet-employed
+                    // days don't count toward $absentDays (EmployeeAttendanceService tags
+                    // those 'not_employed', not 'absent', and excludes them from the total),
+                    // so they still won't reduce Earn Days or trigger a deduction below.
+                    $unpaidDays = $absentDays;
+                    $earnDays   = max(0, $totalMonthDays - $unpaidDays);
 
                     $absentBase   = self::complianceBase($factoryNo, (float) $sd['basic'], (float) $sd['gross']);
                     $deductAbsent = $unpaidDays > 0 ? round(($absentBase / $deductionMonthDays) * $unpaidDays, 2) : 0;
@@ -622,10 +620,9 @@ class SalaryReportService
                         'fh' => $sd['fh'] ?? 0,
                         'fl' => $sd['fl'] ?? 0,
                         'gl' => $sd['gl'] ?? 0,
-                        // Matches what Absent TK actually deducts for (every unearned day —
-                        // genuine absences plus any post-resignation/not-yet-happened days),
-                        // not just the raw attendance-status "Absent" count, so the two
-                        // columns on the printed sheet stay consistent with each other.
+                        // Same raw attendance-status "Absent" count used for Earn Days above
+                        // and for the deduction below — kept as one variable ($unpaidDays) so
+                        // this column, Earn Days, and the deduction can never drift apart.
                         'ab' => $unpaidDays,
                         'earn_days' => $earnDays,
                         'att_bonus' => $attBonus,

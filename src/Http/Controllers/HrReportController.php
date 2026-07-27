@@ -1399,9 +1399,18 @@ class HrReportController extends Controller
     {
         $query = HrEmployee::query();
 
+        // report_type is a single-select field, but a stale bookmarked URL or cached
+        // page from before it was single-select can still submit report_type[] as an
+        // array — casting an array to string throws under this app's error handling,
+        // so always normalize down to one scalar value before touching it as a string.
+        $reportTypeInput = $request->input('report_type');
+        if (is_array($reportTypeInput)) {
+            $reportTypeInput = reset($reportTypeInput) ?: null;
+        }
+
         // ID card should skip placeholder IDs but must not hide valid employees
         // just because designation/department is missing.
-        if ((string) $request->input('report_type') === 'id-card') {
+        if ((string) $reportTypeInput === 'id-card') {
             // $query->where('employee_id', '<>', '00000');
         }
 
@@ -1549,8 +1558,8 @@ class HrReportController extends Controller
             ]);
         }
 
-        if ($request->filled('report_type')) {
-            $reportType = (string) $request->input('report_type');
+        if (filled($reportTypeInput)) {
+            $reportType = (string) $reportTypeInput;
             abort_unless(array_key_exists($reportType, $reportTypes), 422);
         }
 

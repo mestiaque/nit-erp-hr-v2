@@ -15,6 +15,7 @@ use ME\Hr\Models\HrSubSection;
 use ME\Hr\Models\HrClassification;
 use ME\Hr\Models\HrDesignation;
 use ME\Hr\Models\HrHoliday;
+use ME\Hr\Services\EmployeeAttendanceService;
 
 use Illuminate\Routing\Controller;
 use function view;
@@ -253,8 +254,9 @@ class AttendanceController extends Controller
             $outTime = Carbon::parse($attendance->out_time);
             $shiftEnd = Carbon::parse($shift->end_time);
             if ($outTime->gt($shiftEnd)) {
-                $graceMinutes = (int) (hr_factory('ot_grace_minutes') ?? 0);
-                $attendance->total_ot_minute = max(0, (int) $shiftEnd->diffInMinutes($outTime) - $graceMinutes);
+                $graceMinutes = EmployeeAttendanceService::resolveOtGraceMinutes($employee);
+                $minutesPastGrace = max(0, (int) $shiftEnd->diffInMinutes($outTime) - $graceMinutes);
+                $attendance->total_ot_minute = EmployeeAttendanceService::applyMinimumOtBucketing($minutesPastGrace);
             } else {
                 $attendance->total_ot_minute = 0;
             }
@@ -315,8 +317,9 @@ class AttendanceController extends Controller
                 $outTime  = Carbon::parse($attendance->out_time);
                 $shiftEnd = Carbon::parse($shift->end_time);
                 if ($outTime->gt($shiftEnd)) {
-                    $graceMinutes = (int) (hr_factory('ot_grace_minutes') ?? 0);
-                    $attendance->total_ot_minute = max(0, (int) $shiftEnd->diffInMinutes($outTime) - $graceMinutes);
+                    $graceMinutes = EmployeeAttendanceService::resolveOtGraceMinutes($employee);
+                    $minutesPastGrace = max(0, (int) $shiftEnd->diffInMinutes($outTime) - $graceMinutes);
+                    $attendance->total_ot_minute = EmployeeAttendanceService::applyMinimumOtBucketing($minutesPastGrace);
                 } else {
                     $attendance->total_ot_minute = 0;
                 }

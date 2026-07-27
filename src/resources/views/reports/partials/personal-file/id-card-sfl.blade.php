@@ -2,8 +2,10 @@
 @push('css')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-    /* Override parent employee-block so SFL cards flow inline on A4 */
-    .employee-block {
+    /* Override parent employee-block so SFL cards flow inline on A4 — scoped to
+       id-card blocks only (.id-card-block), so it doesn't leak into and break the
+       layout of other report types printed alongside it in a combined selection. */
+    .employee-block.id-card-block {
         display: inline-block !important;
         vertical-align: top !important;
         page-break-after: auto !important;

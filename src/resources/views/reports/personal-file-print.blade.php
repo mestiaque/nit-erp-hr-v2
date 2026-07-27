@@ -4,6 +4,19 @@
 
 @push('css')
 <style>
+    .pf-page {
+        width: 210mm;
+        margin: 0 auto;
+        padding: 10mm;
+        box-sizing: border-box;
+        background: #fff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    }
+    @media print {
+        @page { size: A4; margin: 8mm; }
+        body { margin: 0; }
+        .pf-page { box-shadow: none; margin: 0; }
+    }
     .company-head {
         text-align: center;
         margin-bottom: 12px;
@@ -248,6 +261,7 @@
         @endfor
     </div>
 @else
+<div class="pf-pages">
 @forelse($employees as $employee)
     @php
         $other = is_array($employee->other_information) ? $employee->other_information : json_decode($employee->other_information, true);
@@ -268,17 +282,18 @@
         $employmentStatus = (string) ($employee->employment_status ?? 'regular');
     @endphp
 
-    <div class="employee-block">
+    <div class="employee-block @if($reportType === 'id-card') id-card-block @endif">
         @if($reportType === 'id-card')
             @include('hr::reports.partials.personal-file.id-card')
         @else
 
             @include('hr::reports.partials.personal-file-report-blocks')
-        @endif  
+        @endif
     </div>
 @empty
     <p>{{ $label('প্রিন্টের জন্য কোনো কর্মচারী পাওয়া যায়নি।', 'No employee found for print.') }}</p>
 @endforelse
+</div>
 @endif
 @endsection
 
