@@ -79,10 +79,14 @@ class HrEmployee extends BaseHrModel
 
     /**
      * With an active Auto Roster rule, the rule's primary shift is worked every
-     * day except its chosen day_of_week, which alternates weekly between the
-     * primary and alt shift starting from anchor_date (first on/after anchor ->
-     * alt, the occurrence a week later -> primary, then alt again, and so on).
-     * Without a rule, always the employee's own default shift.
+     * day except its chosen day_of_week. On that day, the shift rotates weekly
+     * through the rule's ordered alternateShifts list and then the primary shift
+     * last, wrapping back to the first alternate — e.g. with alternates [A, B]:
+     * first occurrence on/after anchor_date -> A, a week later -> B, the week
+     * after -> primary, then back to A, and so on. With exactly one alternate
+     * this is the same 2-state weekly alternation the rule started out as.
+     * Without a rule (or a rule with no alternates), always the employee's own
+     * default shift.
      */
     public function resolveShiftForDate($date): ?HrShift
     {
@@ -97,6 +101,11 @@ class HrEmployee extends BaseHrModel
             return $rule->primaryShift ?: $this->shift;
         }
 
+        $alternates = $rule->alternateShifts->pluck('shift');
+        if ($alternates->isEmpty()) {
+            return $rule->primaryShift ?: $this->shift;
+        }
+
         $firstOccurrence = \Carbon\Carbon::parse($rule->anchor_date)->startOfDay();
         while ($firstOccurrence->dayOfWeek !== (int) $rule->day_of_week) {
             $firstOccurrence->addDay();
@@ -107,10 +116,9 @@ class HrEmployee extends BaseHrModel
         }
 
         $weeksSince = (int) $firstOccurrence->diffInWeeks($date);
+        $sequence = $alternates->push($rule->primaryShift ?: $this->shift);
 
-        return $weeksSince % 2 === 0
-            ? ($rule->altShift ?: $this->shift)
-            : ($rule->primaryShift ?: $this->shift);
+        return $sequence[$weeksSince % $sequence->count()];
     }
 
     public function workingPlace(): BelongsTo

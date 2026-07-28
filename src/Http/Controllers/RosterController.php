@@ -16,7 +16,7 @@ class RosterController extends Controller
     public function index()
     {
         $rosters = HrShiftRosterEmployee::with(['employee', 'shift'])->orderBy('roster_date', 'desc')->paginate(30);
-        $rules = HrEmployeeShiftRule::with(['employee', 'altShift'])->get();
+        $rules = HrEmployeeShiftRule::with(['employee', 'primaryShift', 'alternateShifts.shift'])->get();
         $employees = HrEmployee::query()->naturalOrderById()->get();
         $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
         $shifts = $masterData['shifts'];
@@ -26,27 +26,22 @@ class RosterController extends Controller
         return view('hr::rosters.index', compact('rosters', 'rules', 'employees', 'shifts', 'sections', 'subSections'));
     }
 
+    // GET /rosters/create and /rosters/{id}/edit now just land on the index page,
+    // which handles create/edit entirely through modals — kept as routes (rather
+    // than removed) so any existing bookmark/link to them still resolves somewhere
+    // sensible instead of 404ing.
     public function create(Request $request)
     {
-        $employees = HrEmployee::query()->naturalOrderById()->get();
-        $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
-        $shifts = $masterData['shifts'];
-
-        // Reused as the "edit a rule directly" entry point: linking here with
-        // ?employee_id= pre-fills that employee's existing Auto Roster rule, if any.
-        $existingRule = null;
-        if ($request->filled('employee_id')) {
-            $existingRule = HrEmployeeShiftRule::where('employee_id', $request->employee_id)->first();
-        }
-
-        return view('hr::rosters.create', compact('employees', 'shifts', 'existingRule'));
+        return redirect()->route('hr-center.rosters.index');
     }
 
     public function store(Request $request)
     {
         $data = $this->validateRoster($request);
 
-        if (empty($data['auto_roster'])) {
+        if (!empty($data['auto_roster'])) {
+            $this->applyAutoRoster($data);
+        } else {
             // updateOrCreate, not create(): hr_shift_roster_employees has a unique
             // (employee_id, roster_date) constraint — a plain create() throws an uncaught
             // DB error if this employee already has a roster row for that date.
@@ -56,39 +51,28 @@ class RosterController extends Controller
             );
         }
 
-        $this->applyAutoRoster($data);
-
         return redirect()->route('hr-center.rosters.index')->with('success', 'Roster assigned successfully.');
     }
 
     public function edit($id)
     {
-        $roster = HrShiftRosterEmployee::with('employee')->findOrFail($id);
-        $employees = HrEmployee::query()->naturalOrderById()->get();
-        $masterData = \ME\Hr\Services\HrOptionsService::getOptions();
-        $shifts = $masterData['shifts'];
-        $existingRule = $roster->employee_id
-            ? HrEmployeeShiftRule::where('employee_id', $roster->employee_id)->first()
-            : null;
-
-        return view('hr::rosters.edit', compact('roster', 'employees', 'shifts', 'existingRule'));
+        return redirect()->route('hr-center.rosters.index');
     }
 
     public function update(Request $request, $id)
     {
-        $roster = HrShiftRosterEmployee::findOrFail($id);
         $data = $this->validateRoster($request);
 
-        if (empty($data['auto_roster'])) {
-            $roster->update([
+        if (!empty($data['auto_roster'])) {
+            $this->applyAutoRoster($data);
+        } else {
+            HrShiftRosterEmployee::findOrFail($id)->update([
                 'employee_id' => $data['employee_id'] ?? null,
                 'shift_id' => $data['shift_id'],
                 'roster_date' => $data['date'],
                 'remarks' => $data['remarks'] ?? null,
             ]);
         }
-
-        $this->applyAutoRoster($data);
 
         return redirect()->route('hr-center.rosters.index')->with('success', 'Roster updated successfully.');
     }
@@ -102,44 +86,43 @@ class RosterController extends Controller
     private function validateRoster(Request $request): array
     {
         return $request->validate([
-            'employee_id' => 'nullable|exists:hr_employees,id',
+            'employee_id' => 'nullable|exists:hr_employees,id|required_if:auto_roster,1',
             'shift_id' => 'required',
             'date' => 'required|date',
             'remarks' => 'nullable|string',
             'auto_roster' => 'nullable|boolean',
-            'alt_shift_id' => 'required_if:auto_roster,1|nullable|exists:hr_shifts,id',
+            'alt_shift_ids' => 'required_if:auto_roster,1|nullable|array|min:1',
+            'alt_shift_ids.*' => 'required|exists:hr_shifts,id',
             'day_of_week' => 'required_if:auto_roster,1|nullable|integer|between:0,6',
         ]);
     }
 
     /**
-     * Auto Roster is a standing per-employee rule (one row per employee). When on,
-     * the "Shift" field becomes the rule's baseline (primary) shift and "Date"
-     * becomes the anchor from which the chosen day-of-week alternates weekly
-     * between primary and alt — it replaces the one-off dated assignment for
-     * that submit rather than coexisting with it.
-     * Checked -> upsert active rule. Unchecked -> deactivate (not delete, so it can
-     * be re-enabled without re-entering the day/shift).
+     * Auto Roster is a standing per-employee rule (one row per employee, upserted
+     * on employee_id). "Shift" is the rule's baseline (primary) shift and "Date"
+     * is the anchor from which the chosen day-of-week rotates weekly through the
+     * ordered alt_shift_ids list and then primary last, wrapping back to the
+     * start — see HrEmployee::resolveShiftForDate(). Deactivating/deleting a rule
+     * is a separate, explicit action (rulesDestroy()), not a side effect of this.
      */
     private function applyAutoRoster(array $data): void
     {
-        if (empty($data['employee_id'])) {
-            return;
-        }
+        $rule = HrEmployeeShiftRule::updateOrCreate(
+            ['employee_id' => $data['employee_id']],
+            [
+                'primary_shift_id' => $data['shift_id'],
+                'day_of_week' => $data['day_of_week'],
+                'anchor_date' => $data['date'],
+                'is_active' => true,
+            ]
+        );
 
-        if (!empty($data['auto_roster'])) {
-            HrEmployeeShiftRule::updateOrCreate(
-                ['employee_id' => $data['employee_id']],
-                [
-                    'primary_shift_id' => $data['shift_id'],
-                    'alt_shift_id' => $data['alt_shift_id'],
-                    'day_of_week' => $data['day_of_week'],
-                    'anchor_date' => $data['date'],
-                    'is_active' => true,
-                ]
-            );
-        } else {
-            HrEmployeeShiftRule::where('employee_id', $data['employee_id'])->update(['is_active' => false]);
+        // Full resync rather than diffing: rosters are edited rarely enough that a
+        // delete-and-reinsert is simpler and guarantees sort_order always matches
+        // the submitted order exactly.
+        $rule->alternateShifts()->delete();
+        foreach (array_values($data['alt_shift_ids']) as $index => $shiftId) {
+            $rule->alternateShifts()->create(['shift_id' => $shiftId, 'sort_order' => $index]);
         }
     }
 
