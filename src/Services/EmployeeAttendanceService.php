@@ -223,6 +223,7 @@ class EmployeeAttendanceService
         $isOtBasisMain    = (bool) data_get($designation, 'is_ot_basis_main',     true);
         $isOtBasisOthers1 = (bool) data_get($designation, 'is_ot_basis_others_1', true);
         $isOtBasisOthers2 = (bool) data_get($designation, 'is_ot_basis_others_2', true);
+        $isFixedPunch     = (bool) data_get($designation, 'is_fixed_punch',       false);
 
         $otEnabled = match (true) {
             ($factoryNo == 1) => $isOtBasisOthers1,
@@ -377,6 +378,18 @@ class EmployeeAttendanceService
                 $shiftMinutes = (int) $shiftStartDur->diffInMinutes($shiftEndDur);
             }
 
+            // Designation "Is Fixed Punch": once an employee has punched at all that day,
+            // their effective in/out time is snapped to the shift's own start/end time
+            // instead of the real clock time — for designations whose exact punch time
+            // shouldn't matter. A day with no attendance record at all is untouched (still
+            // resolves to Absent as normal); this only normalizes an existing punch.
+            $effectiveInTime  = $att->in_time  ?? null;
+            $effectiveOutTime = $att->out_time ?? null;
+            if ($isFixedPunch && $att && ($effectiveInTime || $effectiveOutTime) && $resolvedShift && $resolvedShift->start_time && $resolvedShift->end_time) {
+                $effectiveInTime  = $resolvedShift->start_time;
+                $effectiveOutTime = $resolvedShift->end_time;
+            }
+
             // ── In/Out visibility + OT, by day type and factory compliance mode ────
             // Recomputed live from the shift end time + the factory's OT grace period,
             // rather than trusting the stored total_ot_minute column — every report that
@@ -384,7 +397,7 @@ class EmployeeAttendanceService
             // reflect the current grace-period setting immediately, including for
             // attendance rows that were synced/saved before the setting was changed.
             $otMinRaw = $otEnabled
-                ? self::calculateOvertimeMinutes($resolvedShift, $dateStr, $att->in_time ?? null, $att->out_time ?? null, $employee)
+                ? self::calculateOvertimeMinutes($resolvedShift, $dateStr, $effectiveInTime, $effectiveOutTime, $employee)
                 : 0;
 
             // A genuine (unconverted) off day — either the weekly holiday or a factory
@@ -408,8 +421,8 @@ class EmployeeAttendanceService
                     $complianceOt = 0.0;
                     $extraOt      = null;
                 } else {
-                    $inTime  = $att && $att->in_time  ? $att->in_time  : null;
-                    $outTime = $att && $att->out_time ? $att->out_time : null;
+                    $inTime  = $att && $effectiveInTime  ? $effectiveInTime  : null;
+                    $outTime = $att && $effectiveOutTime ? $effectiveOutTime : null;
 
                     $otMinRawForActual = $otMinRaw;
                     if ($otEnabled && $isOtBasisWphp && $att && $att->in_time) {
@@ -425,18 +438,18 @@ class EmployeeAttendanceService
                 // factory mode. The real extra time worked is compensated separately via
                 // the Weekend-to-Regular allowance (calculateWeekendToRegularAllowance()),
                 // not through the job card's OT columns.
-                $inTime  = $att && $att->in_time ? $att->in_time : null;
+                $inTime  = $att && $effectiveInTime ? $effectiveInTime : null;
                 $outTime = ($resolvedShift && $resolvedShift->end_time)
                     ? $resolvedShift->end_time
-                    : ($att && $att->out_time ? $att->out_time : null);
+                    : ($att && $effectiveOutTime ? $effectiveOutTime : null);
                 $actualOt     = 0.0;
                 $complianceOt = 0.0;
                 $extraOt      = ($factoryNo == 2) ? 0.0 : null;
             } else {
                 // Regular working day (also covers holiday/leave/absent rows, where
                 // in_time/out_time are naturally empty).
-                $inTime  = $att && $att->in_time  ? $att->in_time  : null;
-                $outTime = $att && $att->out_time ? $att->out_time : null;
+                $inTime  = $att && $effectiveInTime  ? $effectiveInTime  : null;
+                $outTime = $att && $effectiveOutTime ? $effectiveOutTime : null;
 
                 $actualOt = round($otMinRaw / 60, 2);
 

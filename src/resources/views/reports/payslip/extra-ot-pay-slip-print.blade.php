@@ -61,7 +61,12 @@
                 </table>
 
                 <div class="footer">
-                    <div class="signature">সাক্ষর</div>
+                    <div class="signature">
+                    @if(filled(hr_factory('hr_signature')))
+                        <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="display:block; max-height:22px; max-width:96px; object-fit:contain; margin:-24px auto 2px;">
+                    @endif
+                    সাক্ষর
+                </div>
                 </div>
             </td>
             <td class="main-table-td">
@@ -100,7 +105,12 @@
                     </tr>
                 </table>
                 <div class="footer">
-                    <div class="signature">সাক্ষর</div>
+                    <div class="signature">
+                    @if(filled(hr_factory('hr_signature')))
+                        <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="display:block; max-height:22px; max-width:96px; object-fit:contain; margin:-24px auto 2px;">
+                    @endif
+                    সাক্ষর
+                </div>
                 </div>
             </td>
         </table>

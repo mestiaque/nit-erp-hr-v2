@@ -80,7 +80,7 @@ class HrMasterController extends Controller
     {
         $config = $this->entityConfig($entity);
         $modelClass = $config['model'];
-        $payload = $this->validatedPayload($request, $config, $modelClass);
+        $payload = $this->validatedPayload($request, $config, $modelClass, $entity);
 
         $item = new $modelClass();
         $item->fill($payload);
@@ -117,7 +117,7 @@ class HrMasterController extends Controller
         $config = $this->entityConfig($entity);
         $modelClass = $config['model'];
         $item = $modelClass::findOrFail($id);
-        $payload = $this->validatedPayload($request, $config, $modelClass);
+        $payload = $this->validatedPayload($request, $config, $modelClass, $entity);
 
         $item->fill($payload);
         if ($this->hasColumn($modelClass, 'editedby_id')) {
@@ -200,13 +200,24 @@ class HrMasterController extends Controller
         return $options;
     }
 
-    private function validatedPayload(Request $request, array $config, string $modelClass): array
+    private function validatedPayload(Request $request, array $config, string $modelClass, string $entity = 'masters'): array
     {
         $rules = [];
         $checkboxes = [];
+        $files = [];
         foreach ($config['fields'] as $name => $field) {
+            $type = $field['type'] ?? '';
+
+            // File fields are validated/stored separately below — an update request
+            // with no newly-chosen file must never touch the existing stored path, which
+            // the generic validate()+fill() below would otherwise null out.
+            if ($type === 'file') {
+                $files[] = $name;
+                continue;
+            }
+
             $rules[$name] = $field['rules'] ?? 'nullable';
-            if (($field['type'] ?? '') === 'checkbox') {
+            if ($type === 'checkbox') {
                 $checkboxes[] = $name;
             }
         }
@@ -215,6 +226,13 @@ class HrMasterController extends Controller
 
         foreach ($checkboxes as $checkbox) {
             $payload[$checkbox] = $request->boolean($checkbox);
+        }
+
+        foreach ($files as $file) {
+            if ($request->hasFile($file)) {
+                $request->validate([$file => $config['fields'][$file]['rules'] ?? 'nullable|file|max:2048']);
+                $payload[$file] = $request->file($file)->store('hr/' . $entity, 'public');
+            }
         }
 
         foreach (($config['defaults'] ?? []) as $column => $value) {

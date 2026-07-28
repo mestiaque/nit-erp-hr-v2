@@ -282,7 +282,12 @@
             {{ $t('মনোনীত ব্যক্তি/অভিভাবকের স্বাক্ষর ও তারিখ', 'Nominee/Guardian Signature with Date') }}
           </td>
           <td style="text-align:right;">
-            {{ $t('শ্রমিকের স্বাক্ষর/টিপসই ও তারিখ', 'Employee Signature/Thumb Impression with Date') }}<br><br><br>
+            {{ $t('শ্রমিকের স্বাক্ষর/টিপসই ও তারিখ', 'Employee Signature/Thumb Impression with Date') }}<br>
+            @if(filled(hr_factory('hr_signature')))
+              <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="max-height:16mm; max-width:34mm; object-fit:contain; margin:2px 0;">
+            @else
+              <br><br>
+            @endif
             {{ $t('ম্যানেজার/অনুমোদিত কর্মকর্তার স্বাক্ষর ও তারিখ', 'Manager/Authorized Officer Signature with Date') }}
           </td>
         </tr>

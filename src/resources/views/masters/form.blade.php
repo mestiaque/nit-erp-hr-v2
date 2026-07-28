@@ -11,7 +11,7 @@
             <h4 class="mb-0">{{ $item->exists ? 'Edit' : 'Create' }} {{ $entity['title'] }}</h4>
         </div>
         <div class="card-body">
-            <form method="post" action="{{ $item->exists ? route('hr-center.masters.update', [$entityKey, $item->id]) : route('hr-center.masters.store', $entityKey) }}">
+            <form method="post" action="{{ $item->exists ? route('hr-center.masters.update', [$entityKey, $item->id]) : route('hr-center.masters.store', $entityKey) }}" enctype="multipart/form-data">
                 @csrf
                 @if($item->exists)
                     @method('put')

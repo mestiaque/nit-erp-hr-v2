@@ -200,7 +200,17 @@
             <tr>
                 <td style="width:33%; text-align:left; padding-top:30px;">তারিখ</td>
                 <td style="width:33%; text-align:center; padding-top:30px;">কর্মচারীর স্বাক্ষর</td>
-                <td style="width:34%; text-align:right; padding-top:30px;">প্রশাসন, মানব সম্পদ বিভাগ</td>
+                <td style="width:34%; text-align:right; vertical-align:bottom;">
+                    <div style="display:flex; align-items:flex-end; justify-content:flex-end; gap:6px; min-height:28px;">
+                        @if(filled(hr_factory('hr_seal')))
+                            <img src="{{ asset('storage/' . hr_factory('hr_seal')) }}" alt="Seal" style="max-height:14mm; max-width:22mm; object-fit:contain;">
+                        @endif
+                        @if(filled(hr_factory('hr_signature')))
+                            <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="max-height:14mm; max-width:28mm; object-fit:contain;">
+                        @endif
+                    </div>
+                    <div style="margin-top:2px;">প্রশাসন, মানব সম্পদ বিভাগ</div>
+                </td>
             </tr>
         </table>
     </div>

@@ -104,7 +104,7 @@
                                         @else
                                             <a href="{{ route('hr-center.masters.edit', [$entityKey, $item->id]) }}" class="btn-custom yellow"><i class="fas fa-edit"></i></a>
                                         @endif
-                                        @if($hideCreate)
+                                        @if(!$hideCreate)
                                             <form method="post" action="{{ route('hr-center.masters.destroy', [$entityKey, $item->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this item?');">
                                                 @csrf
                                                 @method('delete')

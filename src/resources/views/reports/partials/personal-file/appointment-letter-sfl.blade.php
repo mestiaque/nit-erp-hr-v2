@@ -258,7 +258,14 @@
             </div>
             <div>
                 <p class="signature-label">{{ $companyNameSfl }} এর পক্ষে</p>
-                <div style="border-bottom:1px dashed #333; height: 15mm; margin-bottom: 2px;"></div>
+                <div style="border-bottom:1px dashed #333; height: 15mm; margin-bottom: 2px; display:flex; align-items:flex-end; justify-content:center; gap:6px;">
+                    @if(filled(hr_factory('hr_seal')))
+                        <img src="{{ asset('storage/' . hr_factory('hr_seal')) }}" alt="Seal" style="max-height:14mm; max-width:22mm; object-fit:contain;">
+                    @endif
+                    @if(filled(hr_factory('hr_signature')))
+                        <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="max-height:14mm; max-width:28mm; object-fit:contain;">
+                    @endif
+                </div>
                 <p class="signature-name" style="text-align: center">কর্তৃপক্ষ</p>
             </div>
         </div>

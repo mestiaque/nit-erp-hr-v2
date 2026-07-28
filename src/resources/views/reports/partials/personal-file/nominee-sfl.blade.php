@@ -143,7 +143,13 @@
             <p class="bottom-sig-subtitle">({{ $classWiseName1 }} কর্তৃক সত্যায়িত ছবি)</p>
           </td>
           <td class="text-center">
-            <div class="handwritten-sig-placeholder"><span class="script-sig-text"></span></div>
+            <div class="handwritten-sig-placeholder">
+                @if(filled(hr_factory('hr_signature')))
+                    <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="max-height:20mm; max-width:36mm; object-fit:contain;">
+                @else
+                    <span class="script-sig-text"></span>
+                @endif
+            </div>
             <div class="employer-dotted-sig-line">...........................................................</div>
             <p class="bottom-sig-title">মালিকের বা প্রাধিকারপ্রাপ্ত কর্মকর্তার স্বাক্ষর ও তারিখ</p>
           </td>

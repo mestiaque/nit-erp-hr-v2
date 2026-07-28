@@ -162,7 +162,12 @@
             **আপনার যে কোন অভিযোগ এবং পরামর্শ মানব সম্পদ<br>
             ও কমপ্লায়েন্স বিভাগকে অবহিত করুন।
         </div>
-        <div class="signature">স্বাক্ষর</div>
+        <div class="signature">
+            @if(filled(hr_factory('hr_signature')))
+                <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="display:block; max-height:22px; max-width:76px; object-fit:contain; margin:-24px auto 2px;">
+            @endif
+            স্বাক্ষর
+        </div>
     </div>
 
     <!-- Dashed Divider -->
@@ -274,7 +279,12 @@
             **আপনার যে কোন অভিযোগ এবং পরামর্শ মানব সম্পদ<br>
             ও কমপ্লায়েন্স বিভাগকে অবহিত করুন।
         </div>
-        <div class="signature">স্বাক্ষর</div>
+        <div class="signature">
+            @if(filled(hr_factory('hr_signature')))
+                <img src="{{ asset('storage/' . hr_factory('hr_signature')) }}" alt="Signature" style="display:block; max-height:22px; max-width:76px; object-fit:contain; margin:-24px auto 2px;">
+            @endif
+            স্বাক্ষর
+        </div>
     </div>
 </div>
 @endforeach

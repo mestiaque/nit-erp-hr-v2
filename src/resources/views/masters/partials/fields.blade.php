@@ -38,6 +38,13 @@
                     @endforeach
                 </select>
             @endif
+        @elseif($type === 'file')
+            @if($item->{$name})
+                <div class="mb-2">
+                    <img src="{{ asset('storage/' . $item->{$name}) }}" alt="{{ $field['label'] }}" style="max-height:60px; max-width:180px; object-fit:contain; border:1px solid #ddd; padding:3px; background:#fff;">
+                </div>
+            @endif
+            <input type="file" name="{{ $name }}" class="form-control form-control-sm" accept="image/*">
         @elseif($type === 'checkbox')
             @php($switchId = 'switch_' . $formContext . '_' . $entityKey . '_' . $name . '_' . ($item->id ?: 'new'))
             <input type="hidden" name="{{ $name }}" value="0">
