@@ -4,9 +4,14 @@
      timeout so it can never get stuck covering the report, and hidden in @media print so it
      never appears in the printed/PDF output. --}}
 <div id="acReportLoader" class="ac-report-loader">
-    <div class="ac-report-loader-spinner"></div>
+    <div class="ac-report-loader-bars">
+        <div class="ac-report-loader-bar"></div>
+        <div class="ac-report-loader-bar"></div>
+        <div class="ac-report-loader-bar"></div>
+        <div class="ac-report-loader-bar"></div>
+    </div>
     <div class="ac-report-loader-title">{{ config('acc-sfl.company.name') }}</div>
-    <div class="ac-report-loader-subtitle">Loading Report&hellip;</div>
+    <div class="ac-report-loader-subtitle">Loading Report<span class="ac-report-loader-dots"></span></div>
 </div>
 
 <style>
@@ -21,14 +26,22 @@
         justify-content: center;
         gap: 10px;
     }
-    .ac-report-loader-spinner {
-        width: 48px;
+    .ac-report-loader-bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
         height: 48px;
-        border: 5px solid #dbe4ee;
-        border-top-color: #0047ab;
-        border-radius: 50%;
-        animation: ac-report-loader-spin 0.8s linear infinite;
     }
+    .ac-report-loader-bar {
+        width: 8px;
+        background: #0047ab;
+        border-radius: 2px;
+        animation: ac-report-loader-bar-grow 1s ease-in-out infinite;
+    }
+    .ac-report-loader-bar:nth-child(1) { animation-delay: 0s; }
+    .ac-report-loader-bar:nth-child(2) { animation-delay: .15s; }
+    .ac-report-loader-bar:nth-child(3) { animation-delay: .3s; }
+    .ac-report-loader-bar:nth-child(4) { animation-delay: .45s; }
     .ac-report-loader-title {
         font-family: 'Times New Roman', Times, serif;
         font-size: 20px;
@@ -43,8 +56,22 @@
         color: #777;
         text-align: center;
     }
-    @keyframes ac-report-loader-spin {
-        to { transform: rotate(360deg); }
+    .ac-report-loader-dots::after {
+        content: '.';
+        display: inline-block;
+        width: 1em;
+        text-align: left;
+        animation: ac-report-loader-dots 1.2s linear infinite;
+    }
+    @keyframes ac-report-loader-bar-grow {
+        0%, 100% { height: 12px; }
+        50%      { height: 48px; }
+    }
+    @keyframes ac-report-loader-dots {
+        0%   { content: '.'; }
+        33%  { content: '..'; }
+        66%  { content: '...'; }
+        100% { content: '.'; }
     }
     @media print {
         .ac-report-loader { display: none !important; }
