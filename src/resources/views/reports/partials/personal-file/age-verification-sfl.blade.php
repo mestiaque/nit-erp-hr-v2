@@ -43,7 +43,7 @@
           <p class="law-reference-text" style=" font-size: 12px; font-weight: 400">
             [ধারা ৩৪,৩৬,৩৭ ও ২৭৭ এবং বিধি ৩৪ (১) ও ৩৩৬ (৪) দ্রষ্টব্য বয়স ও সক্ষমতার প্রত্যয়ন পত্র]
           </p>
-          <h2 class="hospital-pad-title" style="margin: 5mm 0mm 8mm 0mm">“রেজিস্টার্ড চিকিৎসকের প্যাড -এ”</h2>
+          <h2 class="hospital-pad-title" style="margin: 8mm 0mm 8mm 0mm">“রেজিস্টার্ড চিকিৎসকের প্যাড -এ”</h2>
           <div class="photo-cell" style="position: absolute; top: 1px; right: 1px;">
             <img src="{{ asset($employee->image()) }}" alt="{{ $employeeNameSfl }}" class="photo-box-img">
           </div>
@@ -113,7 +113,7 @@
                     </div>
                 </div>
               </td>
-              <td colspan="2">
+              <td colspan="2" style="min-height: 20mm;">
                   তাহার সনাক্তকরণের চিহ্ন <span class="bb-dot" style="min-width:280px">{{ $identificationMarkSfl }}</span>
               </td>
           </tr>
@@ -121,7 +121,7 @@
               <td colspan="2">
                   ৬। স্থায়ী ঠিকানা <span class="bb-dot">{{ $permanentAddressSfl }}</span>
               </td>
-              <td colspan="2" style="height: 20mm;">
+              <td colspan="2" style="height: 22mm;">
                   
               </td>
           </tr>
@@ -129,7 +129,7 @@
               <td colspan="2">
                   ৭। অস্থায়ী যোগাযোগের ঠিকানা <span class="bb-dot">{{ $presentAddressSfl }}</span>
               </td>
-              <td colspan="2" style="height: 20mm;">
+              <td colspan="2" style="height: 22mm;">
                   <p></p>
               </td>
           </tr>
@@ -137,7 +137,7 @@
               <td colspan="2" >
                   ৮। জন্ম সনদ/শিক্ষা সনদ অনুসারে বয়স/জন্ম তারিখ <span class="bb-dot">{{ $ageYearsSfl }}</span>
               </td>
-              <td colspan="2" style="height: 20mm;">
+              <td colspan="2" style="height: 22mm;">
                   <p></p>
               </td>
           </tr>
@@ -145,7 +145,7 @@
               <td colspan="2">
                   ৯। দৈহিক সক্ষমতা <span class="bb-dot">{{ $physicalAbilitySfl }}</span>
               </td>
-              <td colspan="2" style="height: 20mm;">
+              <td colspan="2" style="height: 22mm;">
                   <p></p>
               </td>
           </tr>
@@ -153,30 +153,30 @@
               <td colspan="2" >
                  ১০। সনাক্তকরণ/চিহ্ন <span class="bb-dot">{{ $identificationMarkSfl }}</span>
               </td>
-              <td colspan="2" style="height: 20mm;">
+              <td colspan="2" style="height: 22mm;">
                   <p></p>
               </td>
           </tr>
           <tr>
-              <td style="border-right: none !important; padding-top: 15mm;">
+              <td style="border-right: none !important; padding-top: 35mm;">
                 <div>
                   <p class="sign-role-title">সংশ্লিষ্ট ব্যক্তির</p>
                   <p class="sign-role-subtitle">স্বাক্ষর/টিপসহ</p>
                 </div>
               </td>
-              <td style="border-left: none !important;padding-top: 15mm;">
+              <td style="border-left: none !important;padding-top: 35mm;">
                 <div style="text-align: center">
                   <p class="sign-role-title">রেজিস্টার্ড চিকিৎসকের</p>
                   <p class="sign-role-subtitle">স্বাক্ষর</p>
                 </div>
               </td>
-              <td style="border-right: none !important;padding-top: 15mm;">
+              <td style="border-right: none !important;padding-top: 35mm;">
                 <div>
                   <p class="sign-role-title">সংশ্লিষ্ট ব্যক্তির</p>
                   <p class="sign-role-subtitle">স্বাক্ষর/টিপসহ</p>
                 </div>
               </td>
-              <td style="border-left: none !important;padding-top: 15mm;">
+              <td style="border-left: none !important;padding-top: 35mm;">
                 <div style="text-align: center">
                   <p class="sign-role-title">রেজিস্টার্ড চিকিৎসকের</p>
                   <p class="sign-role-subtitle">স্বাক্ষর</p>
@@ -203,8 +203,8 @@
           width: 25% !important;
         }
         .photo-cell {
-          width: 20mm;
-          height: 23mm;
+          width: 22mm;
+          height: 25mm;
           text-align: center;
           border: 1px solid rgba(0, 0, 0, 0.671);
         }

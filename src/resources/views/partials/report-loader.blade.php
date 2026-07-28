@@ -20,7 +20,7 @@
     .hr-loader-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(255, 255, 255, 0.94);
+        background: #f5f8ff;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -38,85 +38,93 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 18px;
+        gap: 22px;
     }
 
-    /* ── Org-chart orbit animation ── */
-    .hr-loader-orbit {
+    /* ── Document-stack animation: pages fall one by one into an HR folder ── */
+    .hr-loader-stack {
         position: relative;
-        width: 92px;
-        height: 92px;
+        width: 130px;
+        height: 130px;
     }
-    .hr-loader-hub {
+
+    .hr-loader-page {
         position: absolute;
-        top: 50%;
         left: 50%;
-        width: 16px;
-        height: 16px;
-        margin: -8px 0 0 -8px;
-        background: #2c5cc5;
-        border-radius: 50%;
-        animation: hr-loader-hub-pulse 1.6s ease-in-out infinite;
-        z-index: 2;
+        top: 6px;
+        width: 34px;
+        height: 44px;
+        margin-left: -17px;
+        background: #fff;
+        border: 2px solid #2c5cc5;
+        border-radius: 4px;
+        opacity: 0;
+        animation: hr-loader-page-fall 1.8s ease-in infinite;
     }
-    .hr-loader-ring {
+    .hr-loader-page::before {
+        content: '';
+        position: absolute;
+        left: 6px;
+        right: 6px;
+        top: 10px;
+        height: 2px;
+        background: #a2c0f5;
+        box-shadow: 0 7px 0 #a2c0f5, 0 14px 0 #a2c0f5;
+    }
+    .hr-loader-page-1 { animation-delay: 0s; }
+    .hr-loader-page-2 { animation-delay: .6s; }
+    .hr-loader-page-3 { animation-delay: 1.2s; }
+
+    @keyframes hr-loader-page-fall {
+        0%   { opacity: 0; transform: translateY(-6px) scale(1); }
+        12%  { opacity: 1; }
+        62%  { opacity: 1; transform: translateY(58px) scale(1); }
+        78%  { opacity: 0; transform: translateY(68px) scale(.4); }
+        100% { opacity: 0; transform: translateY(-6px) scale(1); }
+    }
+
+    .hr-loader-folder {
+        position: absolute;
+        bottom: 4px;
+        left: 50%;
+        width: 96px;
+        height: 60px;
+        margin-left: -48px;
+    }
+    .hr-loader-folder-tab {
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        width: 38px;
+        height: 12px;
+        background: #cddcf7;
+        border-radius: 6px 6px 0 0;
+    }
+    .hr-loader-folder-back {
         position: absolute;
         inset: 0;
-        animation: hr-loader-spin 3.2s linear infinite;
+        background: #cddcf7;
+        border-radius: 4px 10px 6px 6px;
     }
-    .hr-loader-node-wrap {
+    .hr-loader-folder-front {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        height: 42px;
+        background: linear-gradient(180deg, #5b8def, #2c5cc5);
+        border-radius: 4px 4px 8px 8px;
+        transform-origin: bottom center;
+        animation: hr-loader-folder-bounce 1.8s ease-in-out infinite;
     }
-    .hr-loader-spoke {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 1px;
-        height: 44px;
-        background: linear-gradient(to bottom, rgba(44, 92, 197, 0.05), rgba(44, 92, 197, .55));
-        transform-origin: top center;
-    }
-    .hr-loader-node {
-        position: absolute;
-        top: 44px;
-        left: -5px;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #5b8def;
-        animation: hr-loader-node-pulse 1.6s ease-in-out infinite;
-    }
-    /* 5 satellite nodes spaced 72deg apart around the hub */
-    .hr-loader-node-wrap:nth-child(1) { transform: rotate(0deg); }
-    .hr-loader-node-wrap:nth-child(2) { transform: rotate(72deg); }
-    .hr-loader-node-wrap:nth-child(3) { transform: rotate(144deg); }
-    .hr-loader-node-wrap:nth-child(4) { transform: rotate(216deg); }
-    .hr-loader-node-wrap:nth-child(5) { transform: rotate(288deg); }
-    .hr-loader-node-wrap:nth-child(1) .hr-loader-node { animation-delay: 0s;    background: #2c5cc5; }
-    .hr-loader-node-wrap:nth-child(2) .hr-loader-node { animation-delay: .16s; background: #3f6fd4; }
-    .hr-loader-node-wrap:nth-child(3) .hr-loader-node { animation-delay: .32s; background: #5b8def; }
-    .hr-loader-node-wrap:nth-child(4) .hr-loader-node { animation-delay: .48s; background: #7ea4ef; }
-    .hr-loader-node-wrap:nth-child(5) .hr-loader-node { animation-delay: .64s; background: #a2c0f5; }
-
-    @keyframes hr-loader-spin {
-        from { transform: rotate(0deg); }
-        to   { transform: rotate(360deg); }
-    }
-    @keyframes hr-loader-hub-pulse {
-        0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(44, 92, 197, .35); }
-        50%      { transform: scale(1.25); box-shadow: 0 0 0 6px rgba(44, 92, 197, 0); }
-    }
-    @keyframes hr-loader-node-pulse {
-        0%, 100% { transform: scale(.8);  opacity: .55; }
-        50%      { transform: scale(1.15); opacity: 1; }
+    @keyframes hr-loader-folder-bounce {
+        0%, 74%, 100% { transform: scaleY(1) translateY(0); }
+        80%           { transform: scaleY(.92) translateY(2px); }
+        88%           { transform: scaleY(1.03) translateY(-1px); }
     }
 
     .hr-loader-text {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 600;
         letter-spacing: .3px;
         color: #2c5cc5;
@@ -145,15 +153,14 @@
 
 <div id="hr-report-loader" class="hr-loader-overlay" role="status" aria-live="polite">
     <div class="hr-loader-box">
-        <div class="hr-loader-orbit">
-            <div class="hr-loader-hub"></div>
-            <div class="hr-loader-ring">
-                @for ($i = 0; $i < 5; $i++)
-                    <div class="hr-loader-node-wrap">
-                        <div class="hr-loader-spoke"></div>
-                        <div class="hr-loader-node"></div>
-                    </div>
-                @endfor
+        <div class="hr-loader-stack">
+            <div class="hr-loader-page hr-loader-page-1"></div>
+            <div class="hr-loader-page hr-loader-page-2"></div>
+            <div class="hr-loader-page hr-loader-page-3"></div>
+            <div class="hr-loader-folder">
+                <div class="hr-loader-folder-tab"></div>
+                <div class="hr-loader-folder-back"></div>
+                <div class="hr-loader-folder-front"></div>
             </div>
         </div>
         <div class="hr-loader-text" id="hr-report-loader-text">Generating Report</div>

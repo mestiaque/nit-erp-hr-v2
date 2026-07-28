@@ -62,6 +62,14 @@
 @endpush
 
 @section('contents')
+@include('hr::partials.report-loader')
+<script>
+    (function () {
+        if (typeof HrLoader === 'undefined') return;
+        HrLoader.showWithTimeout('Loading Report', 10000);
+        window.addEventListener('load', function () { HrLoader.hide(); });
+    })();
+</script>
 @php
     $fromLabel = $request->filled('from') ? \Illuminate\Support\Carbon::parse($request->from)->format('d-M-Y') : 'Start';
     $toLabel = $request->filled('to') ? \Illuminate\Support\Carbon::parse($request->to)->format('d-M-Y') : 'Today';

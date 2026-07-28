@@ -11,6 +11,7 @@
 @endsection
 
 @section('contents')
+@include('hr::partials.report-loader')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -240,6 +241,16 @@
 
 @push('js')
 <script>
+(function () {
+    var btn = document.getElementById('printSubmitBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        if (typeof HrLoader === 'undefined') return;
+        HrLoader.showWithTimeout('Generating Report', 8000);
+        setTimeout(function () { HrLoader.hide(); }, 1500);
+    });
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
     var reportTypeInput = document.querySelector('input[name="report_type"]');
     var bonusTitleField = document.getElementById('bonus-title-field');

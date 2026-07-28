@@ -5,6 +5,7 @@
 @endsection
 
 @section('contents')
+@include('hr::partials.report-loader')
 <div class="flex-grow-1 p-4">
 	<div class="card">
 		<div class="card-header d-flex justify-content-between align-items-center">
@@ -95,7 +96,7 @@
 					<div class="col-md-3 mb-3 d-flex align-items-end">
 						<div class="w-100 d-flex gap-2">
 							<a href="{{ route('hr-center.reports.monthly-late-report') }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
-							<button type="submit" name="print" value="1" formtarget="_blank" class="btn btn-primary btn-sm w-50"><i class="fa-solid fa-print"></i> Print</button>
+							<button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-primary btn-sm w-50"><i class="fa-solid fa-print"></i> Print</button>
 						</div>
 					</div>
 				</div>
@@ -107,6 +108,16 @@
 
 @push('js')
 <script>
+    (function () {
+        var btn = document.getElementById('reportPrintBtn');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            if (typeof HrLoader === 'undefined') return;
+            HrLoader.showWithTimeout('Generating Report', 8000);
+            setTimeout(function () { HrLoader.hide(); }, 1500);
+        });
+    })();
+
     $(document).ready(function() {
         $('.select2').select2({
             placeholder: 'All',

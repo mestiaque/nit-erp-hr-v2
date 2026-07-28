@@ -144,7 +144,7 @@
                 <p class="signature-label" style="text-align: center;">{{ $classWiseName }} স্বাক্ষর</p>
             </div>
             <div>
-                <p class="signature-label">{{ $employeeNameSfl }} এর পক্ষে</p>
+                <p class="signature-label">{{ $companyNameSfl }} এর পক্ষে</p>
                 <div style="border-bottom:1px dashed #333; height: 15mm; margin-bottom: 2px;"></div>
                 <p class="signature-name" style="text-align: center">কর্তৃপক্ষ</p>
             </div>

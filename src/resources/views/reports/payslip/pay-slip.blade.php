@@ -4,6 +4,7 @@
 @endsection
 
 @section('contents')
+@include('hr::partials.report-loader')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -136,6 +137,10 @@
                 var printBtn = document.getElementById('printBtn');
                 var form = printBtn.closest('form');
                 printBtn.addEventListener('click', function(e) {
+                    if (typeof HrLoader !== 'undefined') {
+                        HrLoader.showWithTimeout('Generating Report', 8000);
+                        setTimeout(function () { HrLoader.hide(); }, 1500);
+                    }
                     var printInput = form.querySelector('input[name="print"]');
                     if (!printInput) {
                         printInput = document.createElement('input');
