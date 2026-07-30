@@ -2,6 +2,10 @@
 
 return [
     'HR AND COMPLIANCE' => [
+        'hr_dashboard' => [
+            'label' => 'HR Dashboard',
+            'permissions' => ['view' => 'View', 'all' => 'All'],
+        ],
         'hr_classification' => [
             'label' => 'Classification',
             'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
