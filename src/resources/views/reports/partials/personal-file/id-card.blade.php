@@ -1,5 +1,5 @@
 @php
-    $factory = env('FACTORY');
+    $factory = general()->company_s_code;
 @endphp
 
 @if($factory == 'SFL')

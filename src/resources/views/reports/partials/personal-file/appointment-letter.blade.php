@@ -74,8 +74,7 @@
 	$otRate     = $basic > 0 ? round(($basic / 208) * 2, 2) : 0;
 	$deductFrom = $sal['deduct_from'];
 @endphp
-
-@if(ENV('FACTORY') == 'SFL')
+@if(general()->company_s_code == 'SFL')
     @include('hr::reports.partials.personal-file.appointment-letter-sfl', [
         'employee' => $employee,
         'language' => $language,

@@ -251,7 +251,7 @@
     $salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
 @endphp
 
-@if($reportType === 'id-card' && env('FACTORY') === 'SFL' && $employees->isNotEmpty())
+@if($reportType === 'id-card' && general()->company_s_code == 'SFL' && $employees->isNotEmpty())
     {{-- Fronts first -- every employee, 9 per page --}}
     <div class="sfl-front-grid">
         @foreach($employees as $employee)

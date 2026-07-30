@@ -458,8 +458,7 @@ class HrEmployeeController extends Controller
             'nominee_image' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
 
-        // dd(env('FACTORY'), $payload['distribution_net_payment']);
-        if (env('FACTORY') === 'SFL') {
+        if (general()->company_s_code == 'SFL') {
             $payload['distribution_net_payment'] ??= 100;
             $payload['distribution_provident_fund'] ??= 0;
             $payload['distribution_insurance'] ??= 100;

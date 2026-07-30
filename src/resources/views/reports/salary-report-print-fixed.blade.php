@@ -11,7 +11,7 @@
         window.addEventListener('load', function () { HrLoader.hide(); });
     })();
 </script>
-    @if(ENV('FACTORY') === 'SFL')
+    @if(general()->company_s_code == 'SFL')
         @include('hr::reports.partials.salary-sheet-print-content-sfl')
     @else
         @include('hr::reports.partials.salary-sheet-print-content')

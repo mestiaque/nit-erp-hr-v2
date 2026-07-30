@@ -42,7 +42,7 @@
         : ($avInfo['identification_mark'] ?? $employee->distinguished_mark);
 @endphp
 
-@if(ENV('FACTORY') == 'SFL')
+@if(general()->company_s_code == 'SFL')
     @include('hr::reports.partials.personal-file.age-verification-sfl', [
         'employee' => $employee,
         'language' => $language,

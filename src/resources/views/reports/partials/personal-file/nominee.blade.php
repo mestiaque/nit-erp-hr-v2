@@ -33,7 +33,7 @@
 @endphp
 
 
-  @if(ENV('FACTORY') == 'SFL')
+  @if(general()->company_s_code == 'SFL')
       @include('hr::reports.partials.personal-file.nominee-sfl')
   @else
 

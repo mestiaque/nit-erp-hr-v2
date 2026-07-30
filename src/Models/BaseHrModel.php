@@ -2,12 +2,15 @@
 
 namespace ME\Hr\Models;
 
+use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
 
 class BaseHrModel extends Model
 {
+    use ActivityLoggable;
+
     protected $guarded = ['id'];
 
     protected static function boot(): void

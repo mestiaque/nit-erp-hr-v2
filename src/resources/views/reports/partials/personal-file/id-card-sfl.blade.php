@@ -229,7 +229,7 @@
     $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
     $na = $t('প্রযোজ্য নয়', 'N/A');
 
-    // Query model directly — $factory in this context is the env('FACTORY') string from id-card.blade.php, not the model
+    // Query model directly — $factory in this context is the general()->company_s_code string from id-card.blade.php, not the model
     $sflFactory = \ME\Hr\Models\HrFactory::where('status', 'active')->orderBy('id')->first();
     $sflCompanyName = $isBangla
         ? ($sflFactory?->bn_name ?: $sflFactory?->name ?: $na)

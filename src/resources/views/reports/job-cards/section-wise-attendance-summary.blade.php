@@ -59,7 +59,7 @@
                     <th>{{ $t('বিলম্ব ও পাঞ্চ মিসিং', 'Late & Punch Missing') }}</th>
                     <th>{{ $t('অনুপস্থিত', 'Absent') }}</th>
                     <th>{{ $t('ছুটি', 'Leave') }}</th>
-                    @if(ENV('FACTORY') === 'SFL')
+                    @if(general()->company_s_code == 'SFL')
                         <th>{{ $t('ছুটি', 'Holiday') }}</th>
                     @else
                         <th>{{ $t('সাপ্তাহিক ছুটি', 'Weekend') }}</th>
@@ -123,7 +123,7 @@
                         <td class="tc">{{ $fmtNum($summary['totalLPM']) }}</td>
                         <td class="tc">{{ $fmtNum($summary['totalAbsent']) }}</td>
                         <td class="tc">{{ $fmtNum($summary['totalLeave']) }}</td>
-                        @if(ENV('FACTORY') === 'SFL')
+                        @if(general()->company_s_code == 'SFL')
                             <td class="tc">{{ $fmtNum($summary['totalWeekendDays'] + $summary['totalGovHolidays']) }}</td>
                         @else
                             <td class="tc">{{ $fmtNum($summary['totalWeekendDays']) }}</td>
