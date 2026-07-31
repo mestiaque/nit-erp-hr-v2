@@ -135,7 +135,7 @@
                 @php
                     $emp   = $rows->first()['employee'];
                     $shift = $rows->first()['shift'];
-                    $initials = collect(explode(' ', $emp->name))->take(2)->map(fn($w) => strtoupper($w[0]))->implode('');
+                    $initials = collect(explode(' ', $emp->name))->filter()->take(2)->map(fn($w) => strtoupper($w[0]))->implode('');
                 @endphp
 
                 <div class="emp-card">
