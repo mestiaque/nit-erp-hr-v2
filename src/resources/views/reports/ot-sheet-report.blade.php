@@ -97,7 +97,7 @@
                         <label class="mb-1">Group By</label>
                         <select name="group_by" class="form-control form-control-sm">
                             @foreach($groupByOptions as $key => $label)
-                                <option value="{{ $key }}" @selected(($request->group_by ?? 'department_section') === $key)>{{ $label }}</option>
+                                <option value="{{ $key }}" @selected(($request->group_by ?? 'none') === $key)>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>
