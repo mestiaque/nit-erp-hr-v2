@@ -2321,6 +2321,12 @@ class HrReportController extends Controller
      */
     public function dailyAttendanceReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         $from = $request->input('from') ?: now()->toDateString();
         $to = $request->input('to') ?: $from;
         $isRange = $from !== $to;
@@ -2429,6 +2435,12 @@ class HrReportController extends Controller
 
     public function otSummaryReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
         $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
 
@@ -2468,6 +2480,58 @@ class HrReportController extends Controller
         ]);
     }
 
+    public function otSheetReportScreen(Request $request)
+    {
+        return view('hr::reports.ot-sheet-report', [
+            'options' => $this->employeeReportOptions(),
+            'groupByOptions' => self::GROUP_BY_OPTIONS,
+            'request' => $request,
+        ]);
+    }
+
+    public function otSheetReportPrint(Request $request)
+    {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+        $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+
+        $employees = $this->employeeReportQuery($request)
+            ->with(['designation:id,name,bn_name,grade', 'department:id,name,bn_name', 'section:id,name,bn_name'])
+            ->orderBy('department_id')
+            ->orderBy('section_id')
+            ->orderBy('name')
+            ->get();
+
+        $options = $this->employeeReportOptions();
+        $groupBy = $this->resolveGroupBy($request, 'department_section');
+        $optionMaps = $this->groupByOptionMaps($options);
+        $designationMap = HrDesignation::query()->get(['id', 'name', 'grade'])
+            ->mapWithKeys(fn (HrDesignation $d) => [$d->id => ['name' => $d->name, 'grade' => $d->grade]]);
+
+        $payload = array_merge(
+            [
+                'request' => $request,
+                'employees' => $employees,
+                'from' => $from,
+                'to' => $to,
+                'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
+                'toLabel' => Carbon::parse($to)->format('d-M-Y'),
+                'designationMap' => $designationMap,
+                'language' => $request->input('language', 'en'),
+            ],
+            SalaryReportService::buildOtSheetData($employees, $from, $to, $request, $groupBy),
+            [
+                'groupLabel' => $this->groupLabelResolver($groupBy, $optionMaps),
+            ]
+        );
+
+        return view('hr::reports.ot-sheet-report-print', $payload);
+    }
+
     public function gatePassReportScreen(Request $request)
     {
         return view('hr::reports.gate-pass-report', [
@@ -2478,6 +2542,12 @@ class HrReportController extends Controller
 
     public function gatePassReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
         $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
 
@@ -2523,6 +2593,12 @@ class HrReportController extends Controller
 
     public function assetReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
         $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
 
@@ -3373,6 +3449,12 @@ class HrReportController extends Controller
      */
     public function fixedSalaryReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         return $this->renderSalarySheetReport($request, 'fixed', 'hr::reports.salary-report-print-fixed');
     }
 
@@ -3381,6 +3463,12 @@ class HrReportController extends Controller
      */
     public function productionSalaryReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         return $this->renderSalarySheetReport($request, 'production', 'hr::reports.salary-report-print-production');
     }
 
@@ -3389,6 +3477,12 @@ class HrReportController extends Controller
      */
     public function bonusSalaryReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         $payload = $this->salaryReportBasePayload($request, 'bonus');
 
         // Always hardcoded Department-grouped before — default 'department' preserves that.
@@ -3410,6 +3504,12 @@ class HrReportController extends Controller
      */
     public function wagesSalarySummaryReportPrint(Request $request)
     {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
         $payload = $this->salaryReportBasePayload($request, 'wages-salary-summary');
 
         // Only Department/Section are coherent rollup axes here — each summary row is

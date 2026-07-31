@@ -41,14 +41,6 @@
 @endpush
 
 @section('contents')
-@include('hr::partials.report-loader')
-<script>
-    (function () {
-        if (typeof HrLoader === 'undefined') return;
-        HrLoader.showWithTimeout('Loading Report', 10000);
-        window.addEventListener('load', function () { HrLoader.hide(); });
-    })();
-</script>
 <div class="report-head text-center">
     @if(!blank(general()->logo()))
         <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">

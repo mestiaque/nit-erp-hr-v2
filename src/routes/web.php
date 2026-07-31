@@ -86,6 +86,8 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/reports/daily-attendance-report-print', [HrReportController::class, 'dailyAttendanceReportPrint'])->name('reports.daily-attendance-report-print');
 		Route::get('/reports/ot-summary', [HrReportController::class, 'otSummaryReportScreen'])->name('reports.ot-summary');
 		Route::get('/reports/ot-summary-print', [HrReportController::class, 'otSummaryReportPrint'])->name('reports.ot-summary-print');
+		Route::get('/reports/ot-sheet', [HrReportController::class, 'otSheetReportScreen'])->name('reports.ot-sheet');
+		Route::get('/reports/ot-sheet-print', [HrReportController::class, 'otSheetReportPrint'])->name('reports.ot-sheet-print');
 		Route::get('/reports/gate-pass-report', [HrReportController::class, 'gatePassReportScreen'])->name('reports.gate-pass-report');
 		Route::get('/reports/gate-pass-report-print', [HrReportController::class, 'gatePassReportPrint'])->name('reports.gate-pass-report-print');
 		Route::get('/reports/asset-report', [HrReportController::class, 'assetReportScreen'])->name('reports.asset-report');

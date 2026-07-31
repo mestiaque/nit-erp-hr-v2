@@ -6,6 +6,7 @@ use ME\Hr\Models\HrEmployeeLeave as Leave;
 use ME\Hr\Models\HrDesignation as Designation;
 use ME\Hr\Models\HrEmployeeSalarySnapshot;
 use ME\Hr\Models\HrLock;
+use ME\Hr\Services\EmployeeAttendanceService;
 
 class SalaryReportService
 {
@@ -673,6 +674,101 @@ class SalaryReportService
             'weekendCount' => $weekendCount,
             'otherHolidayCount' => $otherHolidayCount,
             'inWords' => self::numberToWords((int) round($grand['net'])),
+            'groupBy' => $groupBy,
+        ];
+    }
+
+    /**
+     * Per-employee, date-wise OT sheet (like the Salary Sheet, but each day of the
+     * period is its own column of OT hours) for the OT Sheet report.
+     */
+    public static function buildOtSheetData($employees, string $from, string $to, $request, string $groupBy = 'department_section'): array
+    {
+        $employeeDataFn = HrOptionsService::getOptionsForEmployee();
+        $factoryNo = (int) (hr_factory('factory_no') ?? 0);
+
+        $periodStart = \Carbon\Carbon::parse($from)->startOfDay();
+        $periodEnd = \Carbon\Carbon::parse($to)->startOfDay();
+        $dates = collect(\Carbon\CarbonPeriod::create($periodStart, '1 day', $periodEnd));
+
+        $grandBase = [
+            'emp' => 0, 'basic' => 0, 'house' => 0, 'medical' => 0, 'food' => 0,
+            'transport' => 0, 'gross' => 0, 'ot_hours' => 0, 'ot_rate' => 0, 'ot_amount' => 0,
+        ];
+        foreach ($dates as $d) {
+            $grandBase['day_' . $d->format('Y-m-d')] = 0;
+        }
+        $grand = $grandBase;
+        $sheetRows = [];
+
+        $groupKeyFn = match ($groupBy) {
+            'none' => fn ($emp) => 'all',
+            'classification' => fn ($emp) => (string) $emp->classification_id,
+            'department' => fn ($emp) => (string) $emp->department_id,
+            'section' => fn ($emp) => (string) $emp->section_id,
+            'sub_section' => fn ($emp) => (string) $emp->sub_section_id,
+            'designation' => fn ($emp) => (string) $emp->designation_id,
+            'shift' => fn ($emp) => (string) $emp->shift_id,
+            'department_designation' => fn ($emp) => $emp->department_id . '|' . $emp->designation_id,
+            default => fn ($emp) => $emp->department_id . '|' . $emp->section_id, // department_section
+        };
+
+        foreach ($employees->groupBy($groupKeyFn) as $groupKey => $groupEmps) {
+            $groupEmps = self::sortEmployeesByNaturalId($groupEmps);
+            $rows = [];
+            $groupTotals = $grandBase;
+
+            foreach ($groupEmps as $emp) {
+                $sd = self::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
+                $attendancePack = EmployeeAttendanceService::getEmployeeAttendanceByDate($emp->id, $from, $to);
+                $dayRows = collect($attendancePack['attendance'] ?? []);
+
+                $days = [];
+                foreach ($dates as $d) {
+                    $dateKey = $d->format('Y-m-d');
+                    $dayRow = $dayRows->first(fn ($r) => \Carbon\Carbon::parse($r['date'])->format('Y-m-d') === $dateKey);
+                    $otVal = ($factoryNo === 1 || $factoryNo === 2)
+                        ? (float) ($dayRow['compliance_ot'] ?? 0)
+                        : (float) ($dayRow['actual_ot'] ?? 0);
+                    $days[$dateKey] = $otVal;
+                }
+
+                $row = [
+                    'emp' => $emp,
+                    'basic' => $sd['basic'],
+                    'house' => $sd['house_rent'],
+                    'medical' => $sd['medical'],
+                    'food' => $sd['food_allow'],
+                    'transport' => $sd['transport'],
+                    'gross' => $sd['gross'],
+                    'days' => $days,
+                    'ot_hours' => $sd['ot_hours'],
+                    'ot_rate' => $sd['ot_rate'],
+                    'ot_amount' => $sd['ot'],
+                ];
+                $rows[] = $row;
+
+                $groupTotals['emp']++;
+                $grand['emp']++;
+                foreach (['basic', 'house', 'medical', 'food', 'transport', 'gross', 'ot_hours', 'ot_amount'] as $k) {
+                    $groupTotals[$k] += $row[$k];
+                    $grand[$k] += $row[$k];
+                }
+                foreach ($days as $dateKey => $val) {
+                    $groupTotals['day_' . $dateKey] += $val;
+                    $grand['day_' . $dateKey] += $val;
+                }
+            }
+
+            if (!empty($rows)) {
+                $sheetRows[] = ['group_key' => (string) $groupKey, 'rows' => $rows, 'totals' => $groupTotals];
+            }
+        }
+
+        return [
+            'sheetRows' => $sheetRows,
+            'grand' => $grand,
+            'dates' => $dates,
             'groupBy' => $groupBy,
         ];
     }

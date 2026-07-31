@@ -373,6 +373,13 @@ return [
                                     'permission' => 'hr_ot_summary_report',
                                 ],
                                 [
+                                    'title'      => 'OT Sheet',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/ot-sheet',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_ot_sheet_report',
+                                ],
+                                [
                                     'title'      => 'Pay Slip',
                                     'icon'       => 'fa-solid fa-file-invoice-dollar',
                                     'route'      => '/admin/hr-center/reports/pay-slip',

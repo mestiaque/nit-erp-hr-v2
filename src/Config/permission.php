@@ -200,6 +200,10 @@ return [
             'label' => 'OT Summary Report',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
+        'hr_ot_sheet_report' => [
+            'label' => 'OT Sheet Report',
+            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        ],
         'hr_gate_pass_report' => [
             'label' => 'Gate Pass Report',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
