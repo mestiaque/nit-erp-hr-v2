@@ -187,7 +187,7 @@
         @include('hr::reports.partials.ot-sheet-colgroup')
         <thead>
             <tr>
-                <th colspan="{{ $leadColspan }}" class="tl">Grand Total ({{ $grand['emp'] }} Employees)</th>
+                <th colspan="{{ $leadColspan }}" class="tl" style="font-size:14px">Grand Total ({{ $grand['emp'] }} Employees)</th>
                 @if($columns['basic']['show'])<th class="tr">{{ number_format($grand['basic']) }}</th>@endif
                 @if($columns['house_rent']['show'])<th class="tr">{{ number_format($grand['house']) }}</th>@endif
                 @if($columns['medical']['show'])<th class="tr">{{ number_format($grand['medical']) }}</th>@endif
@@ -200,9 +200,9 @@
                         <th class="tc">{{ $val > 0 ? number_format($val, 1) : '-' }}</th>
                     @endforeach
                 @endif
-                @if($columns['total_ot']['show'])<th class="tc">{{ number_format($grand['ot_hours'], 2) }}</th>@endif
-                @if($columns['ot_rate']['show'])<th class="tc">-</th>@endif
-                @if($columns['ot_amount']['show'])<th class="tr">{{ number_format($grand['ot_amount']) }}</th>@endif
+                @if($columns['total_ot']['show'])<th class="tc" style="font-size:14px">{{ number_format($grand['ot_hours'], 2) }}</th>@endif
+                @if($columns['ot_rate']['show'])<th class="tc" style="font-size:14px">-</th>@endif
+                @if($columns['ot_amount']['show'])<th class="tr" style="font-size:14px; text-align: right;">{{ number_format($grand['ot_amount']) }}</th>@endif
             </tr>
         </thead>
     </table>
