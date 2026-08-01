@@ -123,6 +123,10 @@ return [
             'label' => 'Weekend to Regular',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
+        'hr_attendance_replace_off' => [
+            'label' => 'Day Swap',
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
+        ],
         'hr_shift_roastering' => [
             'label' => 'Shift Roastering',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],

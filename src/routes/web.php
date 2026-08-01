@@ -13,6 +13,7 @@ use ME\Hr\Http\Controllers\HrReportController;
 use ME\Hr\Http\Controllers\ProductionRateController;
 use ME\Hr\Http\Controllers\RosterController;
 use ME\Hr\Http\Controllers\RegularToWeekendController;
+use ME\Hr\Http\Controllers\AttendanceReplaceOffController;
 use ME\Hr\Http\Controllers\AttendanceMachineController;
 use ME\Hr\Http\Controllers\LockController;
 
@@ -136,6 +137,11 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/regular-to-weekend', [RegularToWeekendController::class, 'index'])->name('regular-to-weekend.index');
 		Route::post('/regular-to-weekend', [RegularToWeekendController::class, 'store'])->name('regular-to-weekend.store');
 		Route::put('/regular-to-weekend/{id}', [RegularToWeekendController::class, 'update'])->name('regular-to-weekend.update');
+
+		// Day Swap (Replace Off)
+		Route::get('/attendance-replace-off', [AttendanceReplaceOffController::class, 'index'])->name('attendance-replace-off.index');
+		Route::post('/attendance-replace-off', [AttendanceReplaceOffController::class, 'store'])->name('attendance-replace-off.store');
+		Route::put('/attendance-replace-off/{id}/cancel', [AttendanceReplaceOffController::class, 'cancel'])->name('attendance-replace-off.cancel');
 
 		// Production Rate
 		Route::get('/production-rate', [ProductionRateController::class, 'index'])->name('production-rate.index');

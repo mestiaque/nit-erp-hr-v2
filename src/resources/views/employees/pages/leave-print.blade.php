@@ -501,9 +501,9 @@ body {
             </div>
 
             <div class="form-row" style="margin-bottom:14px; align-items:center;">
-                <span class="line" style="padding: 0 5px;">{{ $bnDate($leaveFrom) }}</span>
+                <span class="line" style="padding: 0 5px;">{{ bn_date($leaveFrom) }}</span>
                 <span class="inline-word">থেকে</span>
-                <span class="line" style="padding: 0 5px;">{{ $bnDate($leaveTo) }}</span>
+                <span class="line" style="padding: 0 5px;">{{ bn_date($leaveTo) }}</span>
                 <span class="inline-word">তারিখ পর্যন্ত</span>
                 <span class="dotted" style="width:65px; margin:0 4px; text-align:center;">{{ $bnNum($totalDays) }}</span>
                 <span class="inline-word">দিন</span>

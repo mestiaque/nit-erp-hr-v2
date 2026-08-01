@@ -241,6 +241,13 @@ return [
                     'permission' => 'hr_regular_to_weekend',
                 ],
                 [
+                    'title'      => 'Day Swap',
+                    'icon'       => 'fa-solid fa-right-left',
+                    'route'      => '/admin/hr-center/attendance-replace-off',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_attendance_replace_off',
+                ],
+                [
                     'title'      => 'Shift Rostering',
                     'icon'       => 'fa-solid fa-calendar-days',
                     'route'      => '/admin/hr-center/rosters',

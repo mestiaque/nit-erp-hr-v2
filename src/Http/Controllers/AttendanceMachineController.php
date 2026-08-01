@@ -9,6 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Log;
 use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrAttendanceMachineLog;
+use ME\Hr\Models\HrAttendanceReplaceOff;
 use ME\Hr\Models\HrEmployee;
 use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrShift;
@@ -387,6 +388,15 @@ class AttendanceMachineController extends Controller
             || HrLock::isLocked('attendance', $day->year, $day->month, $employee->department_id)
         ) {
             Log::info("Attendance punch ignored (locked): employee={$employee->employee_id} date={$attendanceDate}");
+            return false;
+        }
+
+        // A "Day Swap" (see AttendanceReplaceOffController) already moved everyone's
+        // attendance off this date onto its replace_date and is relying on this date
+        // staying empty — a machine re-sync must not silently resurrect attendance
+        // (and therefore salary/OT) on the original weekend/holiday date.
+        if (HrAttendanceReplaceOff::active()->where('worked_date', $attendanceDate)->exists()) {
+            Log::info("Attendance punch ignored (day-swapped): employee={$employee->employee_id} date={$attendanceDate}");
             return false;
         }
 
