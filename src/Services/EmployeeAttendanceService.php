@@ -10,13 +10,15 @@ use ME\Hr\Models\HrRegularToWeekend as RegularToWeekend;
 class EmployeeAttendanceService
 {
     /**
-     * OT only starts counting once the employee has worked past shift end by more than
-     * the configured grace period ("OT Count After Shift End (min)") — e.g. a 30-minute
-     * grace means leaving 20 minutes late shows 0 OT, and leaving 40 minutes late shows
-     * only 10 (the excess beyond the grace window). The grace period is Designation ->
+     * OT only starts counting once the employee has worked past shift end by AT LEAST
+     * the configured grace period ("OT Count After Shift End (min)") — it's a minimum
+     * threshold, not a per-day deduction. E.g. a 40-minute grace means leaving 39
+     * minutes late shows 0 OT, but leaving 40 (or 50, or 60+) minutes late shows the
+     * FULL 40 (or 50, or 60+) minutes worked — the grace amount itself is never
+     * subtracted off once the threshold is met. The grace period is Designation ->
      * Factory: a designation value > 0 wins, otherwise the factory's value applies.
      * Single source of truth for this rule — every OT-writing/reading site in the
-     * system should call this rather than reimplementing the subtraction.
+     * system should call this rather than reimplementing the threshold check.
      */
     public static function calculateOvertimeMinutes(?\ME\Hr\Models\HrShift $shift, string $dateStr, ?string $inTime, ?string $outTime, $employee = null): int
     {
@@ -42,7 +44,9 @@ class EmployeeAttendanceService
 
         $graceMinutes        = self::resolveOtGraceMinutes($employee);
         $minutesPastShiftEnd = (int) $shiftEnd->diffInMinutes($effectiveOut);
-        $minutesPastGrace    = max(0, $minutesPastShiftEnd - $graceMinutes);
+        // Threshold, not a deduction: below the grace period counts as 0 OT; at or
+        // above it, the full minutes worked past shift end count (grace isn't shaved off).
+        $minutesPastGrace    = $minutesPastShiftEnd >= $graceMinutes ? $minutesPastShiftEnd : 0;
 
         return self::applyMinimumOtBucketing($minutesPastGrace);
     }
