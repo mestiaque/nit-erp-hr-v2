@@ -266,12 +266,11 @@ body {
         $employeeMeta['section_bn']    ?? $employeeMeta['section']    ?? '',
         $employeeMeta['department_bn'] ?? $employeeMeta['department'] ?? '',
     ]));
-    // Which leave type checkbox to tick
-    $leaveCode  = strtoupper(trim($leaveType->code ?? ''));
-    $isNaimitik = in_array($leaveCode, ['CL','NL']);
-    $isOsustha  = in_array($leaveCode, ['SL']);
-    $isArjit    = in_array($leaveCode, ['EL','AL']);
-    $isMaatri   = in_array($leaveCode, ['ML','MAT']);
+    // Leave types come from Masters -> Leave Info (admin/hr-center/masters/leave-infos)
+    // rather than a hardcoded checklist, so any type added/renamed there shows up here
+    // automatically. The applied leave's own type is the one ticked/highlighted.
+    $leaveTypeOptions = $leaveTypes ?? collect();
+    $selectedLeaveTypeId = (int) ($leave->leave_type_id ?? $leaveType->id ?? 0);
     $sidebarRows = $leaveSummary ?? [];
 @endphp
 
@@ -288,7 +287,7 @@ body {
     </div>
 
     <div class="date-row">
-        তারিখ ঃ <span class="dotted" style="width:180px; padding: 0 6px;">{{ bn_date($appDate, 'd/m/Y') }}</span>
+        তারিখ : <span class="dotted" style="width:180px; padding: 0 6px;">{{ bn_date($appDate, 'd/m/Y') }}</span>
     </div>
 
     {{-- ===== MAIN TWO-COLUMN ===== --}}
@@ -345,10 +344,11 @@ body {
                 <span class="label">ছুটির ধরন</span>
                 <span class="colon">:</span>
                 <div class="checkbox-group">
-                    <label class="cb"><span class="cb-box">@if($isNaimitik)✓@endif</span> নৈমিত্তিক</label>
-                    <label class="cb"><span class="cb-box">@if($isOsustha)✓@endif</span> অসুস্থতা</label>
-                    <label class="cb"><span class="cb-box">@if($isArjit)✓@endif</span> অর্জিত</label>
-                    <label class="cb"><span class="cb-box">@if($isMaatri)✓@endif</span> মাতৃত্বকালীন</label>
+                    @forelse($leaveTypeOptions as $lt)
+                        <label class="cb"><span class="cb-box">@if((int) $lt->id === $selectedLeaveTypeId)✓@endif</span> {{ $lt->bn_name ?: $lt->name }}</label>
+                    @empty
+                        <label class="cb"><span class="cb-box">✓</span> {{ $leaveType->bn_name ?? $leaveType->name ?? '' }}</label>
+                    @endforelse
                 </div>
             </div>
 
@@ -383,7 +383,7 @@ body {
             <div style="margin-bottom:10px;">
                 <div style="display:flex; align-items:flex-start;">
                     <span class="sl">১১.</span>
-                    <span class="sub-title">বদলী ব্যক্তি (প্রযোজ্য ক্ষেত্রে) ঃ ছুটিতে থাকাকালীন সময়ে তার দায়িত্ব পালন করবেন।</span>
+                    <span class="sub-title">বদলী ব্যক্তি (প্রযোজ্য ক্ষেত্রে) : ছুটিতে থাকাকালীন সময়ে তার দায়িত্ব পালন করবেন।</span>
                 </div>
             </div>
 
@@ -510,7 +510,7 @@ body {
             </div>
 
             <div style="font-size:12px; font-weight:500; margin-bottom:12px;">
-                নৈমিত্তিক / অসুস্থতা / অর্জিত / মাতৃত্বকালীন ছুটি প্রদান করা হয়েছে।
+                {{ $leaveType->bn_name ?? $leaveType->name ?? '' }} ছুটি প্রদান করা হয়েছে।
             </div>
 
             <div style="margin-bottom:8px; display:flex; align-items:center; gap:6px; font-size:12px;">
@@ -532,7 +532,7 @@ body {
         {{-- PASS RIGHT --}}
         <div class="pass-right">
             <div class="pass-date-row">
-                তারিখ ঃ <span class="dotted" style="width:140px;">&nbsp;</span>
+                তারিখ : <span class="dotted" style="width:140px;">&nbsp;</span>
             </div>
 
             <div class="sidebar">

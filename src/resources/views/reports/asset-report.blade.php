@@ -111,10 +111,13 @@
                         <input type="date" name="to" class="form-control form-control-sm" value="{{ $request->to }}">
                     </div>
 
+                    <input type="hidden" name="_render" id="renderFlag" value="0">
+                    <input type="hidden" name="xlsx" id="xlsxFlag" value="0">
                     <div class="col-md-3 mb-3 d-flex align-items-end">
                         <div class="w-100 d-flex gap-2">
-                            <a href="{{ route('hr-center.reports.asset-report') }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
-                            <button type="submit" id="reportPrintBtn" class="btn btn-primary btn-sm w-50"><i class="fa-solid fa-print"></i> Print</button>
+                            <a href="{{ route('hr-center.reports.asset-report') }}" class="btn btn-light btn-sm flex-fill"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" id="reportPrintBtn" class="btn btn-primary btn-sm flex-fill"><i class="fa-solid fa-print"></i> Print</button>
+                            <button type="submit" id="reportExcelBtn" class="btn btn-success btn-sm flex-fill"><i class="fa-solid fa-file-excel"></i> Excel</button>
                         </div>
                     </div>
 
@@ -129,12 +132,27 @@
 <script>
 (function () {
     var btn = document.getElementById('reportPrintBtn');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-        if (typeof HrLoader === 'undefined') return;
-        HrLoader.showWithTimeout('Generating Report', 8000);
-        setTimeout(function () { HrLoader.hide(); }, 1500);
-    });
+    var renderFlag = document.getElementById('renderFlag');
+    var xlsxFlag = document.getElementById('xlsxFlag');
+    if (btn) {
+        btn.addEventListener('click', function () {
+            // Reset in case Excel was clicked earlier in this same page load —
+            // the hidden fields otherwise stay '1' and Print would export xlsx too.
+            if (renderFlag) renderFlag.value = '0';
+            if (xlsxFlag) xlsxFlag.value = '0';
+            if (typeof HrLoader === 'undefined') return;
+            HrLoader.showWithTimeout('Generating Report', 8000);
+            setTimeout(function () { HrLoader.hide(); }, 1500);
+        });
+    }
+
+    var excelBtn = document.getElementById('reportExcelBtn');
+    if (excelBtn && renderFlag && xlsxFlag) {
+        excelBtn.addEventListener('click', function () {
+            renderFlag.value = '1';
+            xlsxFlag.value = '1';
+        });
+    }
 })();
 
 $('.select2').select2({

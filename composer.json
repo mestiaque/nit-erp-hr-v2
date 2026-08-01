@@ -27,6 +27,9 @@
         "orchestra/testbench": "^8.0|^9.0",
         "phpunit/phpunit": "^10.0|^11.0"
     },
+    "suggest": {
+        "phpoffice/phpspreadsheet": "Required to use the 'Export Excel' button on report screens (converts a report's rendered HTML table into a real .xlsx download)."
+    },
     "autoload": {
         "psr-4": {
             "ME\\Hr\\": "src/"

@@ -27,12 +27,13 @@ use ME\Hr\Models\HrSubSection;
 use ME\Hr\Models\HrSex;
 use ME\Hr\Models\HrWorkingPlace;
 use ME\Hr\Services\SalaryReportService;
-
+use ME\Hr\Http\Controllers\Concerns\ExportsReportsToExcel;
 
 
 
 class HrReportController extends Controller
 {
+    use ExportsReportsToExcel;
 
     public function proJobCard(Request $request)
     {
@@ -865,36 +866,36 @@ class HrReportController extends Controller
 
             if ($reportType === 'database') {
                 [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
-                return view('hr::reports.employee-database-print', [
+                return $this->viewOrXlsx($request, 'hr::reports.employee-database-print', [
                     'employees' => $employees,
                     'groups' => $groups,
                     'groupLabel' => $groupLabel,
                     'groupBy' => $groupBy,
                     'request' => $request,
                     'options' => $options,
-                ]);
+                ], 'employee-database');
             } elseif ($reportType === 'details') {
                 $detailsRows = $this->employeeDetailsRows($employees, $options);
                 [$groups, $groupLabel] = $this->groupEmployeeRows($detailsRows, $groupBy, $optionMaps, fn ($row) => $row['employee']);
-                return view('hr::reports.employee-details-print', [
+                return $this->viewOrXlsx($request, 'hr::reports.employee-details-print', [
                     'detailsRows' => $detailsRows,
                     'groups' => $groups,
                     'groupLabel' => $groupLabel,
                     'groupBy' => $groupBy,
                     'request' => $request,
                     'options' => $options,
-                ]);
+                ], 'employee-details');
             } elseif ($reportType === 'manpower-summary') {
                 $manpowerRows = $this->employeeManpowerSummaryRows($employees, $options);
-                return view('hr::reports.employee-manpower-print', [
+                return $this->viewOrXlsx($request, 'hr::reports.employee-manpower-print', [
                     'employees' => $employees,
                     'manpowerRows' => $manpowerRows,
                     'request' => $request,
                     'options' => $options,
-                ]);
+                ], 'employee-manpower-summary');
             }
             // fallback
-            return view('hr::reports.employee-print', [
+            return $this->viewOrXlsx($request, 'hr::reports.employee-print', [
                 'employees' => $employees,
                 'request' => $request,
                 'options' => $options,
@@ -903,7 +904,7 @@ class HrReportController extends Controller
                 'language' => $language,
                 'manpowerRows' => $this->employeeManpowerSummaryRows($employees, $options),
                 'detailsRows' => null,
-            ]);
+            ], 'employee-report');
         }
 
         return view('hr::reports.employee', [
@@ -2410,7 +2411,7 @@ class HrReportController extends Controller
 
         [$groups, $groupLabel] = $this->groupEmployeeRows($employeeRows, $groupBy, $optionMaps, fn (array $row) => $row['employee']);
 
-        return view('hr::reports.daily-attendance-report-print', [
+        return $this->viewOrXlsx($request, 'hr::reports.daily-attendance-report-print', [
             'groups' => $groups,
             'groupLabel' => $groupLabel,
             'groupBy' => $groupBy,
@@ -2421,7 +2422,7 @@ class HrReportController extends Controller
             'dateLabel' => $isRange
                 ? Carbon::parse($from)->format('d-M-Y') . ' to ' . Carbon::parse($to)->format('d-M-Y')
                 : Carbon::parse($from)->format('d-M-Y'),
-        ]);
+        ], 'daily-attendance-report');
     }
 
     public function otSummaryReportScreen(Request $request)
@@ -2464,7 +2465,7 @@ class HrReportController extends Controller
         $optionMaps = $this->groupByOptionMaps($options);
         [$groups, $groupLabel] = $this->groupEmployeeRows($employees, $groupBy, $optionMaps, fn ($emp) => $emp);
 
-        return view('hr::reports.ot-summary-report-print', [
+        return $this->viewOrXlsx($request, 'hr::reports.ot-summary-report-print', [
             'employees' => $employees,
             'from' => $from,
             'to' => $to,
@@ -2477,7 +2478,7 @@ class HrReportController extends Controller
             'groupLabel' => $groupLabel,
             'groupBy' => $groupBy,
             'groupByAxisLabel' => self::GROUP_BY_OPTIONS[$groupBy] === 'None (Flat List)' ? 'Group' : self::GROUP_BY_OPTIONS[$groupBy],
-        ]);
+        ], 'ot-summary-report');
     }
 
     public function otSheetReportScreen(Request $request)
@@ -2529,7 +2530,7 @@ class HrReportController extends Controller
             ]
         );
 
-        return view('hr::reports.ot-sheet-report-print', $payload);
+        return $this->viewOrXlsx($request, 'hr::reports.ot-sheet-report-print', $payload, 'ot-sheet-report');
     }
 
     public function gatePassReportScreen(Request $request)
@@ -2571,7 +2572,7 @@ class HrReportController extends Controller
                 ->sortBy(fn ($rows) => $rows->first()->employee->employee_id ?? '')
             : collect();
 
-        return view('hr::reports.gate-pass-report-print', [
+        return $this->viewOrXlsx($request, 'hr::reports.gate-pass-report-print', [
             'gatePasses' => $gatePasses,
             'groupedGatePasses' => $groupedGatePasses,
             'isRange' => $isRange,
@@ -2579,7 +2580,7 @@ class HrReportController extends Controller
             'to' => $to,
             'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
             'toLabel'   => Carbon::parse($to)->format('d-M-Y'),
-        ]);
+        ], 'gate-pass-report');
     }
 
     public function assetReportScreen(Request $request)
@@ -2633,7 +2634,7 @@ class HrReportController extends Controller
                 ->sortBy(fn ($rows) => $rows->first()->employee->employee_id ?? '')
             : collect();
 
-        return view('hr::reports.asset-report-print', [
+        return $this->viewOrXlsx($request, 'hr::reports.asset-report-print', [
             'assets' => $assets,
             'groupedAssets' => $groupedAssets,
             'isRange' => $isRange,
@@ -2641,7 +2642,7 @@ class HrReportController extends Controller
             'to' => $to,
             'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
             'toLabel'   => Carbon::parse($to)->format('d-M-Y'),
-        ]);
+        ], 'asset-report');
     }
 
     private function attendanceWithOtReportScreen(Request $request, string $report)
@@ -2943,12 +2944,12 @@ class HrReportController extends Controller
                 $grand['others_total'] += $othersTotal;
             });
 
-            return view('hr::reports.daily-manpower-report-print', [
+            return $this->viewOrXlsx($request, 'hr::reports.daily-manpower-report-print', [
                 'request' => $request,
                 'rows' => $rows,
                 'reportDate' => $reportDate,
                 'grand' => $grand,
-            ]);
+            ], 'daily-manpower-report');
         }
 
         return view('hr::reports.daily-manpower-report', [
@@ -3496,7 +3497,7 @@ class HrReportController extends Controller
             ['groupLabel' => $this->groupLabelResolver($groupBy, $optionMaps), 'groupBy' => $groupBy]
         );
 
-        return view('hr::reports.salary-report-print-bonus', $payload);
+        return $this->viewOrXlsx($request, 'hr::reports.salary-report-print-bonus', $payload, 'bonus-salary-report');
     }
 
     /**
@@ -3521,7 +3522,7 @@ class HrReportController extends Controller
             SalaryReportService::buildWagesSummaryData($payload['employees'], $payload['from'], $payload['to'], $request, $groupBy)
         );
 
-        return view('hr::reports.salary-report-print-wages', $payload);
+        return $this->viewOrXlsx($request, 'hr::reports.salary-report-print-wages', $payload, 'wages-salary-summary');
     }
 
     private function renderSalarySheetReport(Request $request, string $reportType, string $view)
@@ -3550,7 +3551,7 @@ class HrReportController extends Controller
             ]
         );
 
-        return view($view, $payload);
+        return $this->viewOrXlsx($request, $view, $payload, 'salary-sheet-' . $reportType);
     }
 
     /**

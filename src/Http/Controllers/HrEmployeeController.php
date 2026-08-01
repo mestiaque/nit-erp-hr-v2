@@ -992,9 +992,17 @@ class HrEmployeeController extends Controller
             ->groupBy(fn ($row) => (int) $row['leave_type_id'])
             ->map(fn ($group) => (int) round($group->sum(fn ($row) => (float) data_get($row, 'total_days', 0))));
 
-        $leaveSummary = $leaveTypes->map(function ($leaveType) use ($takenByTypeId) {
+        // Earned Leave isn't a fixed yearly quota like the others — it accrues from
+        // actual worked days (see calculateYearlyEarnLeave()), so it needs the same
+        // dynamic calculation here as leavesPrint() uses, or this table and the print
+        // view would show two different totals for the same employee.
+        $earnLeaveDays = $this->calculateYearlyEarnLeave($employee);
+        $earnCodes = ['EL', 'AL', 'EARN'];
+
+        $leaveSummary = $leaveTypes->map(function ($leaveType) use ($takenByTypeId, $earnLeaveDays, $earnCodes) {
             $typeId = (int) $leaveType->id;
-            $totalDays = (int) ($leaveType->days ?? 0);
+            $code = strtoupper(trim($leaveType->code ?? ''));
+            $totalDays = in_array($code, $earnCodes, true) ? $earnLeaveDays : (int) ($leaveType->days ?? 0);
             $takenDays = (int) ($takenByTypeId->get($typeId, 0));
 
             return [
@@ -1065,7 +1073,7 @@ class HrEmployeeController extends Controller
 
         $factory = HrFactory::query()->where('status', 'active')->orderBy('id')->first();
 
-        return view('hr::employees.pages.leave-print', compact('employee', 'leave', 'leaveType', 'employeeMeta', 'leaveSummary', 'prevLeave', 'factory'));
+        return view('hr::employees.pages.leave-print', compact('employee', 'leave', 'leaveType', 'leaveTypes', 'employeeMeta', 'leaveSummary', 'prevLeave', 'factory'));
     }
 
     public function leavesStore(Request $request, HrEmployee $employee): RedirectResponse
@@ -1189,9 +1197,27 @@ class HrEmployeeController extends Controller
                 ->toArray()
         );
 
-        $attendCount = 0;
-        $current     = \Carbon\Carbon::parse($yearStart);
-        $end         = \Carbon\Carbon::parse($scanEnd);
+        // Approved leave days count as "days of work performed" too (Bangladesh Labour
+        // Act 2006 s.117 continuous-service rule) — only a genuine unexcused absence
+        // should NOT count toward the 18-day accrual.
+        $paidLeaveDates = [];
+        HrEmployeeLeave::query()
+            ->where('employee_id', $employee->id)
+            ->where('status', 'approved')
+            ->where('leave_from', '<=', $scanEnd)
+            ->where('leave_to', '>=', $yearStart)
+            ->get(['leave_from', 'leave_to'])
+            ->each(function ($leave) use (&$paidLeaveDates, $yearStart, $scanEnd) {
+                $from = \Carbon\Carbon::parse(max($leave->leave_from, $yearStart));
+                $to   = \Carbon\Carbon::parse(min($leave->leave_to, $scanEnd));
+                for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
+                    $paidLeaveDates[$d->format('Y-m-d')] = true;
+                }
+            });
+
+        $workedDays = 0;
+        $current    = \Carbon\Carbon::parse($yearStart);
+        $end        = \Carbon\Carbon::parse($scanEnd);
 
         while ($current->lte($end)) {
             $dateStr   = $current->format('Y-m-d');
@@ -1203,15 +1229,19 @@ class HrEmployeeController extends Controller
 
             $isWeekendDay = ($dayOfWeek === $empWeekend && !$isWeekendToRegular) || $isRegularToWeekend;
             $isHoliday    = $holidays->contains(fn ($h) => $dateStr >= $h->from_date && $dateStr <= $h->to_date);
+            $isPresent    = array_key_exists($dateStr, $attendedDates);
+            $isPaidLeave  = array_key_exists($dateStr, $paidLeaveDates);
 
-            if (!$isWeekendDay && !$isHoliday && array_key_exists($dateStr, $attendedDates)) {
-                $attendCount++;
+            // Worked Days = Present + Weekly Holiday + Paid Holiday + Paid Leave — i.e.
+            // every day counts unless it's a real, unexcused absence.
+            if ($isWeekendDay || $isHoliday || $isPresent || $isPaidLeave) {
+                $workedDays++;
             }
 
             $current->addDay();
         }
 
-        return (int) floor(($attendCount / 18) * 30);
+        return (int) floor($workedDays / 18);
     }
 
     private function options(): array

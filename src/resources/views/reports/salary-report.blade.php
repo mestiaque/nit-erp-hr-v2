@@ -222,12 +222,18 @@
                         </select>
                     </div>
 
+                    <input type="hidden" name="_render" id="renderFlag" value="0">
+                    <input type="hidden" name="xlsx" id="xlsxFlag" value="0">
                     <div class="col-md-3 mb-3 d-flex align-items-end">
                         <div class="w-100 d-flex gap-2">
-                            <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-light btn-sm flex-fill"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                             <button type="submit" id="printSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
-                                    formtarget="_blank" class="btn btn-primary btn-sm w-50">
+                                    formtarget="_blank" class="btn btn-primary btn-sm flex-fill">
                                 <i class="fa-solid fa-print"></i> Print
+                            </button>
+                            <button type="submit" id="excelSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
+                                    formtarget="_blank" class="btn btn-success btn-sm flex-fill">
+                                <i class="fa-solid fa-file-excel"></i> Excel
                             </button>
                         </div>
                     </div>
@@ -243,12 +249,32 @@
 <script>
 (function () {
     var btn = document.getElementById('printSubmitBtn');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-        if (typeof HrLoader === 'undefined') return;
-        HrLoader.showWithTimeout('Generating Report', 8000);
-        setTimeout(function () { HrLoader.hide(); }, 1500);
-    });
+    var renderFlag = document.getElementById('renderFlag');
+    var xlsxFlag = document.getElementById('xlsxFlag');
+    if (btn) {
+        btn.addEventListener('click', function () {
+            // Reset in case Excel was clicked earlier in this same page load —
+            // the hidden fields otherwise stay '1' and Print would export xlsx too.
+            if (renderFlag) renderFlag.value = '0';
+            if (xlsxFlag) xlsxFlag.value = '0';
+            if (typeof HrLoader === 'undefined') return;
+            HrLoader.showWithTimeout('Generating Report', 8000);
+            setTimeout(function () { HrLoader.hide(); }, 1500);
+        });
+    }
+
+    // Excel export skips the print page's async loading-shell entirely (that shell
+    // fetches the report as HTML and document.write()s it in — feeding it a binary
+    // .xlsx download instead would just corrupt the page) by requesting the fully
+    // rendered report directly via _render=1, plus xlsx=1 so the controller streams
+    // a file instead of a view.
+    var excelBtn = document.getElementById('excelSubmitBtn');
+    if (excelBtn && renderFlag && xlsxFlag) {
+        excelBtn.addEventListener('click', function () {
+            renderFlag.value = '1';
+            xlsxFlag.value = '1';
+        });
+    }
 })();
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -264,11 +290,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var reportTypeButtons = document.querySelectorAll('[data-report-type]');
     var printSubmitBtn = document.getElementById('printSubmitBtn');
+    var excelSubmitBtn = document.getElementById('excelSubmitBtn');
 
     reportTypeButtons.forEach(function (el) {
         el.addEventListener('click', function () {
             if (reportTypeInput) reportTypeInput.value = el.dataset.reportType;
             if (printSubmitBtn) printSubmitBtn.setAttribute('formaction', el.dataset.route);
+            if (excelSubmitBtn) excelSubmitBtn.setAttribute('formaction', el.dataset.route);
 
             reportTypeButtons.forEach(function (btn) {
                 btn.classList.toggle('btn-primary', btn === el);
