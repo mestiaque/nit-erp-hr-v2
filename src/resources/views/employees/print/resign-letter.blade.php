@@ -70,7 +70,7 @@
 @push('css')
 <style>
     body { font-family: 'Noto Sans Bengali', 'SolaimanLipi', Arial, sans-serif; }
-    .resign-letter { font-size: 18px; line-height: 1.4; padding: 20px 10px; width: 210mm; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,.1); }
+    .resign-letter { font-size: 18px; line-height: 1.8; padding: 20px 10px; width: 210mm; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,.1); }
     .rl-date { margin-bottom: 36px; }
     .rl-block { margin-bottom: 30px; }
     .rl-subject { margin-bottom: 30px; }
