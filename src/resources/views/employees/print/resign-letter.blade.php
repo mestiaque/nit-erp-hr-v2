@@ -15,8 +15,8 @@
     $designationModel = optional($employee->designation);
     $designation = $designationModel->bn_name ?? $designationModel->name ?? data_get($employee, 'designation_name') ?? $na;
 
-    $sectionModel = optional($employee->section);
-    $section = $sectionModel->bn_name ?? $sectionModel->name ?? data_get($employee, 'section_name') ?? $na;
+    $departmentModel = optional($employee->department);
+    $department = $departmentModel->bn_name ?? $departmentModel->name ?? data_get($employee, 'department_name') ?? $na;
 
     $employeeId = data_get($employee, 'employee_id', $na);
     $joinDate   = blank($employee->join_date) ? $na : bn_date($employee->join_date, 'd/m/Y');
@@ -29,26 +29,26 @@
 
     <p class="rl-block">
         বরাবর,<br>
-        মহা ব্যবস্থাপক<br>
+        ব্যবস্থাপক<br>
         প্রশাসন ও মানবসম্পদ বিভাগ<br>
         {{ $companyName }}<br>
         {{ $companyAddress }}
     </p>
 
-    <p class="rl-subject"><strong>বিষয়ঃ-</strong> চাকুরী হইতে অব্যহতি জন্য আবেদন।</p>
+    <p class="rl-subject"><strong>বিষয়ঃ-</strong> চাকুরী হইতে অব্যাহতির জন্য আবেদন।</p>
 
     <p class="rl-salutation">জনাব,</p>
 
     <p class="rl-body">
         বিনিত নিবেদন এই যে, আমি <span class="rl-fill">{{ $employeeName }}</span> পদবীঃ <span class="rl-fill">{{ $designation }}</span>
-        আইডি নংঃ <span class="rl-fill">{{ $employeeId }}</span> সেকশনঃ <span class="rl-fill">{{ $section }}</span>
-        গত <span class="rl-fill">{{ $joinDate ?: '----------------' }}</span> তারিখ হতে চাকরি করতেছি। আমার
+        আইডি নংঃ <span class="rl-fill">{{ $employeeId }}</span> ডিপার্টমেন্টঃ <span class="rl-fill">{{ $department }}</span>
+        গত <span class="rl-fill">{{ $joinDate ?: '----------------' }}</span> তারিখ হতে উক্ত পদে যোগদান করি। আমার
         <span class="rl-fill">{{ $reason ?: '----------------' }}</span> সমস্যার কারনে
-        <span class="rl-fill">{{ $resignDate ?: '----------------' }}</span> ইং তারিখ হইতে আমি চাকরি করিতে পারিব না।
+        <span class="rl-fill">{{ $resignDate ?: '----------------' }}</span> ইং তারিখ হইতে আমি স্বেচ্ছায় চাকুরী হইতে অব্যাহতি পত্র প্রদান করছি।
     </p>
 
     <p class="rl-body">
-        অতএব জনাবের নিকট আকুল আবেদন এই যে, উপরোক্ত বিষয়টি বিবেচনা করিয়া আমাকে চাকুরী হইতে অব্যহতি প্রদানে মহোদয়ের মর্জি হয়।
+        অতএব জনাবের নিকট আকুল আবেদন এই যে, উপরোক্ত বিষয়টি বিবেচনা করিয়া আমাকে চাকুরী হইতে অব্যাহতি প্রদানে মহোদয়ের মর্জি হয়।
     </p>
 
     <div class="rl-sign-row">
