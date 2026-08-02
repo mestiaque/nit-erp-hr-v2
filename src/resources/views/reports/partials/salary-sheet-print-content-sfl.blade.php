@@ -106,7 +106,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<th>C/L</th>
 				<th>Pay Day</th>
 				<th>Absent Day</th>
-				<th>Absent TK</th>
+				<th>Absent Amt TK</th>
 				<th>Att: Bonus</th>
 				<th>Other Alowance</th>
 				<th>Total Salary</th>

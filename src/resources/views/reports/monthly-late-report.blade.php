@@ -22,7 +22,7 @@
 
 					<div class="col-md-3 mb-3">
 						<label class="mb-1">To Date</label>
-						<input type="date" name="to" class="form-control form-control-sm" value="{{ $request->to ?? date('Y-m-t') }}">
+						<input type="date" name="to" class="form-control form-control-sm" value="{{ $request->to ?? date('Y-m-d') }}">
 					</div>
 
 					<div class="col-md-3 mb-3">

@@ -184,6 +184,16 @@ class SalaryReportService
         $dinnerTotal = (float) ($meal['dinner_total']  ?? 0);
         $mealTotal   = $tiffinTotal + $nightTotal + $dinnerTotal;
 
+        // Days within [from, to] the employee was actually employed — excludes
+        // 'not_employed' rows (post-exit, pre-join, or future — see
+        // EmployeeAttendanceService::getEmployeeAttendanceByDate()). Used by
+        // buildSalarySheetData() to prorate pay to whatever window is actually
+        // relevant for this employee (a mid-period join/exit, or a still-in-progress
+        // period), instead of assuming the full calendar month applies to everyone.
+        $employedDays = collect($attendancePack['attendance'] ?? [])
+            ->filter(fn ($row) => ($row['status_key'] ?? null) !== 'not_employed')
+            ->count();
+
         return [
             'gross'                => (float) ($salaryReport['gross'] ?? $sal['gross'] ?? 0),
             'basic'                => (float) ($salaryReport['basic'] ?? $sal['basic'] ?? 0),
@@ -226,6 +236,7 @@ class SalaryReportService
             'tiffin_eligible_days' => (int) ($meal['tiffin_eligible_days'] ?? 0),
             'night_eligible_days'  => (int) ($meal['night_eligible_days']  ?? 0),
             'dinner_eligible_days' => (int) ($meal['dinner_eligible_days']  ?? 0),
+            'employed_days'        => $employedDays,
         ];
     }
 
@@ -457,6 +468,16 @@ class SalaryReportService
         $totalMonthDays = (int) $periodStart->daysInMonth;
         $totalPeriodDays = (int) $periodStart->diffInDays($periodEnd) + 1;
 
+        // The report's own date range capped at today — a still-in-progress period
+        // (its end date hasn't happened yet) must not credit days that haven't
+        // occurred. A fully completed period is unaffected (today is already past
+        // periodEnd, so this equals $totalPeriodDays as normal).
+        $today = now()->startOfDay();
+        $effectiveEarnEnd = $periodEnd->copy()->startOfDay()->min($today);
+        $elapsedMonthDays = $effectiveEarnEnd->lt($periodStart->copy()->startOfDay())
+            ? 0
+            : (int) $periodStart->copy()->startOfDay()->diffInDays($effectiveEarnEnd) + 1;
+
         $dayMap = ['sunday' => 0, 'monday' => 1, 'tuesday' => 2, 'wednesday' => 3, 'thursday' => 4, 'friday' => 5, 'saturday' => 6];
         $weekendRaw = (string) (hr_factory('weekend') ?? 'Friday');
         $weekendNames = collect(preg_split('/\s*,\s*/', $weekendRaw))
@@ -594,17 +615,48 @@ class SalaryReportService
                     $otAmount = (float) ($sd['ot'] ?? 0);
                     $extraFacility = (float) ($sd['extra_facility'] ?? 0);
 
-                    // Earn Days = Total Month Days - Total Absent. Post-exit/not-yet-employed
-                    // days don't count toward $absentDays (EmployeeAttendanceService tags
-                    // those 'not_employed', not 'absent', and excludes them from the total),
-                    // so they still won't reduce Earn Days or trigger a deduction below.
+                    // $effectiveDays = days actually relevant to this employee within the
+                    // report's own date range: capped globally by $elapsedMonthDays (today,
+                    // for a still-in-progress period) and per-employee by
+                    // $sd['employed_days'] (their own join/exit dates, for anyone who
+                    // joined or resigned partway through it). This is the window Earn
+                    // Days, the salary proration, and the attendance-bonus eligibility
+                    // below are all measured against — never the full calendar month
+                    // unless the report period and the employee's own employment both
+                    // actually cover the whole thing.
                     $unpaidDays = $absentDays;
-                    $earnDays   = max(0, $totalMonthDays - $unpaidDays);
+                    $employedDaysInPeriod = (int) ($sd['employed_days'] ?? $elapsedMonthDays);
+                    $effectiveDays = min($elapsedMonthDays, $employedDaysInPeriod);
+                    $earnDays = max(0, $effectiveDays - $unpaidDays);
 
+                    // Attendance Bonus requires a genuinely full, completed month for this
+                    // employee — a partial view (still-in-progress period, or a mid-period
+                    // join/exit) never qualifies, regardless of how few/no absences there
+                    // were within whatever partial window was actually covered.
+                    if ($effectiveDays < $totalMonthDays) {
+                        $attBonus = 0.0;
+                    }
+
+                    // Absent Amt: real absence only, at the compliance-mode day-rate — the
+                    // literal deduction for days actually marked Absent within the window
+                    // above (never for days outside it, e.g. after a resignation or before
+                    // today in an in-progress month — those simply aren't part of the paid
+                    // window at all, see $proratedSalaryTotal below, rather than being
+                    // deducted as if they were absences).
                     $absentBase   = self::complianceBase($factoryNo, (float) $sd['basic'], (float) $sd['gross']);
-                    $deductAbsent = $unpaidDays > 0 ? round(($absentBase / $deductionMonthDays) * $unpaidDays, 2) : 0;
+                    $absentPerDay = $deductionMonthDays > 0 ? ($absentBase / $deductionMonthDays) : 0;
+                    $deductAbsent = $unpaidDays > 0 ? round($absentPerDay * $unpaidDays, 2) : 0;
 
-                    $payableSalary  = max(0, ($salaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);
+                    // Prorate the salary components themselves to $effectiveDays (out of
+                    // the standard 30-day payroll month) — this is what makes a 10-day
+                    // report correctly show ~10/30 of a full month's pay instead of the
+                    // full month minus a deduction for the other ~20 days. Present days
+                    // within that window are paid at the same day-rate; Absent Amt above
+                    // is subtracted on top for the days marked Absent within it.
+                    $salaryPerDay        = $deductionMonthDays > 0 ? ($salaryTotal / $deductionMonthDays) : 0;
+                    $proratedSalaryTotal = round($salaryPerDay * $effectiveDays, 2);
+
+                    $payableSalary  = max(0, ($proratedSalaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);
                     $deductionTotal = (float) ($sd['total_deduct'] ?? 0) + $deductAbsent;
                     $netSalary      = max(0, $payableSalary + $otAmount + $extraFacility - ($loan + $tax + $stamp + $deductOther));
 

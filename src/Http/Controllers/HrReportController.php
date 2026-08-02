@@ -1014,6 +1014,20 @@ class HrReportController extends Controller
         $query = HrEmployee::query();
         // dd($request->all());
 
+        // An employee who had already exited before this report's period even starts
+        // has zero relevant days in it — every day resolves to "not_employed" anyway
+        // (EmployeeAttendanceService), so they shouldn't be listed, paid, or counted
+        // in any report built on this shared query (Attendance, Salary, OT Summary,
+        // Bonus Sheet, Job Card, ...). Skipped when employee_status was explicitly
+        // filtered — an intentional "show resigned employees" request (e.g. an audit)
+        // is still honored, matching the employee_status filter further down.
+        if (!$request->filled('employee_status')) {
+            $periodStart = $request->input('from') ?: now()->startOfMonth()->toDateString();
+            $query->where(function ($q) use ($periodStart) {
+                $q->whereNull('exited_at')->orWhere('exited_at', '>=', $periodStart);
+            });
+        }
+
         if ($request->filled('employee_id')) {
             $query->where('employee_id', 'like', '%' . trim((string) $request->employee_id) . '%');
         }
@@ -1889,7 +1903,7 @@ class HrReportController extends Controller
 
         if ($request->boolean('print')) {
             $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-            $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+            $to   = $request->input('to')   ?: now()->toDateString();
             $reportType = (string) $request->input('report_type', 'job-card');
             if (!array_key_exists($reportType, $reportTypes)) {
                 $reportType = 'job-card';
@@ -2009,7 +2023,7 @@ class HrReportController extends Controller
             }
 
             $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-            $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+            $to   = $request->input('to')   ?: now()->toDateString();
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
@@ -2443,24 +2457,14 @@ class HrReportController extends Controller
         }
 
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->toDateString();
 
+        // Already-exited-before-this-period exclusion now lives centrally in
+        // employeeReportQuery() so every report gets it consistently.
         $employees = $this->employeeReportQuery($request)
             ->orderBy('section_id')
             ->naturalOrderById()
             ->get();
-
-        // An employee who had already exited before this report's period even starts
-        // has zero relevant days in it — every day resolves to "not_employed" anyway
-        // (EmployeeAttendanceService), so they shouldn't be listed at all, same as
-        // the Salary Sheet already treats them. Skip this when employee_status was
-        // explicitly filtered — an intentional "show resigned employees" request
-        // (e.g. an audit) should still be honored.
-        if (!$request->filled('employee_status')) {
-            $employees = $employees
-                ->reject(fn ($employee) => !blank($employee->exited_at) && $employee->exited_at < $from)
-                ->values();
-        }
 
         $dates = collect();
         $cur = Carbon::parse($from);
@@ -2510,7 +2514,7 @@ class HrReportController extends Controller
             ]);
         }
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->toDateString();
 
         $employees = $this->employeeReportQuery($request)
             ->with(['designation:id,name,bn_name,grade', 'department:id,name,bn_name', 'section:id,name,bn_name'])
@@ -2562,7 +2566,7 @@ class HrReportController extends Controller
         }
 
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->toDateString();
 
         $employeeIds = $this->employeeReportQuery($request)->pluck('id');
 
@@ -2613,7 +2617,7 @@ class HrReportController extends Controller
         }
 
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-        $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+        $to   = $request->input('to')   ?: now()->toDateString();
 
         $employeeIds = $this->employeeReportQuery($request)->pluck('id');
 
@@ -2749,7 +2753,7 @@ class HrReportController extends Controller
 
         if ($request->boolean('print')) {
             $from = (string) ($request->input('from') ?: now()->startOfMonth()->toDateString());
-            $to = (string) ($request->input('to') ?: now()->endOfMonth()->toDateString());
+            $to = (string) ($request->input('to') ?: now()->toDateString());
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
@@ -3074,7 +3078,7 @@ class HrReportController extends Controller
             }
 
             $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-            $to   = $request->input('to')   ?: now()->endOfMonth()->toDateString();
+            $to   = $request->input('to')   ?: now()->toDateString();
 
             $employees = $this->employeeReportQuery($request)
                 ->with(['designation', 'department', 'section'])
@@ -3572,7 +3576,7 @@ class HrReportController extends Controller
     private function salaryReportBasePayload(Request $request, string $reportType): array
     {
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
-        $to = $request->input('to') ?: now()->endOfMonth()->toDateString();
+        $to = $request->input('to') ?: now()->toDateString();
         $options = $this->employeeReportOptions();
 
         $employees = $this->employeeReportQuery($request)
@@ -3639,7 +3643,10 @@ class HrReportController extends Controller
             $month = (int) $request->input('month', now()->month);
             $year = (int) $request->input('year', $currentYear);
             $from = Carbon::create($year, $month, 1)->startOfMonth()->toDateString();
-            $to = Carbon::create($year, $month, 1)->endOfMonth()->toDateString();
+            // Cap at today for the current month (a still-in-progress month must not
+            // report on days that haven't happened yet) — a past month's own end date
+            // is always earlier than today, so this has no effect on completed months.
+            $to = Carbon::create($year, $month, 1)->endOfMonth()->min(now())->toDateString();
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')
@@ -3691,7 +3698,10 @@ class HrReportController extends Controller
             $month = (int) $request->input('month', now()->month);
             $year = (int) $request->input('year', $currentYear);
             $from = Carbon::create($year, $month, 1)->startOfMonth()->toDateString();
-            $to = Carbon::create($year, $month, 1)->endOfMonth()->toDateString();
+            // Cap at today for the current month (a still-in-progress month must not
+            // report on days that haven't happened yet) — a past month's own end date
+            // is always earlier than today, so this has no effect on completed months.
+            $to = Carbon::create($year, $month, 1)->endOfMonth()->min(now())->toDateString();
 
             $employees = $this->employeeReportQuery($request)
                 ->orderBy('section_id')

@@ -37,7 +37,7 @@
 	@foreach($leaveInfos as $li)
 		<th>{{ $li->code }}</th>
 	@endforeach
-	<th>Abs<br>Amt</th>
+	<th>Absent<br>Amt</th>
 	<th>Adv<br>Amt</th>
 	<th>Tax</th>
 	<th>Stamp</th>

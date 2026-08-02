@@ -1,3 +1,29 @@
 amar ekta feature lagbe , dhoro 31 tarikh e weekend , but 31 tarkh e office charu rekhe porer je kono ekdion replace suti katabe (dhore nao porer mane 5 tarikh), but jedin replace suti katabe sedin er date e all date replace hobe, mane attendance theke suru kore sob sobkisu oi 5 tarikh e chole asbe with 5 tarikh mane regular day er moto ot soho sobkisu calculation hobe
 
 just ekhane emon ekta flag rakhbe 31 tarikh e jeno oidin e ar kono attendance e na ney block thake, eita na korle jeta hobe machine theke data sync hole sei weekend ei punch dekhabe and oidin er salary ba sobkisu chole asbe 
+
+
+
+
+
+1019 resign employee
+    e july er 10 tarikhe resign korese 
+    tar mane tar tar 10 diner hisab hobe 10 din er moddhe se koydin aslo koydin absent holo, tar earn, deduction etc calculation hobe, jehetu full month se koreni tai attendance bonus add hobe na , attendance bonus add hobar sortoi hollo full month er calculation, eita apply hobe 
+
+    transfer', 'lefty', 'left', 'resign', 'resigned er khetre 
+
+
+
+2009 regular employee
+    er report jodi ami 1 month er dekhi
+        tahole dekhabe 1 month er moddhe today porjonto koydin
+        jodi full month na hoy tahole attendance bonus show korbe na
+    dhore nilam se 10 din er ta dekhtese 
+        tar gross 30000 taka 
+        tar absent na hole se 10,000 taka pabe (calculation onujayi)
+        tar jodi absent 1 din thake tahole 1 din er deduction hobe mane 
+
+        but ekhon jeta issue hocche 30 diner hisab kore oi 20 diner absent hisab kore oita deduction hocche, ami eita chassi na , properly absent na hole absent er jonno deduction hobe na, 10 din er report dekhle oi din tar goss koto asbe ta hisab kore tar opor calculatuon hobe
+
+
+        eivabe apply koro, na bujhle amake ask kore nio 
