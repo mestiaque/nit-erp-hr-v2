@@ -526,6 +526,13 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Lefty/Resign info updated.');
     }
 
+    public function showResignLetter(HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        return view('hr::employees.print.resign-letter', ['employee' => $employee]);
+    }
+
     public function updateFinalSettlement(Request $request, HrEmployee $employee)
     {
         $this->ensureEmployee($employee);

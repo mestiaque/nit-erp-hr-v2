@@ -319,7 +319,13 @@
     <div class="modal-dialog" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.resign.update', $employee->id) }}">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Lefty & Resign Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.resign-fields', ['employee' => $employee])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer">
+            @if($employee->employment_status === 'resign')
+                <a href="{{ route('hr-center.employees.resign.print.show', $employee->id) }}" target="_blank" class="btn btn-outline-primary btn-sm mr-auto"><i class="fa-solid fa-print"></i> Print Resign</a>
+            @endif
+            <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+        </div>
     </form></div></div>
 </div>
 
