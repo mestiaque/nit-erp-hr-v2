@@ -8,7 +8,6 @@ use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrDepartment;
 use ME\Hr\Models\HrEmployee;
 use ME\Hr\Models\HrEmployeeLeave;
-use ME\Hr\Models\HrEmployeeSalaryInfo;
 use ME\Hr\Models\HrEmployeeSeparation;
 use ME\Hr\Models\HrHoliday;
 use ME\Hr\Models\HrRequisition;
@@ -147,12 +146,82 @@ class HrDashboardController extends Controller
                 ->limit(5)
                 ->get(['id', 'purpose', 'type', 'from_date', 'to_date']);
 
-            // ── Payroll summary (active employees) ──────────────────────────────
-            $activeEmployeeIds = HrEmployee::query()->tap($activeScope)->pluck('id');
-            $payrollTotal = HrEmployeeSalaryInfo::where('status', 1)
-                ->whereIn('employee_id', $activeEmployeeIds)
-                ->sum('gross_salary');
-            $payrollAvg = $totalEmployees > 0 ? round($payrollTotal / $totalEmployees) : 0;
+            // ── Payroll summary: This Month + This Year (YTD), increment-aware ──
+            // A plain sum of hr_employee_salary_infos.gross_salary is stale for anyone
+            // with a locked increment since — "effective salary is derived from
+            // increment records," same rule SalaryReportService/HrOptionsService/
+            // FinalSettlementCalculator already follow (HrEmployeeSalaryIncrement::
+            // applyIncrementOverride()). This reimplements that same latest-locked-
+            // increment-as-of-a-date logic in bulk (grouped in PHP, not per-employee
+            // queries) so a ~400-employee dashboard load stays fast.
+            $now = now();
+            $yearStart = $now->copy()->startOfYear()->toDateString();
+
+            $payrollEmployees = HrEmployee::query()
+                ->whereNotNull('join_date')
+                ->where('join_date', '<=', $now->toDateString())
+                ->where(function ($q) use ($yearStart) {
+                    $q->whereNull('exited_at')->orWhere('exited_at', '>=', $yearStart);
+                })
+                ->with('salaryInfo')
+                ->get(['id', 'join_date', 'exited_at']);
+
+            $factoryNo = (int) (function_exists('hr_factory') ? (hr_factory('factory_no') ?? 0) : 0);
+            $grossField = match ($factoryNo) {
+                1 => 'gross_salary_comp1',
+                2 => 'gross_salary_comp2',
+                default => 'gross_salary',
+            };
+            $incrementField = match ($factoryNo) {
+                1 => 'new_salary_comp_1',
+                2 => 'new_salary_comp_2',
+                default => 'new_salary',
+            };
+
+            $increments = \ME\Hr\Models\HrEmployeeSalaryIncrement::whereIn('employee_id', $payrollEmployees->pluck('id'))
+                ->where('is_locked', true)
+                ->orderBy('increment_date')
+                ->get(['employee_id', 'new_salary', 'new_salary_comp_1', 'new_salary_comp_2', 'increment_date'])
+                ->groupBy('employee_id');
+
+            $effectiveGrossAsOf = function ($employee, string $asOfDate) use ($increments, $grossField, $incrementField) {
+                $base = (float) ($employee->salaryInfo?->{$grossField} ?? 0);
+                $applicable = ($increments->get($employee->id) ?? collect())
+                    ->filter(fn ($inc) => $inc->increment_date <= $asOfDate)
+                    ->last();
+                if (!$applicable) {
+                    return $base;
+                }
+                $value = (float) ($applicable->{$incrementField} ?: $applicable->new_salary);
+                return $value > 0 ? $value : $base;
+            };
+
+            $wasEmployedOn = function ($employee, Carbon $asOf) {
+                $joined = $employee->join_date <= $asOf->toDateString();
+                $stillEmployed = !$employee->exited_at || $employee->exited_at >= $asOf->copy()->startOfMonth()->toDateString();
+                return $joined && $stillEmployed;
+            };
+
+            $payrollThisMonth = 0.0;
+            $activeCountThisMonth = 0;
+            foreach ($payrollEmployees as $emp) {
+                if ($wasEmployedOn($emp, $now)) {
+                    $payrollThisMonth += $effectiveGrossAsOf($emp, $now->toDateString());
+                    $activeCountThisMonth++;
+                }
+            }
+
+            $payrollThisYear = 0.0;
+            for ($m = 1; $m <= $now->month; $m++) {
+                $monthEnd = Carbon::create($now->year, $m, 1)->endOfMonth();
+                foreach ($payrollEmployees as $emp) {
+                    if ($wasEmployedOn($emp, $monthEnd)) {
+                        $payrollThisYear += $effectiveGrossAsOf($emp, $monthEnd->toDateString());
+                    }
+                }
+            }
+
+            $payrollAvgThisMonth = $activeCountThisMonth > 0 ? round($payrollThisMonth / $activeCountThisMonth) : 0;
 
             // ── Leave summary ────────────────────────────────────────────────────
             $leaveSummary = [
@@ -171,31 +240,32 @@ class HrDashboardController extends Controller
                 'newThisMonth', 'recruitedThisYear', 'terminatedThisYear',
                 'last30', 'monthlyTrend', 'joinTrend', 'departments',
                 'recentJoiners', 'recentSeparations', 'onLeaveToday',
-                'upcomingBirthdays', 'upcomingHolidays', 'payrollTotal',
-                'payrollAvg', 'leaveSummary'
+                'upcomingBirthdays', 'upcomingHolidays', 'payrollThisMonth',
+                'payrollThisYear', 'payrollAvgThisMonth', 'leaveSummary'
             );
 
         } catch (\Throwable $e) {
             return [
-                'totalEmployees'    => 0,
-                'presentToday'      => 0,
-                'lateToday'         => 0,
-                'absentToday'       => 0,
-                'newThisMonth'      => 0,
-                'recruitedThisYear' => 0,
-                'terminatedThisYear'=> 0,
-                'last30'            => collect(),
-                'monthlyTrend'      => collect(),
-                'joinTrend'         => collect(),
-                'departments'       => collect(),
-                'recentJoiners'     => collect(),
-                'recentSeparations' => collect(),
-                'onLeaveToday'      => collect(),
-                'upcomingBirthdays' => collect(),
-                'upcomingHolidays'  => collect(),
-                'payrollTotal'      => 0,
-                'payrollAvg'        => 0,
-                'leaveSummary'      => ['pending' => 0, 'approved' => 0, 'onLeaveToday' => 0],
+                'totalEmployees'      => 0,
+                'presentToday'        => 0,
+                'lateToday'           => 0,
+                'absentToday'         => 0,
+                'newThisMonth'        => 0,
+                'recruitedThisYear'   => 0,
+                'terminatedThisYear'  => 0,
+                'last30'              => collect(),
+                'monthlyTrend'        => collect(),
+                'joinTrend'           => collect(),
+                'departments'         => collect(),
+                'recentJoiners'       => collect(),
+                'recentSeparations'   => collect(),
+                'onLeaveToday'        => collect(),
+                'upcomingBirthdays'   => collect(),
+                'upcomingHolidays'    => collect(),
+                'payrollThisMonth'    => 0,
+                'payrollThisYear'     => 0,
+                'payrollAvgThisMonth' => 0,
+                'leaveSummary'        => ['pending' => 0, 'approved' => 0, 'onLeaveToday' => 0],
             ];
         }
     }

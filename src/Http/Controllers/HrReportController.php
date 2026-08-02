@@ -2450,6 +2450,18 @@ class HrReportController extends Controller
             ->naturalOrderById()
             ->get();
 
+        // An employee who had already exited before this report's period even starts
+        // has zero relevant days in it — every day resolves to "not_employed" anyway
+        // (EmployeeAttendanceService), so they shouldn't be listed at all, same as
+        // the Salary Sheet already treats them. Skip this when employee_status was
+        // explicitly filtered — an intentional "show resigned employees" request
+        // (e.g. an audit) should still be honored.
+        if (!$request->filled('employee_status')) {
+            $employees = $employees
+                ->reject(fn ($employee) => !blank($employee->exited_at) && $employee->exited_at < $from)
+                ->values();
+        }
+
         $dates = collect();
         $cur = Carbon::parse($from);
         $end = Carbon::parse($to);

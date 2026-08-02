@@ -326,12 +326,12 @@
             <div class="hr-section-title">Payroll Summary</div>
             <div class="row g-2 text-center">
                 <div class="col-6">
-                    <div class="hr-stat-val" style="color:#10b981;font-size:20px;">{{ number_format($s['payrollTotal']) }}</div>
-                    <div class="hr-stat-lbl">Total Gross Salary</div>
+                    <div class="hr-stat-val" style="color:#10b981;font-size:20px;">{{ number_format($s['payrollThisMonth']) }}</div>
+                    <div class="hr-stat-lbl">This Month <small class="d-block text-muted">Avg {{ number_format($s['payrollAvgThisMonth']) }}/employee</small></div>
                 </div>
                 <div class="col-6">
-                    <div class="hr-stat-val" style="color:#6366f1;font-size:20px;">{{ number_format($s['payrollAvg']) }}</div>
-                    <div class="hr-stat-lbl">Avg. Salary / Employee</div>
+                    <div class="hr-stat-val" style="color:#6366f1;font-size:20px;">{{ number_format($s['payrollThisYear']) }}</div>
+                    <div class="hr-stat-lbl">This Year <small class="d-block text-muted">Jan–{{ now()->format('M') }} (YTD)</small></div>
                 </div>
             </div>
         </div>
