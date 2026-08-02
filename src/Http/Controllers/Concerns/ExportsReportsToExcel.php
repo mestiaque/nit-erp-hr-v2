@@ -3,6 +3,7 @@
 namespace ME\Hr\Http\Controllers\Concerns;
 
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Reader\Html as HtmlReader;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -43,6 +44,18 @@ trait ExportsReportsToExcel
 
         $reader = new HtmlReader();
         $spreadsheet = $reader->loadFromString('<!doctype html><html><body>' . $contentsHtml . '</body></html>');
+
+        // The HTML reader never sets column widths, so every column opens at Excel's
+        // narrow default — long text truncates and any date/number column shows as a
+        // solid "####" block until manually widened. Auto-sizing every column to its
+        // content on every sheet fixes that without needing per-report column maps.
+        foreach ($spreadsheet->getAllSheets() as $sheet) {
+            $highestColumnIndex = Coordinate::columnIndexFromString($sheet->getHighestColumn());
+            for ($col = 1; $col <= $highestColumnIndex; $col++) {
+                $sheet->getColumnDimensionByColumn($col)->setAutoSize(true);
+            }
+            $sheet->calculateColumnWidths();
+        }
 
         $filename = $filenamePrefix . '-' . now()->format('Y-m-d_His') . '.xlsx';
 
