@@ -569,6 +569,7 @@ class SalaryReportService
             'other_earn' => 0, 'gross' => 0, 'payable' => 0,
             'ot_hours' => 0, 'ot_rate' => 0, 'ot_total' => 0,
             'extra_facility' => 0, 'net' => 0, 'deduction_total' => 0,
+            'sfl_total' => 0, 'sfl_net' => 0, 'sfl_payable' => 0,
         ];
         foreach ($leaveInfos as $li) {
             $grandBase['leave_' . strtoupper($li->code)] = 0;
@@ -601,7 +602,6 @@ class SalaryReportService
                 foreach ($secEmps as $emp) {
                     $sd = self::getEmployeeSalaryData($emp, $from, $to, $request, $employeeDataFn);
 
-                    $salaryTotal = $sd['basic'] + $sd['house_rent'] + $sd['medical'] + $sd['transport'] + $sd['food_allow'];
                     $otRate = (float) ($sd['ot_rate'] ?? 0);
                     $presentDays = (int) ($sd['present'] ?? 0);
                     $absentDays = (int) ($sd['absent'] ?? 0);
@@ -626,7 +626,7 @@ class SalaryReportService
                     // actually cover the whole thing.
                     $unpaidDays = $absentDays;
                     $employedDaysInPeriod = (int) ($sd['employed_days'] ?? $elapsedMonthDays);
-                    $effectiveDays = min($elapsedMonthDays, $employedDaysInPeriod);
+                    $effectiveDays = min($elapsedMonthDays, $employedDaysInPeriod, $deductionMonthDays);
                     $earnDays = max(0, $effectiveDays - $unpaidDays);
 
                     // Attendance Bonus requires a genuinely full, completed month for this
@@ -647,6 +647,8 @@ class SalaryReportService
                     $absentPerDay = $deductionMonthDays > 0 ? ($absentBase / $deductionMonthDays) : 0;
                     $deductAbsent = $unpaidDays > 0 ? round($absentPerDay * $unpaidDays, 2) : 0;
 
+                    $salaryTotal = $sd['basic'] + $sd['house_rent'] + $sd['medical'] + $sd['transport'] + $sd['food_allow'];
+
                     // Prorate the salary components themselves to $effectiveDays (out of
                     // the standard 30-day payroll month) — this is what makes a 10-day
                     // report correctly show ~10/30 of a full month's pay instead of the
@@ -659,6 +661,15 @@ class SalaryReportService
                     $payableSalary  = max(0, ($proratedSalaryTotal + $attBonus + $wphAmount + $otherEarn) - $deductAbsent);
                     $deductionTotal = (float) ($sd['total_deduct'] ?? 0) + $deductAbsent;
                     $netSalary      = max(0, $payableSalary + $otAmount + $extraFacility - ($loan + $tax + $stamp + $deductOther));
+
+                    // SFL-layout-only figures (Salary Sheet print): Total Salary = Gross -
+                    // Absent Amt TK + Att Bonus + Other Allowance; Net Salary = Total Salary
+                    // + OT-Amount; Payable = Net Salary - Advance Paid - Revenue (stamp).
+                    // These are separate from $salaryTotal/$payableSalary/$netSalary above,
+                    // which the non-SFL detailed salary sheet layout depends on.
+                    $sflTotalSalary = max(0, $sd['gross'] - $deductAbsent + $attBonus + $extraFacility);
+                    $sflNetSalary   = $sflTotalSalary + $otAmount;
+                    $sflPayable     = max(0, $sflNetSalary - $loan - $stamp);
 
                     $row = [
                         'emp' => $emp,
@@ -695,6 +706,9 @@ class SalaryReportService
                         'extra_facility' => $extraFacility,
                         'net' => $netSalary,
                         'deduction_total' => $deductionTotal,
+                        'sfl_total' => $sflTotalSalary,
+                        'sfl_net' => $sflNetSalary,
+                        'sfl_payable' => $sflPayable,
                     ];
                     foreach ($leaveInfos as $li) {
                         $code = strtoupper($li->code);
@@ -726,6 +740,7 @@ class SalaryReportService
             'weekendCount' => $weekendCount,
             'otherHolidayCount' => $otherHolidayCount,
             'inWords' => self::numberToWords((int) round($grand['net'])),
+            'sflInWords' => self::numberToWords((int) round($grand['sfl_payable'])),
             'groupBy' => $groupBy,
         ];
     }

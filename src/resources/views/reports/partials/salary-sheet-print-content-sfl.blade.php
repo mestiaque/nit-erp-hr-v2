@@ -168,16 +168,16 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						<td class="tr">{{ number_format($row['deduct_absent']) }}</td>
 						<td class="tr">{{ number_format($row['att_bonus']) }}</td>
 						<td class="tr">{{ number_format($row['extra_facility']) }}</td>
-						<td class="tr"><strong>{{ number_format($row['salary_total']) }}</strong></td>
+						<td class="tr"><strong>{{ number_format($row['sfl_total']) }}</strong></td>
 
 						<td class="tc">{{ number_format($row['ot_hours'], 2) }}</td>
 						<td class="tc">{{ number_format($row['ot_rate'], 2) }}</td>
 						<td class="tr">{{ number_format($row['ot_total']) }}</td>
 
-						<td class="tr"><strong>{{ number_format($row['payable']) }}</strong></td>
+						<td class="tr"><strong>{{ number_format($row['sfl_net']) }}</strong></td>
 						<td class="tr">{{ number_format($row['loan']) }}</td>
 						<td class="tr">{{ number_format($row['stamp']) }}</td>
-						<td class="tr"><strong>{{ number_format($row['net']) }}</strong></td>
+						<td class="tr"><strong>{{ number_format($row['sfl_payable']) }}</strong></td>
 						<td class="stamp-box"></td>
 						<td class="stamp-box"></td>
 					</tr>
@@ -202,14 +202,14 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<td class="tr">{{ number_format($group['totals']['deduct_absent']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['att_bonus']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['extra_facility']) }}</td>
-					<td class="tr">{{ number_format($group['totals']['salary_total']) }}</td>
+					<td class="tr">{{ number_format($group['totals']['sfl_total']) }}</td>
 					<td class="tc">{{ number_format($group['totals']['ot_hours'], 2) }}</td>
 					<td class="tc">{{ number_format($group['totals']['emp'] > 0 ? $group['totals']['ot_rate'] / $group['totals']['emp'] : 0, 2) }}</td>
 					<td class="tr">{{ number_format($group['totals']['ot_total']) }}</td>
-					<td class="tr">{{ number_format($group['totals']['payable']) }}</td>
+					<td class="tr">{{ number_format($group['totals']['sfl_net']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['loan']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['stamp']) }}</td>
-					<td class="tr">{{ number_format($group['totals']['net']) }}</td>
+					<td class="tr">{{ number_format($group['totals']['sfl_payable']) }}</td>
 					<td class="tr"></td>
 					<td class="tr"></td>
 				</tr>
@@ -234,14 +234,14 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tr">{{ number_format($grand['deduct_absent']) }}</td>
 				<td class="tr">{{ number_format($grand['att_bonus']) }}</td>
 				<td class="tr">{{ number_format($grand['extra_facility']) }}</td>
-				<td class="tr">{{ number_format($grand['salary_total']) }}</td>
+				<td class="tr">{{ number_format($grand['sfl_total']) }}</td>
 				<td class="tc">{{ number_format($grand['ot_hours'], 2) }}</td>
 				<td class="tc">{{ number_format($grand['emp'] > 0 ? $grand['ot_rate'] / $grand['emp'] : 0, 2) }}</td>
 				<td class="tr">{{ number_format($grand['ot_total']) }}</td>
-				<td class="tr">{{ number_format($grand['payable']) }}</td>
+				<td class="tr">{{ number_format($grand['sfl_net']) }}</td>
 				<td class="tr">{{ number_format($grand['loan']) }}</td>
 				<td class="tr">{{ number_format($grand['stamp']) }}</td>
-				<td class="tr">{{ number_format($grand['net']) }}</td>
+				<td class="tr">{{ number_format($grand['sfl_payable']) }}</td>
 				<td class="tr"></td>
 				<td class="tr"></td>
 			</tr>
@@ -249,10 +249,10 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	</table>
 	<div class="sheet-inwords">
 		In Words :
-		@if($inWords)
-			Taka {{ ucfirst($inWords) }} only
+		@if($sflInWords ?? null)
+			Taka {{ ucfirst($sflInWords) }} only
 		@else
-			Taka {{ number_format($grand['net'], 2) }} only
+			Taka {{ number_format($grand['sfl_payable'], 2) }} only
 		@endif
 	</div>
 @endif

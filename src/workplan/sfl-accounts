@@ -30,5 +30,15 @@ just ekhane emon ekta flag rakhbe 31 tarikh e jeno oidin e ar kono attendance e 
 
 
 
-Employee   Gross Salary
-8008       12,700
+Employee   Gross Salary  Absent Amt TK   Total Salary  OT-Amount     Net Salary      Revenue         Payable
+8008       12,700        0               12,700        6,791         15, 118          10              21,899   wrong 
+8010       13,000        433             13,000        5,670         14,963          10              20,623   wrong
+
+
+8008       12,700        0               12,700        6,791         19,491          10              19,481   correct
+8010       13,000        433             12,567        5,670         18,237          10              18,227   correct
+
+
+gross salary  (- Absent Amt TK) (+Att: Bonus) (+Other Alowance) = Total Salary
+Total salary +  OT-Amount = Net Salary
+Net Salary (- Advance Paid) (-Revenue) = Payable 
