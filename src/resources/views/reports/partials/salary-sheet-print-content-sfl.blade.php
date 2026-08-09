@@ -2,7 +2,8 @@
 <style>
 * { box-sizing: border-box; }
 body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
-
+td{ font-size: 9px; }
+th{ font-size: 9px; }
 .rpt-header { text-align:center;  padding-bottom:4px; margin-bottom:5px; line-height:1.2; }
 .rpt-header h2 { margin:0; font-size:14px; text-transform:uppercase; letter-spacing:.6px; color:#1a3a5c; }
 .rpt-header p  { margin:1px 0 0; font-size:9.5px; color:#444; }
@@ -30,12 +31,12 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 .sheet-sec-row td { background:#f4f4f4; color:#0b4f6c; font-weight:700; }
 .sheet-sec-total td { background:#fafafa; font-weight:700; }
 .sheet-grand td { background:#ececec; font-weight:700; font-size:10px; }
-.stamp-box { width:25mm; height:20mm; padding:0; }
+.stamp-box { width:35mm; height:25mm; padding:0; }
 .sheet-inwords { margin-top:10px; font-size:10px; font-weight:700; }
 
 @media print {
-	@page { size: A4 landscape; margin: 7mm; }
-	body { margin: 0; }
+	@page { size: legal landscape; margin: 7mm; }
+	body { margin: 1mm; }
 }
 </style>
 @endpush
@@ -118,7 +119,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<th>Revenue</th>
 				<th>Payable</th>
 				<th>Stamp</th>
-				<th>Signature</th>
+				{{-- <th>Signature</th> --}}
 			</tr>
 		</thead>
 		<tbody>
@@ -179,7 +180,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						<td class="tr">{{ number_format($row['stamp']) }}</td>
 						<td class="tr"><strong>{{ number_format($row['sfl_payable']) }}</strong></td>
 						<td class="stamp-box"></td>
-						<td class="stamp-box"></td>
+						{{-- <td class="stamp-box"></td> --}}
 					</tr>
 				@endforeach
 
@@ -211,7 +212,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<td class="tr">{{ number_format($group['totals']['stamp']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['sfl_payable']) }}</td>
 					<td class="tr"></td>
-					<td class="tr"></td>
+					{{-- <td class="tr"></td> --}}
 				</tr>
 			@endforeach
 
@@ -243,7 +244,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tr">{{ number_format($grand['stamp']) }}</td>
 				<td class="tr">{{ number_format($grand['sfl_payable']) }}</td>
 				<td class="tr"></td>
-				<td class="tr"></td>
+				{{-- <td class="tr"></td> --}}
 			</tr>
 		</tbody>
 	</table>
