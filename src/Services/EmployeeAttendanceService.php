@@ -210,6 +210,13 @@ class EmployeeAttendanceService
             $exitedAt = Carbon::parse($employee->exited_at)->startOfDay();
         }
 
+        // Symmetric to $exitedAt above: a date before the employee's own join date is
+        // just as much "not employed" as one after they left — without this, pre-join
+        // dates fall through to the "no attendance row" branch below and get counted
+        // as Absent, wrongly deducting pay for days the employee wasn't even hired yet
+        // and wrongly inflating employed_days (which uncaps salary proration).
+        $joinedAt = !blank($employee->join_date) ? Carbon::parse($employee->join_date)->startOfDay() : null;
+
         // A day that hasn't happened yet obviously has no attendance row either — without
         // this, every future date inside an in-progress month's range (e.g. requesting the
         // whole current month on the 19th) fell through to the "no attendance row" branch
@@ -299,7 +306,7 @@ class EmployeeAttendanceService
         foreach ($dates as $d) {
             $dateStr = $d->format('Y-m-d');
 
-            if (($exitedAt && $d->gt($exitedAt)) || $d->gt($today)) {
+            if (($exitedAt && $d->gt($exitedAt)) || ($joinedAt && $d->lt($joinedAt)) || $d->gt($today)) {
                 $result[] = [
                     'date'            => $d->format('d-m-Y'),
                     'day'             => $d->format('l'),
