@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\DB;
 use ME\Hr\Models\HrAttendance;
 use ME\Hr\Models\HrAttendanceReplaceOff;
 use ME\Hr\Models\HrEmployee;
-use ME\Hr\Models\HrLock;
 use ME\Hr\Services\EmployeeAttendanceService;
 
 /**
@@ -17,9 +16,13 @@ use ME\Hr\Services\EmployeeAttendanceService;
  *
  * The office stays open on worked_date (normally a weekend/holiday) and everyone
  * takes their compensatory day off on replace_date instead. Applying a swap:
- *   1. Moves every employee's hr_attendances row for worked_date onto replace_date,
- *      recalculating OT against each employee's own shift as resolved for
- *      replace_date — the moved day is treated exactly like a regular working day.
+ *   1. Force-moves every employee's hr_attendances row for worked_date onto
+ *      replace_date, recalculating OT against each employee's own shift as
+ *      resolved for replace_date — the moved day is treated exactly like a
+ *      regular working day. A payroll lock covering worked_date does not block
+ *      the move. A pre-existing attendance row already on replace_date (e.g. a
+ *      stray punch already there) is left alone and the move is skipped for
+ *      HR to resolve manually — every other employee's move still proceeds.
  *   2. Leaves worked_date permanently blocked (see the active-swap check added to
  *      AttendanceMachineController::applyPunchToAttendance()) so a later machine
  *      sync can never re-introduce attendance/salary impact on that date.
@@ -53,31 +56,27 @@ class AttendanceReplaceOffController extends Controller
             'worked_date' => 'required|date',
             'replace_date' => 'required|date|different:worked_date',
             'remarks' => 'nullable|string',
+            'conflict_mode' => 'nullable|in:force,skip',
         ]);
 
         $workedDate = $data['worked_date'];
         $replaceDate = $data['replace_date'];
+        $conflictMode = $data['conflict_mode'] ?? 'skip';
 
         if (HrAttendanceReplaceOff::active()->where('worked_date', $workedDate)->exists()) {
             return back()->withErrors(['worked_date' => 'This date already has an active day swap.'])->withInput();
         }
 
         $movedCount = 0;
-        $skippedLocked = 0;
         $skippedConflict = 0;
 
-        DB::transaction(function () use ($workedDate, $replaceDate, $data, &$movedCount, &$skippedLocked, &$skippedConflict) {
+        DB::transaction(function () use ($workedDate, $replaceDate, $data, $conflictMode, &$movedCount, &$skippedConflict) {
             // Locks the rows for the remainder of this transaction so a concurrent
             // machine-sync punch can't land on worked_date in the gap between reading
             // and moving/blocking it.
             $attendances = HrAttendance::where('date', $workedDate)->lockForUpdate()->get();
 
-            $workedDay = Carbon::parse($workedDate);
-
             foreach ($attendances as $attendance) {
-                // A locked attendance row (or a period-level lock covering its month)
-                // is immutable everywhere else in this system — the swap must respect
-                // that too, rather than silently moving payroll-locked data.
                 $employee = HrEmployee::with('shift', 'shiftRule.primaryShift', 'shiftRule.alternateShifts.shift')
                     ->find($attendance->employee_id);
 
@@ -85,23 +84,26 @@ class AttendanceReplaceOffController extends Controller
                     continue;
                 }
 
-                if ($attendance->is_locked
-                    || HrLock::isLocked('attendance', $workedDay->year, $workedDay->month, $employee->department_id)
-                ) {
-                    $skippedLocked++;
-                    continue;
-                }
-
-                // Don't clobber a pre-existing attendance row on replace_date (e.g. a
-                // stray punch already there) — skip it for HR to resolve manually;
-                // every other employee's move still proceeds.
+                // A pre-existing attendance row already on replace_date (e.g. a stray
+                // punch already there) is either overwritten (conflict_mode=force,
+                // worked_date's attendance always wins) or left alone and skipped for
+                // HR to resolve manually (conflict_mode=skip, the default) — every
+                // other employee's move still proceeds either way.
                 $conflict = HrAttendance::where('employee_id', $attendance->employee_id)
                     ->where('date', $replaceDate)
                     ->exists();
                 if ($conflict) {
-                    $skippedConflict++;
-                    continue;
+                    if ($conflictMode !== 'force') {
+                        $skippedConflict++;
+                        continue;
+                    }
+                    HrAttendance::where('employee_id', $attendance->employee_id)
+                        ->where('date', $replaceDate)
+                        ->delete();
                 }
+
+                // Forceful swap: a payroll lock on worked_date does not block the move.
+                $attendance->is_locked = false;
 
                 $shift = $employee->resolveShiftForDate($replaceDate);
 
@@ -141,9 +143,6 @@ class AttendanceReplaceOffController extends Controller
 
         $message = "Day swap applied: {$movedCount} attendance record(s) moved from {$workedDate} to {$replaceDate}. "
             . "{$workedDate} is now blocked from any further attendance sync.";
-        if ($skippedLocked > 0) {
-            $message .= " {$skippedLocked} record(s) were skipped because they're locked.";
-        }
         if ($skippedConflict > 0) {
             $message .= " {$skippedConflict} record(s) were skipped because the employee already has attendance on {$replaceDate} — resolve those manually.";
         }

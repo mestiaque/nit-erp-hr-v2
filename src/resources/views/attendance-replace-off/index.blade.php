@@ -124,6 +124,21 @@
                 <input type="date" name="replace_date" class="form-control" required value="{{ old('replace_date') }}">
               </div>
               <div class="mb-3">
+                <label>If Replace Date already has attendance for an employee</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="conflict_mode" id="conflictSkip" value="skip" {{ old('conflict_mode', 'skip') === 'skip' ? 'checked' : '' }}>
+                  <label class="form-check-label" for="conflictSkip">
+                    Skip that employee <small class="text-muted">(leave existing attendance as-is, resolve manually)</small>
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="conflict_mode" id="conflictForce" value="force" {{ old('conflict_mode') === 'force' ? 'checked' : '' }}>
+                  <label class="form-check-label" for="conflictForce">
+                    Force overwrite <small class="text-muted">(delete existing attendance, Worked Date's data wins)</small>
+                  </label>
+                </div>
+              </div>
+              <div class="mb-3">
                 <label>Remarks</label>
                 <textarea name="remarks" class="form-control" rows="2">{{ old('remarks') }}</textarea>
               </div>
