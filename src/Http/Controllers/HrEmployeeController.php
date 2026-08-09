@@ -259,6 +259,33 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.index')->with('success', 'Salary info updated.');
     }
 
+    /**
+     * Backfill each matching employee's salary_info designation-linked fields (attendance
+     * bonus, allowances, etc.) from their Designation record, wherever the employee-level
+     * field is currently empty/zero. Never overwrites an employee-specific value already set.
+     * Optional `designation_id` query/body param limits the run to one designation.
+     */
+    public function syncSalaryFromDesignation(Request $request): RedirectResponse
+    {
+        $designationId = $request->filled('designation_id') ? (int) $request->input('designation_id') : null;
+
+        $query = HrEmployee::query()->whereNotNull('designation_id');
+        if ($designationId) {
+            $query->where('designation_id', $designationId);
+        }
+
+        $synced = 0;
+        $query->with('salaryInfo')->chunkById(200, function ($employees) use (&$synced) {
+            foreach ($employees as $employee) {
+                $this->syncDesignationSalaryToEmployee($employee, ['designation_id' => $employee->designation_id], false);
+                $synced++;
+            }
+        });
+
+        return redirect()->route('hr-center.employees.index')
+            ->with('success', "Synced designation salary fields for {$synced} employee(s).");
+    }
+
     public function updateAddress(Request $request, HrEmployee $employee): RedirectResponse
     {
         $this->ensureEmployee($employee);

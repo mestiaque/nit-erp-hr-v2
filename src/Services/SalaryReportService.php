@@ -82,7 +82,11 @@ class SalaryReportService
             : (float) ($summary['totalOt'] ?? 0);
         $otAmount = round($otHours * $otRate, 2);
 
-        $present = (int) ($summary['totalPresentAll'] ?? 0);
+        // totalAttendance excludes weekend/holiday days (unlike totalPresentAll, which
+        // also counts anyone who clocked in on a holiday) — the report shows Work Day
+        // and Holy Day as separate, non-overlapping columns, so they must not double-count
+        // the same date.
+        $present = (int) ($summary['totalAttendance'] ?? 0);
         $absent  = (int) ($summary['totalAbsent'] ?? 0);
 
         $leaveDays          = (int) ($summary['totalLeave'] ?? 0);
@@ -632,8 +636,11 @@ class SalaryReportService
                     // Attendance Bonus requires a genuinely full, completed month for this
                     // employee — a partial view (still-in-progress period, or a mid-period
                     // join/exit) never qualifies, regardless of how few/no absences there
-                    // were within whatever partial window was actually covered.
-                    if ($effectiveDays < $totalMonthDays) {
+                    // were within whatever partial window was actually covered. The "full
+                    // month" threshold is capped at $deductionMonthDays too, since
+                    // $effectiveDays itself never exceeds it (a 31-day calendar month must
+                    // not be treated as a partial month just because payroll uses 30 days).
+                    if ($effectiveDays < min($totalMonthDays, $deductionMonthDays)) {
                         $attBonus = 0.0;
                     }
 
@@ -667,7 +674,14 @@ class SalaryReportService
                     // + OT-Amount; Payable = Net Salary - Advance Paid - Revenue (stamp).
                     // These are separate from $salaryTotal/$payableSalary/$netSalary above,
                     // which the non-SFL detailed salary sheet layout depends on.
-                    $sflTotalSalary = max(0, $sd['gross'] - $deductAbsent + $attBonus + $extraFacility);
+                    //
+                    // "Gross" here must be prorated to $effectiveDays first — a mid-period
+                    // join/resignation (or a still-in-progress period) means the employee
+                    // was never entitled to a full month's gross to begin with, and Absent
+                    // Amt TK alone doesn't capture that (it only deducts days actually
+                    // marked Absent within the employed window, not days outside it).
+                    $proratedGross  = round(($deductionMonthDays > 0 ? ($sd['gross'] / $deductionMonthDays) : 0) * $effectiveDays, 2);
+                    $sflTotalSalary = max(0, $proratedGross - $deductAbsent + $attBonus + $extraFacility);
                     $sflNetSalary   = $sflTotalSalary + $otAmount;
                     $sflPayable     = max(0, $sflNetSalary - $loan - $stamp);
 

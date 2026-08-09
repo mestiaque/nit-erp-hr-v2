@@ -90,7 +90,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				@if($withPicture)<th>Photo</th>@endif
 				<th>Join Date</th>
 				<th>Designation</th>
-				<th>Section</th>
+				<th>Department</th>
 				<th>Grade</th>
 				<th>Basic</th>
 				<th>H.R</th>
@@ -145,7 +145,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						@endif
 						<td class="tc">{{ $employee->joining_date ? \Carbon\Carbon::parse($employee->joining_date)->format('d-M-Y') : '-' }}</td>
 						<td>{{ $desigEntry['name'] ?? 'N/A' }}</td>
-						<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
+						<td>{{ $departmentMap->get($employee->department_id, 'N/A') }}</td>
 						<td class="tc">{{ $desigEntry['grade'] ?? '-' }}</td>
 
 						<td class="tr">{{ number_format($row['basic']) }}</td>

@@ -38,6 +38,7 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::post('/employees', [HrEmployeeController::class, 'store'])->name('employees.store');
 		Route::put('/employees/{employee}/profile', [HrEmployeeController::class, 'updateProfile'])->name('employees.profile.update');
 		Route::put('/employees/{employee}/salary', [HrEmployeeController::class, 'updateSalary'])->name('employees.salary.update');
+		Route::match(['get', 'post'], '/employees/salary/sync-from-designation', [HrEmployeeController::class, 'syncSalaryFromDesignation'])->name('employees.salary.sync-from-designation');
 		Route::put('/employees/{employee}/address', [HrEmployeeController::class, 'updateAddress'])->name('employees.address.update');
 		Route::put('/employees/{employee}/nominee', [HrEmployeeController::class, 'updateNominee'])->name('employees.nominee.update');
 		Route::put('/employees/{employee}/age-verification', [HrEmployeeController::class, 'updateAgeVerification'])->name('employees.age.update');
