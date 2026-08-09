@@ -36,3 +36,7 @@ Publish the config file:
 ```bash
 php artisan vendor:publish --tag=hr-config
 ```
+
+```sync designation to employee
+admin/hr-center/employees/salary/sync-from-designation
+```
