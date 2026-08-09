@@ -630,7 +630,21 @@ class SalaryReportService
                     // actually cover the whole thing.
                     $unpaidDays = $absentDays;
                     $employedDaysInPeriod = (int) ($sd['employed_days'] ?? $elapsedMonthDays);
-                    $effectiveDays = min($elapsedMonthDays, $employedDaysInPeriod, $deductionMonthDays);
+
+                    // Normalize real calendar employed-days onto the standard 30-day
+                    // payroll scale before capping — a 31-day month must not let "employed
+                    // all but 1 day" (e.g. joined the 2nd) silently round up to a full
+                    // 30/30 payable window just because 30 real days happens to already
+                    // hit $deductionMonthDays. Comparing raw day-counts against the fixed
+                    // 30-day cap can't catch that gap: 30 employed-days out of a 31-day
+                    // month and 30 employed-days out of a 30-day month are indistinguishable
+                    // as plain counts. Scaling first (30 * employedDays/totalMonthDays) is
+                    // what actually surfaces the missing day.
+                    $normalizedEmployedDays = $totalMonthDays > 0
+                        ? (int) round($employedDaysInPeriod * $deductionMonthDays / $totalMonthDays)
+                        : $employedDaysInPeriod;
+
+                    $effectiveDays = min($elapsedMonthDays, $normalizedEmployedDays, $deductionMonthDays);
                     $earnDays = max(0, $effectiveDays - $unpaidDays);
 
                     // Attendance Bonus requires a genuinely full, completed month for this

@@ -34,10 +34,10 @@ th{ font-size: 9px; }
 .stamp-box { width:35mm; height:25mm; padding:0; }
 .sheet-inwords { margin-top:10px; font-size:10px; font-weight:700; }
 
-@media print {
-	@page { size: legal landscape; margin: 7mm; }
-	body { margin: 1mm; }
-}
+	@media print {
+		@page { size: legal	 landscape; margin: 7mm; }
+		body { margin: 1mm; }
+	}
 </style>
 @endpush
 
