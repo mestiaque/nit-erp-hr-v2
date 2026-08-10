@@ -46,7 +46,7 @@ th{ font-size: 9px; }
 	$address = hr_factory('address') ?? '';
 	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
 	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
-	$totalCols = $withPicture ? 35 : 34;
+	$totalCols = ($withPicture ? 31 : 30) + $leaveInfos->count();
 	$labelCols = $withPicture ? 8 : 7;
 @endphp
 
@@ -102,9 +102,9 @@ th{ font-size: 9px; }
 				<th>Month Day</th>
 				<th>Work Day</th>
 				<th>Holy Day</th>
-				<th>E/L</th>
-				<th>S/L</th>
-				<th>C/L</th>
+				@foreach($leaveInfos as $li)
+					<th>{{ $li->code }}</th>
+				@endforeach
 				<th>Pay Day</th>
 				<th>Absent Day</th>
 				<th>Absent Amt TK</th>
@@ -160,13 +160,13 @@ th{ font-size: 9px; }
 						<td class="tc">{{ $row['pr'] }}</td>
 						<td class="tc">{{ $row['wh'] + $row['fh'] }}</td>
 
-						<td class="tc">{{ $row['leave_EL'] ?? 0 }}</td>
-						<td class="tc">{{ $row['leave_SL'] ?? 0 }}</td>
-						<td class="tc">{{ $row['leave_CL'] ?? 0 }}</td>
+						@foreach($leaveInfos as $li)
+							<td class="tc">{{ $row['leave_' . strtoupper($li->code)] ?? 0 }}</td>
+						@endforeach
 
-						<td class="tc">{{ $row['earn_days'] }}</td>
-						<td class="tc">{{ $row['ab'] }}</td>
-						<td class="tr">{{ number_format($row['deduct_absent']) }}</td>
+						<td class="tc">{{ $row['sfl_pay_day'] }}</td>
+						<td class="tc">{{ $row['sfl_ab'] }}</td>
+						<td class="tr">{{ number_format($row['sfl_deduct_absent']) }}</td>
 						<td class="tr">{{ number_format($row['att_bonus']) }}</td>
 						<td class="tr">{{ number_format($row['extra_facility']) }}</td>
 						<td class="tr"><strong>{{ number_format($row['sfl_total']) }}</strong></td>
@@ -195,12 +195,12 @@ th{ font-size: 9px; }
 					<td class="tc">{{ $totalMonthDays }}</td>
 					<td class="tc">{{ $group['totals']['pr'] }}</td>
 					<td class="tc">{{ $group['totals']['wh'] + $group['totals']['fh'] }}</td>
-					<td class="tc">{{ $group['totals']['leave_EL'] ?? 0 }}</td>
-					<td class="tc">{{ $group['totals']['leave_SL'] ?? 0 }}</td>
-					<td class="tc">{{ $group['totals']['leave_CL'] ?? 0 }}</td>
-					<td class="tc">{{ $group['totals']['earn_days'] }}</td>
-					<td class="tc">{{ $group['totals']['ab'] }}</td>
-					<td class="tr">{{ number_format($group['totals']['deduct_absent']) }}</td>
+					@foreach($leaveInfos as $li)
+						<td class="tc">{{ $group['totals']['leave_' . strtoupper($li->code)] ?? 0 }}</td>
+					@endforeach
+					<td class="tc">{{ $group['totals']['sfl_pay_day'] }}</td>
+					<td class="tc">{{ $group['totals']['sfl_ab'] }}</td>
+					<td class="tr">{{ number_format($group['totals']['sfl_deduct_absent']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['att_bonus']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['extra_facility']) }}</td>
 					<td class="tr">{{ number_format($group['totals']['sfl_total']) }}</td>
@@ -227,12 +227,12 @@ th{ font-size: 9px; }
 				<td class="tc">{{ $totalMonthDays }}</td>
 				<td class="tc">{{ $grand['pr'] }}</td>
 				<td class="tc">{{ $grand['wh'] + $grand['fh'] }}</td>
-				<td class="tc">{{ $grand['leave_EL'] ?? 0 }}</td>
-				<td class="tc">{{ $grand['leave_SL'] ?? 0 }}</td>
-				<td class="tc">{{ $grand['leave_CL'] ?? 0 }}</td>
-				<td class="tc">{{ $grand['earn_days'] }}</td>
-				<td class="tc">{{ $grand['ab'] }}</td>
-				<td class="tr">{{ number_format($grand['deduct_absent']) }}</td>
+				@foreach($leaveInfos as $li)
+					<td class="tc">{{ $grand['leave_' . strtoupper($li->code)] ?? 0 }}</td>
+				@endforeach
+				<td class="tc">{{ $grand['sfl_pay_day'] }}</td>
+				<td class="tc">{{ $grand['sfl_ab'] }}</td>
+				<td class="tr">{{ number_format($grand['sfl_deduct_absent']) }}</td>
 				<td class="tr">{{ number_format($grand['att_bonus']) }}</td>
 				<td class="tr">{{ number_format($grand['extra_facility']) }}</td>
 				<td class="tr">{{ number_format($grand['sfl_total']) }}</td>

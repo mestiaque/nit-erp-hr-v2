@@ -276,8 +276,13 @@ class EmployeeAttendanceService
             'maternity'=> 0,
         ];
 
+        // Only an approved leave actually blocks the day from attendance/absence/holiday
+        // classification — a still-pending request hasn't been authorized yet and must
+        // not silently override the employee's real attendance (or manufacture a "leave"
+        // day out of an otherwise-absent one) before HR has approved it.
         $leaves = Leave::with('leaveType')
             ->where('employee_id', $employee->id)
+            ->where('status', 'approved')
             ->whereDate('leave_from', '<=', $toDate)
             ->whereDate('leave_to', '>=', $fromDate)
             ->get();

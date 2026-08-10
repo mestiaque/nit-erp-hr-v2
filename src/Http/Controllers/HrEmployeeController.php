@@ -1191,6 +1191,28 @@ class HrEmployeeController extends Controller
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave deleted.');
     }
 
+    public function leavesApprove(HrEmployee $employee, HrEmployeeLeave $leave): RedirectResponse
+    {
+        $this->ensureEmployee($employee);
+        abort_unless($leave->employee_id === $employee->id, 404);
+
+        $leave->status = 'approved';
+        $leave->save();
+
+        return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave approved.');
+    }
+
+    public function leavesReject(HrEmployee $employee, HrEmployeeLeave $leave): RedirectResponse
+    {
+        $this->ensureEmployee($employee);
+        abort_unless($leave->employee_id === $employee->id, 404);
+
+        $leave->status = 'rejected';
+        $leave->save();
+
+        return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave rejected.');
+    }
+
     public function printSection(HrEmployee $employee, string $section)
     {
         $this->ensureEmployee($employee);

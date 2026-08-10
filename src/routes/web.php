@@ -65,6 +65,8 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::post('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesStore'])->name('employees.leaves.store');
 		Route::put('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesUpdate'])->name('employees.leaves.update');
 		Route::delete('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesDelete'])->name('employees.leaves.delete');
+		Route::post('/employees/{employee}/leaves/{leave}/approve', [HrEmployeeController::class, 'leavesApprove'])->name('employees.leaves.approve');
+		Route::post('/employees/{employee}/leaves/{leave}/reject', [HrEmployeeController::class, 'leavesReject'])->name('employees.leaves.reject');
 		Route::get('/employees/{employee}/documents', [HrEmployeeController::class, 'documentsPage'])->name('employees.documents.page');
 		Route::post('/employees/{employee}/documents', [HrEmployeeController::class, 'documentsStore'])->name('employees.documents.store');
 		Route::delete('/employees/{employee}/documents', [HrEmployeeController::class, 'documentsDelete'])->name('employees.documents.delete');

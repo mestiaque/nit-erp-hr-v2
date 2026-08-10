@@ -159,10 +159,13 @@ class SalaryReportService
             $deductOther = (float) ($salaryReport['total_deduct'] ?? 0) - $knownDeduct;
         }
 
-        // Per-LeaveInfo code counts from Leave records within the period
+        // Per-LeaveInfo code counts from Leave records within the period — approved
+        // only, consistent with EmployeeAttendanceService's own leave-day detection; a
+        // still-pending request shouldn't show up as a taken leave day here either.
         $leavesByCode = [];
         $empLeaves = Leave::with('leaveType')
             ->where('employee_id', $emp->id)
+            ->where('status', 'approved')
             ->whereDate('leave_from', '<=', $to)
             ->whereDate('leave_to', '>=', $from)
             ->get();
@@ -573,6 +576,7 @@ class SalaryReportService
             'other_earn' => 0, 'gross' => 0, 'payable' => 0,
             'ot_hours' => 0, 'ot_rate' => 0, 'ot_total' => 0,
             'extra_facility' => 0, 'net' => 0, 'deduction_total' => 0,
+            'sfl_pay_day' => 0, 'sfl_ab' => 0, 'sfl_deduct_absent' => 0,
             'sfl_total' => 0, 'sfl_net' => 0, 'sfl_payable' => 0,
         ];
         foreach ($leaveInfos as $li) {
@@ -687,16 +691,32 @@ class SalaryReportService
                     // Absent Amt TK + Att Bonus + Other Allowance; Net Salary = Total Salary
                     // + OT-Amount; Payable = Net Salary - Advance Paid - Revenue (stamp).
                     // These are separate from $salaryTotal/$payableSalary/$netSalary above,
-                    // which the non-SFL detailed salary sheet layout depends on.
+                    // which the non-SFL detailed salary sheet layout depends on — and from
+                    // $earnDays/$unpaidDays above, which are also shared with it.
                     //
-                    // "Gross" here must be prorated to $effectiveDays first — a mid-period
-                    // join/resignation (or a still-in-progress period) means the employee
-                    // was never entitled to a full month's gross to begin with, and Absent
-                    // Amt TK alone doesn't capture that (it only deducts days actually
-                    // marked Absent within the employed window, not days outside it).
-                    $proratedGross  = round(($deductionMonthDays > 0 ? ($sd['gross'] / $deductionMonthDays) : 0) * $effectiveDays, 2);
-                    $sflTotalSalary = max(0, $proratedGross - $deductAbsent + $attBonus + $extraFacility);
-                    $sflNetSalary   = $sflTotalSalary + $otAmount;
+                    // Two different things, two different treatments — a mid-period
+                    // join/resignation gap is NOT an absence (the employee wasn't marked
+                    // absent, they simply weren't employed yet/anymore), so it must not show
+                    // up as Absent Day or go through the Absent Amt deduction. Instead the
+                    // gap is captured by prorating Gross itself against the actual calendar
+                    // month length ($totalMonthDays) — a fully-employed, zero-absence
+                    // employee is paid full Gross regardless of a 28/30/31-day month, while a
+                    // partial-month joiner/leaver gets exactly their employed fraction. A real
+                    // marked absence (while actually employed) is deducted separately, at the
+                    // standard $deductionMonthDays(30) day-rate, same as elsewhere.
+                    // WOP (Without Pay leave) is the one leave type that isn't paid — it's
+                    // deducted exactly like a real absence, at the same day-rate. Every
+                    // other leave type (CL/SL/EL/FL/ML/GL/...) is paid and never reduces
+                    // Pay Day or Total Salary.
+                    $wopDays          = (int) ($sd['leaves_by_code']['WOP'] ?? 0);
+                    $sflUnpaidDays    = $absentDays + $wopDays;
+                    $sflProratedGross = $totalMonthDays > 0
+                        ? round($sd['gross'] * $employedDaysInPeriod / $totalMonthDays, 2)
+                        : $sd['gross'];
+                    $sflPayDay        = max(0, $employedDaysInPeriod - $sflUnpaidDays);
+                    $sflDeductAbsent  = $sflUnpaidDays > 0 ? round($absentPerDay * $sflUnpaidDays, 2) : 0;
+                    $sflTotalSalary   = max(0, $sflProratedGross - $sflDeductAbsent + $attBonus + $extraFacility);
+                    $sflNetSalary     = $sflTotalSalary + $otAmount;
                     $sflPayable     = max(0, $sflNetSalary - $loan - $stamp);
 
                     $row = [
@@ -734,6 +754,9 @@ class SalaryReportService
                         'extra_facility' => $extraFacility,
                         'net' => $netSalary,
                         'deduction_total' => $deductionTotal,
+                        'sfl_pay_day' => $sflPayDay,
+                        'sfl_ab' => $absentDays,
+                        'sfl_deduct_absent' => $sflDeductAbsent,
                         'sfl_total' => $sflTotalSalary,
                         'sfl_net' => $sflNetSalary,
                         'sfl_payable' => $sflPayable,

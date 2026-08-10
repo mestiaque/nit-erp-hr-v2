@@ -78,6 +78,7 @@
                             <th>Leave From</th>
                             <th>Leave To</th>
                             <th>Total Days</th>
+                            <th>Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -92,8 +93,24 @@
                             <td>{{ data_get($row, 'leave_to') ?: '-' }}</td>
                             <td>{{ data_get($row, 'total_days') ?: 0 }}</td>
                             <td>
+                                @php $leaveStatus = data_get($row, 'status') ?: 'pending'; @endphp
+                                <span class="badge {{ $leaveStatus === 'approved' ? 'badge-success' : ($leaveStatus === 'rejected' ? 'badge-danger' : 'badge-warning') }}">
+                                    {{ ucfirst($leaveStatus) }}
+                                </span>
+                            </td>
+                            <td>
                                 @if(data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
                                 <a href="{{ route('hr-center.employees.leaves.print', [$employee->id, data_get($row, 'identifier')]) }}" target="_blank" class="btn-custom" style="background:#17a2b8;color:#fff;" title="Print Leave Application"><i class="fa-solid fa-print"></i></a>
+                                @endif
+                                @if($leaveStatus === 'pending' && data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
+                                <form method="post" action="{{ route('hr-center.employees.leaves.approve', [$employee->id, data_get($row, 'identifier')]) }}" style="display:inline-block" onsubmit="return confirm('Approve this leave?');">
+                                    @csrf
+                                    <button type="submit" class="btn-custom" style="background:#28a745;color:#fff;" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                </form>
+                                <form method="post" action="{{ route('hr-center.employees.leaves.reject', [$employee->id, data_get($row, 'identifier')]) }}" style="display:inline-block" onsubmit="return confirm('Reject this leave?');">
+                                    @csrf
+                                    <button type="submit" class="btn-custom danger" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                                </form>
                                 @endif
                                 <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditLeaveModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
                                 <form method="post" action="{{ route('hr-center.employees.leaves.delete', $employee->id) }}" style="display:inline-block" onsubmit="return confirm('Delete this leave?');">
@@ -106,7 +123,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center">No leave data found.</td></tr>
+                        <tr><td colspan="9" class="text-center">No leave data found.</td></tr>
                     @endforelse
                     </tbody>
                 </table>

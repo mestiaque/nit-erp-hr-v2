@@ -3544,13 +3544,20 @@ class HrReportController extends Controller
     private function renderSalarySheetReport(Request $request, string $reportType, string $view)
     {
         $payload = $this->salaryReportBasePayload($request, $reportType);
-        // FL/GL are excluded here — those codes are now the dedicated Festival/General
-        // factory-holiday columns (see EmployeeAttendanceService's holiday_festival/
-        // holiday_general), not per-employee leave-type columns, so they must not also
-        // appear via the generic per-leave-type loop below.
-        $leaveInfos = HrLeaveInfo::where('status', 'active')
-            ->whereNotIn('code', ['FL', 'GL'])
-            ->orderBy('id')->get(['id', 'name', 'code']);
+
+        $leaveInfosQuery = HrLeaveInfo::where('status', 'active');
+        // The SFL layout's own "Holy Day" column is explicitly weekend + factory holiday
+        // (General + Festival) only — it never derives from per-employee Leave records —
+        // so a personal GL/FL leave application there can't double-count against it, and
+        // every active Leave Info type (including GL/FL) gets its own column. The non-SFL
+        // layout still excludes FL/GL: those codes are also used there as the dedicated
+        // Festival/General factory-holiday columns (see EmployeeAttendanceService's
+        // holiday_festival/holiday_general), so showing them again via the generic
+        // per-leave-type loop would double-count.
+        if ((string) (optional(general())->company_s_code) !== 'SFL') {
+            $leaveInfosQuery->whereNotIn('code', ['FL', 'GL']);
+        }
+        $leaveInfos = $leaveInfosQuery->orderBy('id')->get(['id', 'name', 'code']);
 
         // Always hardcoded Department+Section grouped before — default 'department_section'
         // preserves that exact bucketing/subtotal appearance.
