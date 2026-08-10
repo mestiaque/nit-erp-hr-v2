@@ -377,7 +377,15 @@ class EmployeeAttendanceService
             } elseif ($isWeekend) {
                 $status = 'weekend'; $status_display = 'Weekend';
             } elseif ($att) {
-                $status         = !empty($att->status) ? str_replace(' ', '_', strtolower($att->status)) : 'present';
+                $status = !empty($att->status) ? str_replace(' ', '_', strtolower($att->status)) : 'present';
+                // A "Punch Missing" row with no in_time AND no out_time recorded at all
+                // carries no evidence the employee was ever present — it's indistinguishable
+                // from a plain absence, and 'punch_missing'/'pm' is its own bucket
+                // (totalPM) that salary/report deduction logic never reads, so leaving it
+                // unrelabeled would silently pay for a day with zero attendance.
+                if (in_array($status, ['punch_missing', 'pm'], true) && empty($att->in_time) && empty($att->out_time)) {
+                    $status = 'absent';
+                }
                 $status_display = ucwords(str_replace('_', ' ', $status));
             } else {
                 $status = 'absent'; $status_display = 'Absent';

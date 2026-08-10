@@ -421,6 +421,71 @@ class AttendanceController extends Controller
         }
         return 'Present';
     }
+
+    /**
+     * Re-derives each employee's attendance status for a fixed 40-day window (ending
+     * 2 days ago, so today-2 back through today-41) from EmployeeAttendanceService's
+     * own authoritative per-day cascade (leave/absent/holiday/weekend/present/...) —
+     * the same logic every report already reads through — and writes it back onto the
+     * stored HrAttendance.status column wherever it disagrees. This corrects rows left
+     * stale by upstream data that changed after the fact (a leave got approved, a
+     * "Punch Missing" row turned out to have no punches at all, etc.) so anything that
+     * reads `status` directly (rather than through the service) stays consistent too.
+     *
+     * Only existing HrAttendance rows are touched — a day with no row at all doesn't
+     * need one created, since the report logic already treats a missing row as Absent
+     * on its own. This is forceful: a payroll lock on a date/department does NOT block
+     * the correction — the goal is the attendance record matching reality, independent
+     * of whether payroll has already been finalized against the stale value.
+     */
+    public function syncStatus(Request $request)
+    {
+        $to = Carbon::today()->subDays(2);
+        $from = $to->copy()->subDays(39); // 40-day window inclusive of $to
+
+        $updated = 0;
+
+        HrEmployee::query()->select('id', 'department_id')->chunkById(100, function ($employees) use ($from, $to, &$updated) {
+            foreach ($employees as $employee) {
+                $attendanceRows = HrAttendance::where('employee_id', $employee->id)
+                    ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                    ->get()
+                    ->keyBy(fn ($row) => Carbon::parse($row->date)->format('Y-m-d'));
+
+                if ($attendanceRows->isEmpty()) {
+                    continue;
+                }
+
+                $pack = EmployeeAttendanceService::getEmployeeAttendanceByDate(
+                    $employee->id, $from->toDateString(), $to->toDateString()
+                );
+                $computedByDate = collect($pack['attendance'] ?? [])
+                    ->keyBy(fn ($row) => Carbon::createFromFormat('d-m-Y', $row['date'])->format('Y-m-d'));
+
+                foreach ($attendanceRows as $dateStr => $att) {
+                    $computed = $computedByDate->get($dateStr);
+                    if (!$computed || ($computed['status_key'] ?? null) === 'not_employed') {
+                        continue;
+                    }
+
+                    // Forceful sync: a payroll lock on this date/department doesn't block
+                    // the status correction — the underlying attendance fact (who was
+                    // actually present/absent/on leave) is what's authoritative here,
+                    // regardless of whether payroll has already been finalized against it.
+                    $newStatus = $computed['status'];
+                    if ($newStatus && $att->status !== $newStatus) {
+                        $att->status = $newStatus;
+                        $att->save();
+                        $updated++;
+                    }
+                }
+            }
+        });
+
+        $message = "Attendance status synced for {$from->toDateString()} to {$to->toDateString()}: {$updated} row(s) updated.";
+
+        return redirect()->back()->with('success', $message);
+    }
 }
 
 

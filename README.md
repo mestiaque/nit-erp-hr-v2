@@ -40,3 +40,6 @@ php artisan vendor:publish --tag=hr-config
 ```sync designation to employee
 admin/hr-center/employees/salary/sync-from-designation
 ```
+```sync attendance status
+/admin/hr-center/attendances/sync-status
+```

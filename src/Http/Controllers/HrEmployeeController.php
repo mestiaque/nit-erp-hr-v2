@@ -1194,7 +1194,7 @@ class HrEmployeeController extends Controller
     public function leavesApprove(HrEmployee $employee, HrEmployeeLeave $leave): RedirectResponse
     {
         $this->ensureEmployee($employee);
-        abort_unless($leave->employee_id === $employee->id, 404);
+        abort_unless($leave->employee_id == $employee->id, 404);
 
         $leave->status = 'approved';
         $leave->save();
@@ -1205,7 +1205,7 @@ class HrEmployeeController extends Controller
     public function leavesReject(HrEmployee $employee, HrEmployeeLeave $leave): RedirectResponse
     {
         $this->ensureEmployee($employee);
-        abort_unless($leave->employee_id === $employee->id, 404);
+        abort_unless($leave->employee_id == $employee->id, 404);
 
         $leave->status = 'rejected';
         $leave->save();
