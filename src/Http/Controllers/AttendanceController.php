@@ -483,8 +483,7 @@ class AttendanceController extends Controller
         });
 
         $message = "Attendance status synced for {$from->toDateString()} to {$to->toDateString()}: {$updated} row(s) updated.";
-
-        return redirect()->back()->with('success', $message);
+        print($message);
     }
 }
 
