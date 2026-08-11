@@ -123,7 +123,6 @@
                 <div class="gp-pass-no">পাস নং: {{ $gatePass->pass_no }}</div>
             </div>
             {{-- <div class="gp-pass-no"></div> --}}
-            <br>
 
             <div class="gp-field">
                 <span class="lbl">তারিখ:</span>
