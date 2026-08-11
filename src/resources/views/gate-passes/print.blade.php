@@ -7,7 +7,7 @@
 * { font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Nikosh', Arial, sans-serif; }
 
 .gp-sheet { display: flex; flex-wrap: wrap; gap: 0; align-items: stretch; justify-content: center; }
-.gp-wrap { flex: 1 1 0; max-width: 480px; min-width: 320px; border: 1px solid #000; padding: 10px 14px 14px; }
+.gp-wrap { flex: 1 1 0; max-width: 480px; min-width: 320px; border: 1px solid #000; padding: 10px 14px 14px; position: relative; }
 .gp-divider { flex: 0 0 auto; width: 0; border-left: 1px dashed #000; margin: 0 8px; }
 
 .gp-head-row { display: flex; justify-content: center; align-items: flex-start; border-bottom: 1px solid #000; padding-bottom: 6px; margin-bottom: 6px; }
@@ -23,9 +23,9 @@
 .gp-unit-code { border-top: 1px solid #000; padding: 1px 4px; font-size: 8.5px; }
 .gp-unit-code .box { display: inline-block; border: 1px solid #000; width: 40px; height: 12px; vertical-align: middle; margin-left: 4px; }
 
-.gp-title-row { display: flex; justify-content: space-between; align-items: baseline; margin: 4px 0 10px; }
+.gp-title-row { display: flex; justify-content: space-between; align-items: baseline; margin: 4px 0 10px; align-items:self-start;}
 .gp-title { font-size: 15px; font-weight: 700; text-decoration: underline; width: 80%; text-align: center; padding-left: 35%; }
-.gp-copy-tag { font-size: 10.5px; font-weight: 700; border: 1px dashed #0000007a;}
+.gp-copy-tag { font-size: 10.5px; font-weight: 700; border: 1px dashed #0000007a; position: absolute; top: 10px; right: 10px;}
 .gp-pass-no { font-size: 9px; color: #333; }
 
 .gp-field { font-size: 11.5px; margin-bottom: 9px; display: flex; flex-wrap: wrap; gap: 4px 8px; }
@@ -96,6 +96,7 @@
             <div class="gp-divider"></div>
         @endif
         <div class="gp-wrap">
+            <div class="gp-copy-tag">{{ $copyLabel }}</div>
             <div class="gp-head-row">
                 <div class="gp-head-left">
                     @if(!blank(optional(general())->logo()))
@@ -119,9 +120,9 @@
 
             <div class="gp-title-row">
                 <div class="gp-title">গেইট পাস</div>
-                <div class="gp-copy-tag">{{ $copyLabel }}</div>
+                <div class="gp-pass-no">পাস নং: {{ $gatePass->pass_no }}</div>
             </div>
-            <div class="gp-pass-no">পাস নং: {{ $gatePass->pass_no }}</div>
+            {{-- <div class="gp-pass-no"></div> --}}
             <br>
 
             <div class="gp-field">
