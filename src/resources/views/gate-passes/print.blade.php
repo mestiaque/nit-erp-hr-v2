@@ -60,10 +60,12 @@
     $company = hr_factory('name') ?? 'Company Name';
     $address = hr_factory('address') ?? '';
 
+    // Reasons are stored in Bangla directly now; this only translates old
+    // records created before that change (English values still in the DB).
     $reasonBn = [
         'Personal Work'        => 'ব্যক্তিগত কাজ',
         'Medical / Emergency'  => 'চিকিৎসা / জরুরী প্রয়োজন',
-        'Official Work'        => 'প্রাতিষ্ঠানিক কাজ',
+        'Official Work'        => 'অফিসিয়াল কাজ',
         'Bank Work'            => 'ব্যাংক সংক্রান্ত কাজ',
         'Family Emergency'     => 'পারিবারিক জরুরী প্রয়োজন',
         'Others'               => 'অন্যান্য',
@@ -170,16 +172,16 @@
 
             <div class="gp-field">
                 <span class="lbl">বর্হিগমনের সময়:</span>
-                <span class="val">{{ $bnDigits(optional($outTime)->format('h:i')) }}</span>
-                <span class="lbl">{{ $ampmBn($outTime) }}</span>
+                <span class="val">{{ $bnDigits(optional($outTime)->format('h:i')) }} &nbsp;&nbsp;&nbsp;{{ $ampmBn($outTime) }}</span>
+                <span class="lbl"></span>
             </div>
 
             <div class="gp-field">
                 <span class="lbl">ফিরে আসার সময়:</span>
-                <span class="val">{{ $bnDigits(optional($inTime)->format('h:i')) }}</span>
-                <span class="lbl">{{ $ampmBn($inTime) }}</span>
+                <span class="val">{{ $bnDigits(optional($inTime)->format('h:i')) }} &nbsp;&nbsp;&nbsp;{{ $ampmBn($inTime) }}</span>
+                <span class="lbl"><span class="gp-note">(নিরাপত্তা সেকশন পূরণ করবেন)</span></span>
             </div>
-            <div class="gp-note">(নিরাপত্তা সেকশন পূরণ করবেন)</div>
+            {{-- <div class="gp-note">(নিরাপত্তা সেকশন পূরণ করবেন)</div> --}}
 
             <div class="gp-sign-row">
                 <div class="gp-sign-box"><div class="line"></div>আবেদনকারী</div>

@@ -168,8 +168,8 @@
                         </div>
                     </div>
                     <div class="form-group mb-2">
-                        <label class="form-label">In Time <span class="text-danger">*</span></label>
-                        <input type="time" name="in_time" id="create_in_time" class="form-control form-control-sm" required>
+                        <label class="form-label">In Time</label>
+                        <input type="time" name="in_time" id="create_in_time" class="form-control form-control-sm">
                     </div>
                     <div class="form-group mb-2">
                         <label class="form-label">Reason <span class="text-danger">*</span></label>

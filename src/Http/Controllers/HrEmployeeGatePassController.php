@@ -12,12 +12,16 @@ use ME\Hr\Models\HrEmployeeGatePass;
 class HrEmployeeGatePassController extends Controller
 {
     private const REASONS = [
-        'Personal Work',
-        'Medical / Emergency',
-        'Official Work',
-        'Bank Work',
-        'Family Emergency',
-        'Others',
+        'ব্যক্তিগত কাজ',
+        'চিকিৎসা / জরুরী প্রয়োজন',
+        'অফিসিয়াল কাজ',
+        'ব্যাংক সংক্রান্ত কাজ',
+        'পারিবারিক জরুরী প্রয়োজন',
+        'মিটিং / প্রশিক্ষণ',
+        'ক্রয় সংক্রান্ত কাজ',
+        'সরকারি অফিসের কাজ',
+        'বাসা/বাড়ির কাজ',
+        'অন্যান্য',
     ];
 
     public function index(Request $request)
@@ -55,18 +59,23 @@ class HrEmployeeGatePassController extends Controller
             'employee_id'      => 'required|exists:hr_employees,id',
             'date'             => 'required|date',
             'out_time'         => 'required|date_format:H:i',
-            'in_time'          => 'required|date_format:H:i',
+            'in_time'          => 'nullable|date_format:H:i',
             'duration_minutes' => 'nullable|integer|min:1',
             'reason'           => 'required|string|max:100',
             'remarks'          => 'nullable|string|max:1000',
         ]);
 
         $outTime = Carbon::parse($validated['date'] . ' ' . $validated['out_time']);
-        $inTime  = Carbon::parse($validated['date'] . ' ' . $validated['in_time']);
-        if ($inTime->lte($outTime)) {
-            $inTime->addDay(); // gate pass crosses midnight
+
+        $inTime = null;
+        if (!empty($validated['in_time'])) {
+            $inTime = Carbon::parse($validated['date'] . ' ' . $validated['in_time']);
+            if ($inTime->lte($outTime)) {
+                $inTime->addDay(); // gate pass crosses midnight
+            }
         }
-        $duration = $validated['duration_minutes'] ?? (int) $outTime->diffInMinutes($inTime);
+
+        $duration = $validated['duration_minutes'] ?? ($inTime ? (int) $outTime->diffInMinutes($inTime) : 0);
 
         $gatePass = HrEmployeeGatePass::create([
             'pass_no'          => $this->nextPassNo(),
