@@ -74,7 +74,6 @@
     $outTime = $gatePass->out_time;
     $inTime  = $gatePass->in_time;
     $ampmBn  = fn ($t) => $t ? ($t->format('A') === 'AM' ? 'এ.এম' : 'পি.এম') : '';
-    $approxHours = $gatePass->duration_minutes ? round($gatePass->duration_minutes / 60, 1) : '';
 
     $employee   = $gatePass->employee;
     $empName    = $employee->bn_name ?? $employee->name ?? 'N/A';
@@ -86,6 +85,17 @@
     // Bengali digits for the numeric-only values (ID, hours) so the printed
     // slip reads fully in Bangla rather than mixing scripts mid-field.
     $bnDigits = fn ($v) => $v === null || $v === '' ? '' : strtr((string) $v, ['0'=>'০','1'=>'১','2'=>'২','3'=>'৩','4'=>'৪','5'=>'৫','6'=>'৬','7'=>'৭','8'=>'৮','9'=>'৯']);
+
+    // 30 -> "৩০ মিনিট", 60 -> "১ ঘন্টা", 70 -> "১ ঘন্টা ১০ মিনিট"
+    $approxDuration = '';
+    if ($gatePass->duration_minutes) {
+        $h = intdiv($gatePass->duration_minutes, 60);
+        $m = $gatePass->duration_minutes % 60;
+        $parts = [];
+        if ($h > 0) $parts[] = $bnDigits($h) . ' ঘন্টা';
+        if ($m > 0) $parts[] = $bnDigits($m) . ' মিনিট';
+        $approxDuration = implode(' ', $parts);
+    }
 
     $copies = ['অফিস কপি', 'গেইট কপি'];
 @endphp
@@ -166,8 +176,7 @@
 
             <div class="gp-field">
                 <span class="lbl">ফিরে আসার সময় (আনু:):</span>
-                <span class="val">{{ $bnDigits($approxHours) }}</span>
-                <span class="lbl">ঘন্টা</span>
+                <span class="val">{{ $approxDuration }}</span>
             </div>
 
             <div class="gp-field">

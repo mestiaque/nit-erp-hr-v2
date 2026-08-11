@@ -99,7 +99,7 @@ class HrEmployeeGatePassController extends Controller
 
         $validated = $request->validate([
             'out_time'         => 'required|date',
-            'in_time'          => 'required|date|after:out_time',
+            'in_time'          => 'nullable|date|after:out_time',
             'duration_minutes' => 'nullable|integer|min:1',
             'reason'           => 'required|string|max:100',
             'remarks'          => 'nullable|string|max:1000',
@@ -107,8 +107,8 @@ class HrEmployeeGatePassController extends Controller
         ]);
 
         $outTime  = Carbon::parse($validated['out_time']);
-        $inTime   = Carbon::parse($validated['in_time']);
-        $duration = $validated['duration_minutes'] ?? (int) $outTime->diffInMinutes($inTime);
+        $inTime   = !empty($validated['in_time']) ? Carbon::parse($validated['in_time']) : null;
+        $duration = $validated['duration_minutes'] ?? ($inTime ? (int) $outTime->diffInMinutes($inTime) : $gatePass->duration_minutes);
 
         $gatePass->update([
             'out_time'         => $outTime,

@@ -163,7 +163,7 @@
                         <div class="col-md-6">
                             <div class="form-group mb-2">
                                 <label class="form-label">Duration (Minutes)</label>
-                                <input type="number" min="1" name="duration_minutes" id="create_duration" class="form-control form-control-sm" placeholder="e.g. 60">
+                                <input type="number" min="1" name="duration_minutes" id="create_duration" class="form-control form-control-sm" placeholder="e.g. 60" list="gp-duration-suggestions">
                             </div>
                         </div>
                     </div>
@@ -216,13 +216,13 @@
                         <div class="col-md-6">
                             <div class="form-group mb-2">
                                 <label class="form-label">Duration (Minutes)</label>
-                                <input type="number" min="1" name="duration_minutes" id="edit_duration" class="form-control form-control-sm">
+                                <input type="number" min="1" name="duration_minutes" id="edit_duration" class="form-control form-control-sm" list="gp-duration-suggestions">
                             </div>
                         </div>
                     </div>
                     <div class="form-group mb-2">
-                        <label class="form-label">In Time <span class="text-danger">*</span></label>
-                        <input type="datetime-local" name="in_time" id="edit_in_time" class="form-control form-control-sm" required>
+                        <label class="form-label">In Time</label>
+                        <input type="datetime-local" name="in_time" id="edit_in_time" class="form-control form-control-sm">
                     </div>
                     <div class="form-group mb-2">
                         <label class="form-label">Reason <span class="text-danger">*</span></label>
@@ -280,6 +280,21 @@
         </div>
     </div>
 </div>
+
+{{-- Text content (not the `label` attribute) is what browsers actually show
+     in the suggestion dropdown for a number input's datalist. --}}
+<datalist id="gp-duration-suggestions">
+    <option value="15">15 (0.25H)</option>
+    <option value="30">30 (0.5H)</option>
+    <option value="45">45 (0.75H)</option>
+    <option value="60">60 (1H)</option>
+    <option value="90">90 (1.5H)</option>
+    <option value="120">120 (2H)</option>
+    <option value="150">150 (2.5H)</option>
+    <option value="180">180 (3H)</option>
+    <option value="240">240 (4H)</option>
+    <option value="480">480 (8H)</option>
+</datalist>
 @endsection
 
 @push('js')
