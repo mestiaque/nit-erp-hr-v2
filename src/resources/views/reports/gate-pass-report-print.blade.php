@@ -17,7 +17,7 @@
 .emp-total-row td { background:#fafafa; font-weight:700; }
 
 @media print {
-    @page { size: A4 landscape; margin: 7mm; }
+    @page { size: A4; margin: 7mm; }
     body { margin: 0; }
 }
 </style>

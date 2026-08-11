@@ -304,35 +304,24 @@
         document.getElementById('create_out_time').value = now.toISOString().slice(11, 16);
     });
 
-    // Keep Duration <-> In Time synchronized against Out Time on the Edit modal
-    // (datetime-local fields, so date and time move together).
+    // Duration is a derived, read-only-in-practice field: it is always computed from
+    // Out Time + In Time and never writes back to In Time. Typing a Duration value
+    // does not move In Time — the user sets Out/In directly and Duration follows.
+    // (Edit modal — datetime-local fields, so date and time move together.)
     function wireDurationSync(outId, durationId, inId) {
         var out = document.getElementById(outId);
         var duration = document.getElementById(durationId);
         var inTime = document.getElementById(inId);
-        var updating = false;
-
-        function calcInFromDuration() {
-            if (updating || !out.value || !duration.value) return;
-            updating = true;
-            var outDate = new Date(out.value);
-            outDate.setMinutes(outDate.getMinutes() + parseInt(duration.value, 10));
-            inTime.value = new Date(outDate.getTime() - outDate.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            updating = false;
-        }
 
         function calcDurationFromIn() {
-            if (updating || !out.value || !inTime.value) return;
-            updating = true;
+            if (!out.value || !inTime.value) return;
             var diffMs = new Date(inTime.value) - new Date(out.value);
             if (diffMs > 0) {
                 duration.value = Math.round(diffMs / 60000);
             }
-            updating = false;
         }
 
-        out.addEventListener('change', calcInFromDuration);
-        duration.addEventListener('input', calcInFromDuration);
+        out.addEventListener('change', calcDurationFromIn);
         inTime.addEventListener('change', calcDurationFromIn);
     }
 
@@ -342,37 +331,20 @@
         var out = document.getElementById(outId);
         var duration = document.getElementById(durationId);
         var inTime = document.getElementById(inId);
-        var updating = false;
 
         function toMinutes(hhmm) {
             var parts = hhmm.split(':');
             return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
         }
-        function toHHMM(totalMinutes) {
-            totalMinutes = ((totalMinutes % 1440) + 1440) % 1440;
-            var h = Math.floor(totalMinutes / 60);
-            var m = totalMinutes % 60;
-            return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-        }
-
-        function calcInFromDuration() {
-            if (updating || !out.value || !duration.value) return;
-            updating = true;
-            inTime.value = toHHMM(toMinutes(out.value) + parseInt(duration.value, 10));
-            updating = false;
-        }
 
         function calcDurationFromIn() {
-            if (updating || !out.value || !inTime.value) return;
-            updating = true;
+            if (!out.value || !inTime.value) return;
             var diff = toMinutes(inTime.value) - toMinutes(out.value);
             if (diff <= 0) diff += 1440; // gate pass crosses midnight
             duration.value = diff;
-            updating = false;
         }
 
-        out.addEventListener('change', calcInFromDuration);
-        duration.addEventListener('input', calcInFromDuration);
+        out.addEventListener('change', calcDurationFromIn);
         inTime.addEventListener('change', calcDurationFromIn);
     }
 
