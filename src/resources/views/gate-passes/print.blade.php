@@ -4,7 +4,7 @@
 
 @push('css')
 <style>
-* { font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Nikosh', Arial, sans-serif; }
+* { font-family: 'Noto Sans Bengali', 'SolaimanLipi', 'Nikosh', Arial, sans-serif; font-size: 11px; }
 
 .gp-sheet { display: flex; flex-wrap: wrap; gap: 0; align-items: stretch; justify-content: center; }
 .gp-wrap { flex: 1 1 0; max-width: 480px; min-width: 320px; border: 1px solid #000; padding: 10px 14px 14px; position: relative; }
@@ -33,7 +33,7 @@
 .gp-field .val { flex: 1 1 auto; min-width: 60px; border-bottom: 1px dotted #000; padding: 0 2px; }
 .gp-field-inline { display: flex; flex-wrap: wrap; gap: 4px 18px; }
 .gp-field-inline > div { display: flex; align-items: baseline; gap: 4px; flex: 1 1 45%; }
-.gp-field-inline .val { flex: 1 1 auto; border-bottom: 1px dotted #000; padding: 0 2px; min-width: 40px; }
+.gp-field-inline .val { flex: 1 1 auto; border-bottom: 1px dotted #000; padding: 0 2px; min-width: 40px; align-self: end; }
 
 .gp-purpose-hint { font-size: 9px; color: #555; margin-top: 1px; }
 
@@ -77,10 +77,10 @@
 
     $employee   = $gatePass->employee;
     $empName    = $employee->bn_name ?? $employee->name ?? 'N/A';
-    $empDesig   = optional($employee?->designation)->bn_name ?? optional($employee?->designation)->name ?? 'N/A';
+    $empDesig   = optional($employee?->designation)->bn_name ?? optional($employee?->designation)->name ?? '';
     $empSection = optional($employee?->section)->bn_name ?? optional($employee?->section)->name ?? '';
     $empLine    = optional($employee?->floorLine)->bn_line_name ?? optional($employee?->floorLine)->line_name ?? '';
-    $empDept    = optional($employee?->department)->bn_name ?? optional($employee?->department)->name ?? 'N/A';
+    $empDept    = optional($employee?->department)->bn_name ?? optional($employee?->department)->name ?? '';
 
     // Bengali digits for the numeric-only values (ID, hours) so the printed
     // slip reads fully in Bangla rather than mixing scripts mid-field.
@@ -139,7 +139,7 @@
                 <span class="val">{{ $bnDigits(optional($outTime)->format('d-m-Y')) }}</span>
             </div> --}}
 
-            <div class="gp-field-inline">
+            <div class="gp-field-inline" style="margin-bottom: 5px">
                 <div style="">
                     <span class="lbl">নাম:</span>
                     <span class="val">{{ $empName }}</span>
@@ -150,7 +150,7 @@
                 </div>
             </div>
 
-            <div class="gp-field-inline">
+            <div class="gp-field-inline" style="margin-bottom: 5px">
                 <div>
                     <span class="lbl">আইডি নং:</span>
                     <span class="val">{{ $bnDigits($employee->employee_id ?? '-') }}</span>
