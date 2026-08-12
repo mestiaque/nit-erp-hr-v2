@@ -57,8 +57,8 @@
 
 @section('contents')
 @php
-    $company = hr_factory('name') ?? 'Company Name';
-    $address = hr_factory('address') ?? '';
+    $company = hr_factory('bn_name') ?? hr_factory('name') ?? 'Company Name';
+    $address = hr_factory('bn_address') ?? hr_factory('address') ?? '';
 
     // Reasons are stored in Bangla directly now; this only translates old
     // records created before that change (English values still in the DB).
