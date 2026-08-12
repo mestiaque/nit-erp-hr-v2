@@ -78,7 +78,7 @@
     $employee   = $gatePass->employee;
     $empName    = $employee->bn_name ?? $employee->name ?? 'N/A';
     $empDesig   = optional($employee?->designation)->bn_name ?? optional($employee?->designation)->name ?? 'N/A';
-    $empSection = optional($employee?->section)->bn_name ?? optional($employee?->section)->name ?? 'aaaaa';
+    $empSection = optional($employee?->section)->bn_name ?? optional($employee?->section)->name ?? '';
     $empLine    = optional($employee?->floorLine)->bn_line_name ?? optional($employee?->floorLine)->line_name ?? '';
     $empDept    = optional($employee?->department)->bn_name ?? optional($employee?->department)->name ?? 'N/A';
 
