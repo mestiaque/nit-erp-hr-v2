@@ -28,7 +28,7 @@
 .gp-copy-tag { font-size: 10.5px; font-weight: 700; border: 1px dashed #0000007a; position: absolute; top: 10px; right: 10px;}
 .gp-pass-no { font-size: 9px; color: #333; }
 
-.gp-field { font-size: 11.5px; margin-bottom: 9px; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.gp-field { font-size: 11.5px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 4px 8px; }
 .gp-field .lbl { white-space: nowrap; }
 .gp-field .val { flex: 1 1 auto; min-width: 60px; border-bottom: 1px dotted #000; padding: 0 2px; }
 .gp-field-inline { display: flex; flex-wrap: wrap; gap: 4px 18px; }
@@ -78,7 +78,7 @@
     $employee   = $gatePass->employee;
     $empName    = $employee->bn_name ?? $employee->name ?? 'N/A';
     $empDesig   = optional($employee?->designation)->bn_name ?? optional($employee?->designation)->name ?? 'N/A';
-    $empSection = optional($employee?->section)->bn_name ?? optional($employee?->section)->name ?? '';
+    $empSection = optional($employee?->section)->bn_name ?? optional($employee?->section)->name ?? 'aaaaa';
     $empLine    = optional($employee?->floorLine)->bn_line_name ?? optional($employee?->floorLine)->line_name ?? '';
     $empDept    = optional($employee?->department)->bn_name ?? optional($employee?->department)->name ?? 'N/A';
 
@@ -134,14 +134,14 @@
             </div>
             {{-- <div class="gp-pass-no"></div> --}}
 
-            <div class="gp-field">
+            {{-- <div class="gp-field">
                 <span class="lbl">তারিখ:</span>
                 <span class="val">{{ $bnDigits(optional($outTime)->format('d-m-Y')) }}</span>
-            </div>
+            </div> --}}
 
             <div class="gp-field-inline">
                 <div style="">
-                    <span class="lbl">জনাব:</span>
+                    <span class="lbl">নাম:</span>
                     <span class="val">{{ $empName }}</span>
                 </div>
                 <div style="">
