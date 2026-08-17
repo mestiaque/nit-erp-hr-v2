@@ -168,10 +168,10 @@ return [
             'label' => 'Job Card',
             'permissions' => ['view' => 'View', 'all' => 'All']
         ],
-        'hr_pro_job_card' => [
-            'label' => 'Pro. Job Card',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
+        // 'hr_pro_job_card' => [
+        //     'label' => 'Pro. Job Card',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
         'hr_meal_report' => [
             'label' => 'Tiffin / Diner / Night',
             'permissions' => ['view' => 'View', 'all' => 'All']
@@ -180,10 +180,10 @@ return [
             'label' => 'Bonus Sheet (Fixed)',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
-        'hr_bonus_sheet_production' => [
-            'label' => 'Bonus Sheet (Production)',
-            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
-        ],
+        // 'hr_bonus_sheet_production' => [
+        //     'label' => 'Bonus Sheet (Production)',
+        //     'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        // ],
         'hr_salary_report_fixed' => [
             'label' => 'Salary Report (Fixed)',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
@@ -192,10 +192,10 @@ return [
             'label' => 'Salary Report (Bonus)',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
-        'hr_salary_report_production' => [
-            'label' => 'Salary Report (Production)',
-            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
-        ],
+        // 'hr_salary_report_production' => [
+        //     'label' => 'Salary Report (Production)',
+        //     'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        // ],
         'hr_salary_report_wage' => [
             'label' => 'Salary Report (Wage)',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
@@ -221,34 +221,34 @@ return [
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
 
-        'hr_production_rate_linking' => [
-            'label' => 'Production Rate (Linking)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
-        'hr_production_rate_triming' => [
-            'label' => 'Production Rate (Triming)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
-        'hr_production_rate_mending' => [
-            'label' => 'Production Rate (Mending)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
-        'hr_production_rate_hole_button_bartack' => [
-            'label' => 'Production Rate (Hole/Button/BarTack)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
-        'hr_production_rate_sewing' => [
-            'label' => 'Production Rate (Sewing)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
-        'hr_production_rate_ironing' => [
-            'label' => 'Production Rate (Ironing)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
-        'hr_production_rate_zipper' => [
-            'label' => 'Production Rate (Zipper)',
-            'permissions' => ['view' => 'View', 'all' => 'All']
-        ],
+        // 'hr_production_rate_linking' => [
+        //     'label' => 'Production Rate (Linking)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
+        // 'hr_production_rate_triming' => [
+        //     'label' => 'Production Rate (Triming)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
+        // 'hr_production_rate_mending' => [
+        //     'label' => 'Production Rate (Mending)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
+        // 'hr_production_rate_hole_button_bartack' => [
+        //     'label' => 'Production Rate (Hole/Button/BarTack)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
+        // 'hr_production_rate_sewing' => [
+        //     'label' => 'Production Rate (Sewing)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
+        // 'hr_production_rate_ironing' => [
+        //     'label' => 'Production Rate (Ironing)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
+        // 'hr_production_rate_zipper' => [
+        //     'label' => 'Production Rate (Zipper)',
+        //     'permissions' => ['view' => 'View', 'all' => 'All']
+        // ],
 
     ],
 ];

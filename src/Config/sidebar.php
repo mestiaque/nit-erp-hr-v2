@@ -410,13 +410,13 @@ return [
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_job_card_report',
                                 ],
-                                [
-                                    'title'      => 'Pro. Job Card',
-                                    'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/pro-job-card',
-                                    'icon_color' => 'text-warning',
-                                    'permission' => 'hr_pro_job_card',
-                                ],
+                                // [
+                                //     'title'      => 'Pro. Job Card',
+                                //     'icon'       => 'fa-solid fa-arrow-right',
+                                //     'route'      => '/admin/hr-center/reports/pro-job-card',
+                                //     'icon_color' => 'text-warning',
+                                //     'permission' => 'hr_pro_job_card',
+                                // ],
                             ],
                         ],
 
@@ -434,13 +434,13 @@ return [
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_bonus_sheet_fixed',
                                 ],
-                                [
-                                    'title'      => 'Production Bonus',
-                                    'icon'       => 'fa-solid fa-arrow-right',
-                                    'route'      => '/admin/hr-center/reports/bonus-sheet/production',
-                                    'icon_color' => 'text-warning',
-                                    'permission' => 'hr_bonus_sheet_production',
-                                ],
+                                // [
+                                //     'title'      => 'Production Bonus',
+                                //     'icon'       => 'fa-solid fa-arrow-right',
+                                //     'route'      => '/admin/hr-center/reports/bonus-sheet/production',
+                                //     'icon_color' => 'text-warning',
+                                //     'permission' => 'hr_bonus_sheet_production',
+                                // ],
                             ],
                         ],
 
