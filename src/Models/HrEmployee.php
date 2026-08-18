@@ -13,8 +13,8 @@ class HrEmployee extends BaseHrModel
 
     public function imageFile(): HasOne
     {
-        $mediaClass = class_exists(\App\Models\Media::class) ? \App\Models\Media::class : self::class;
-        return $this->hasOne($mediaClass, 'src_id')->where('src_type', 6)->where('use_Of_file', 1);
+        $fileClass = class_exists(\App\Models\File::class) ? \App\Models\File::class : self::class;
+        return $this->hasOne($fileClass, 'fileable_id')->where('fileable_type', self::class)->where('use_case', 'profile');
     }
 
     public function image($type = null): string

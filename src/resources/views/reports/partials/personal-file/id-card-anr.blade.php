@@ -117,7 +117,7 @@
         <div class="id-card-strip">{{ $t('পরিচয়পত্র', 'ID CARD') }}</div>
 
         <div class="id-card-photo-wrap">
-            <img src="{{ asset($employee->image()) }}" alt="{{ $t('কর্মচারীর ছবি', 'Employee Photo') }}" class="id-card-photo">
+            <img src="{{ $employee->image() }}" alt="{{ $t('কর্মচারীর ছবি', 'Employee Photo') }}" class="id-card-photo">
         </div>
 
         <table class="id-card-info">

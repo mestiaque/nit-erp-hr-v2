@@ -228,7 +228,7 @@ class HrEmployeeController extends Controller
         $employee->save();
 
         if ($request->hasFile('profile_image')) {
-            uploadFile($request->file('profile_image'), $employee->id, 6, 1, Auth::id());
+            uploadFile($request->file('profile_image'), $employee->id, 8, 1, Auth::id());
         }
 
         return redirect()->route('hr-center.employees.index')->with('success', 'Employee profile updated.');
@@ -495,17 +495,13 @@ class HrEmployeeController extends Controller
         }
 
         $imagePath = null;
+        $nomineeImageFile = null;
         if ($request->hasFile('nominee_image')) {
-            $file = $request->file('nominee_image');
-            $folder = public_path('medies/nominees');
-            if (!is_dir($folder)) {
-                @mkdir($folder, 0755, true);
-            }
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move($folder, $filename);
-            $imagePath = 'medies/nominees/' . $filename;
+            $nomineeImageFile = $request->file('nominee_image');
+            $storedPath = $nomineeImageFile->store('hr/nominee', 'public');
+            $imagePath = 'storage/'.$storedPath;
         }
-        $this->upsertNomineeInfo($employee, $payload, $imagePath);
+        $this->upsertNomineeInfo($employee, $payload, $imagePath, $nomineeImageFile);
         $employee->setTypes('employee');
         $employee->save();
 
@@ -1415,8 +1411,8 @@ class HrEmployeeController extends Controller
             $title = trim($row['title']);
             foreach ($row['files'] as $file) {
                 $ext      = strtolower($file->getClientOriginalExtension());
-                $path     = $file->store("hr/documents/{$employee->id}", 'public');
-                HrEmployeeDocument::create([
+                $path     = $file->store("hr/document/{$employee->id}", 'public');
+                $doc = HrEmployeeDocument::create([
                     'employee_id' => $employee->id,
                     'title'       => $title,
                     'file_path'   => $path,
@@ -1424,6 +1420,27 @@ class HrEmployeeController extends Controller
                     'file_type'   => $ext,
                     'file_size'   => $file->getSize(),
                 ]);
+
+                if (class_exists(\App\Models\File::class)) {
+                    \App\Models\File::create([
+                        'fileable_type' => HrEmployee::class,
+                        'fileable_id' => $employee->id,
+                        'use_case' => 'documents',
+                        'file_name' => (string) \Illuminate\Support\Str::uuid(),
+                        'original_name' => $file->getClientOriginalName(),
+                        'caption' => $title,
+                        'file_path' => $path,
+                        'file_full_path' => asset('storage/'.$path),
+                        'disk' => 'public',
+                        'extension' => $ext,
+                        'size' => $file->getSize(),
+                        'file_type' => $file->getMimeType(),
+                        'source_table' => 'hr_employee_documents',
+                        'source_id' => $doc->id,
+                        'addedby_id' => auth()->id(),
+                    ]);
+                }
+
                 $stored++;
             }
         }
@@ -1443,6 +1460,11 @@ class HrEmployeeController extends Controller
             ->firstOrFail();
 
         Storage::disk('public')->delete($doc->file_path);
+
+        if (class_exists(\App\Models\File::class)) {
+            \App\Models\File::where('source_table', 'hr_employee_documents')->where('source_id', $doc->id)->delete();
+        }
+
         $doc->delete();
 
         return redirect()->route('hr-center.employees.documents.page', $employee->id)
@@ -1674,7 +1696,7 @@ class HrEmployeeController extends Controller
         ];
     }
 
-    private function upsertNomineeInfo(HrEmployee $employee, array $payload, ?string $imagePath = null): void
+    private function upsertNomineeInfo(HrEmployee $employee, array $payload, ?string $imagePath = null, $imageFile = null): void
     {
         $nominee = HrEmployeeNominee::firstOrNew(['employee_id' => $employee->id]);
         $nominee->employee_id = $employee->id;
@@ -1702,6 +1724,11 @@ class HrEmployeeController extends Controller
         }
         $nominee->status = 1;
         $nominee->save();
+
+        if ($imageFile && class_exists(\App\Models\File::class) && function_exists('recordFileColumn')) {
+            $storedPath = $imagePath ? preg_replace('#^storage/#', '', $imagePath) : null;
+            recordFileColumn(HrEmployeeNominee::class, $nominee->id, 'photo', $storedPath, $imageFile, auth()->id());
+        }
     }
 
     private function upsertAgeVerification(HrEmployee $employee, array $payload): void

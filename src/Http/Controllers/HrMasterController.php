@@ -80,7 +80,8 @@ class HrMasterController extends Controller
     {
         $config = $this->entityConfig($entity);
         $modelClass = $config['model'];
-        $payload = $this->validatedPayload($request, $config, $modelClass, $entity);
+        $uploadedFiles = [];
+        $payload = $this->validatedPayload($request, $config, $modelClass, $entity, $uploadedFiles);
 
         $item = new $modelClass();
         $item->fill($payload);
@@ -88,6 +89,7 @@ class HrMasterController extends Controller
             $item->addedby_id = Auth::id();
         }
         $item->save();
+        $this->syncMasterFiles($item, $modelClass, $payload, $uploadedFiles);
 
         if ($entity === 'bonus-titles' && $request->boolean('add_policy')) {
             return redirect()
@@ -117,13 +119,15 @@ class HrMasterController extends Controller
         $config = $this->entityConfig($entity);
         $modelClass = $config['model'];
         $item = $modelClass::findOrFail($id);
-        $payload = $this->validatedPayload($request, $config, $modelClass, $entity);
+        $uploadedFiles = [];
+        $payload = $this->validatedPayload($request, $config, $modelClass, $entity, $uploadedFiles);
 
         $item->fill($payload);
         if ($this->hasColumn($modelClass, 'editedby_id')) {
             $item->editedby_id = Auth::id();
         }
         $item->save();
+        $this->syncMasterFiles($item, $modelClass, $payload, $uploadedFiles);
 
         if ($entity === 'bonus-titles' && $request->boolean('add_policy')) {
             return redirect()
@@ -200,7 +204,7 @@ class HrMasterController extends Controller
         return $options;
     }
 
-    private function validatedPayload(Request $request, array $config, string $modelClass, string $entity = 'masters'): array
+    private function validatedPayload(Request $request, array $config, string $modelClass, string $entity = 'masters', array &$uploadedFiles = []): array
     {
         $rules = [];
         $checkboxes = [];
@@ -231,7 +235,9 @@ class HrMasterController extends Controller
         foreach ($files as $file) {
             if ($request->hasFile($file)) {
                 $request->validate([$file => $config['fields'][$file]['rules'] ?? 'nullable|file|max:2048']);
-                $payload[$file] = $request->file($file)->store('hr/' . $entity, 'public');
+                $uploadedFile = $request->file($file);
+                $payload[$file] = $uploadedFile->store('hr/' . \Illuminate\Support\Str::singular($entity), 'public');
+                $uploadedFiles[$file] = $uploadedFile;
             }
         }
 
@@ -242,6 +248,49 @@ class HrMasterController extends Controller
         }
 
         return $payload;
+    }
+
+    /**
+     * Mirror every uploaded master 'file' field (hr_seal, hr_signature, ...) into the
+     * central files table, in addition to the relative path already stored on the
+     * entity's own column. Never touches the column value itself.
+     */
+    private function syncMasterFiles($item, string $modelClass, array $payload, array $uploadedFiles): void
+    {
+        if (empty($uploadedFiles) || !class_exists(\App\Models\File::class)) {
+            return;
+        }
+
+        foreach ($uploadedFiles as $field => $uploadedFile) {
+            $path = $payload[$field] ?? null;
+            if (!$path) {
+                continue;
+            }
+
+            $record = \App\Models\File::firstOrNew([
+                'fileable_type' => $modelClass,
+                'fileable_id' => $item->id,
+                'use_case' => $field,
+            ]);
+
+            if ($record->exists && $record->file_path && $record->file_path !== $path) {
+                \Illuminate\Support\Facades\Storage::disk($record->disk ?: 'public')->delete($record->file_path);
+            }
+
+            if (!$record->exists) {
+                $record->file_name = (string) \Illuminate\Support\Str::uuid();
+            }
+
+            $record->original_name = $uploadedFile->getClientOriginalName();
+            $record->file_path = $path;
+            $record->file_full_path = asset('storage/' . $path);
+            $record->disk = 'public';
+            $record->extension = $uploadedFile->getClientOriginalExtension();
+            $record->size = $uploadedFile->getSize();
+            $record->file_type = $uploadedFile->getMimeType();
+            $record->addedby_id = Auth::id();
+            $record->save();
+        }
     }
 
     private function resolveAttributeLikeOptions(string $filter): array

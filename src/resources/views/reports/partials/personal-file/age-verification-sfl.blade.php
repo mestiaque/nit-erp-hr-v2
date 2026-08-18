@@ -45,7 +45,7 @@
           </p>
           <h2 class="hospital-pad-title" style="margin: 8mm 0mm 8mm 0mm">“রেজিস্টার্ড চিকিৎসকের প্যাড -এ”</h2>
           <div class="photo-cell" style="position: absolute; top: 1px; right: 1px;">
-            <img src="{{ asset($employee->image()) }}" alt="{{ $employeeNameSfl }}" class="photo-box-img">
+            <img src="{{ $employee->image() }}" alt="{{ $employeeNameSfl }}" class="photo-box-img">
           </div>
       </div>
 

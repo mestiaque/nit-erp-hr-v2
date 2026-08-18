@@ -17,4 +17,20 @@ class HrEmployeeNominee extends BaseHrModel
     {
         return $this->belongsTo(HrGeoLocation::class, 'police_station_id');
     }
+
+    public function photoFile()
+    {
+        return $this->hasOne(\App\Models\File::class, 'fileable_id')
+            ->where('fileable_type', self::class)
+            ->where('use_case', 'photo');
+    }
+
+    public function photoUrl(): ?string
+    {
+        if ($this->photoFile) {
+            return $this->photoFile->file_url;
+        }
+
+        return $this->photo ? asset($this->photo) : null;
+    }
 }

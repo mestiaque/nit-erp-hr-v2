@@ -352,7 +352,7 @@
 
     {{-- Photo --}}
     <div class="sfl-photo-wrap">
-        <img src="{{ asset($employee->image()) }}" alt="{{ $employeeName }}" class="sfl-photo">
+        <img src="{{ $employee->image() }}" alt="{{ $employeeName }}" class="sfl-photo">
     </div>
 
     {{-- Info grid --}}

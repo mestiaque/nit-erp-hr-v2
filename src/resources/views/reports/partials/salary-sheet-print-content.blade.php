@@ -112,7 +112,7 @@
 						<td class="tc">{{ $sl++ }}</td>
 						@if($withPicture)
 							<td class="tc photo-cell">
-								<img src="{{ asset($employee->image()) }}" alt="" style="object-fit:cover;">
+								<img src="{{ $employee->image() }}" alt="" style="object-fit:cover;">
 							</td>
 						@endif
 						<td class="tc">{{ $employee->employee_id }}</td>

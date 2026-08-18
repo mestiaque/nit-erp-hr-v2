@@ -19,7 +19,7 @@
         <label class="mb-1">Image</label>
         <input type="file" name="profile_image" accept="image/*" class="form-control form-control-sm">
         <small class="text-muted d-block mt-1">jpg, jpeg, png, gif, webp (max 2MB)</small>
-        <img src="{{ asset($employee->image()) }}" alt="Employee Image" style="width:50px;height:50px;object-fit:cover;border:1px solid #ddd;margin-top:6px;">
+        <img src="{{ $employee->image() }}" alt="Employee Image" style="width:50px;height:50px;object-fit:cover;border:1px solid #ddd;margin-top:6px;">
     </div>
     @endif
     <div class="col-md-6 mb-2"><label class="mb-1">Name</label><input type="text" name="name" value="{{ old('name', $employee->name) }}" class="form-control form-control-sm" required></div>
