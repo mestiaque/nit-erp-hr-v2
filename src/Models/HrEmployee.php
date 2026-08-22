@@ -19,7 +19,7 @@ class HrEmployee extends BaseHrModel
 
     public function image($type = null): string
     {
-        if (class_exists(\App\Models\Media::class) && $this->imageFile) {
+        if (class_exists(\App\Models\File::class) && $this->imageFile) {
             return match ($type) {
                 'sm'    => $this->imageFile->file_url_sm ?? 'medies/profile.png',
                 'md'    => $this->imageFile->file_url_md ?? 'medies/profile.png',

@@ -168,7 +168,7 @@
       <div class="nominee-head">
         <div class="nominee-company">{{ $companyName }}</div>
         <div class="nominee-address">{{ $companyAddress }}</div>
-        <div class="nominee-form-no">{{ $t('ফরম', 'Form') }}-{{ $isBangla ? en2bnNumber($employee->id) : $employee->id }}</div>
+        <div class="nominee-form-no">{{ $t('ফরম', 'Form') }}-{{ $isBangla ? en2bnNumber(41) : 41 }}</div>
         <div class="nominee-title">{{ $t('মনোনয়ন ফরম', 'Nominee Declaration Form') }}</div>
       </div>
 
