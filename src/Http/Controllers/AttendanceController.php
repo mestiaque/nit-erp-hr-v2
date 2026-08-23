@@ -113,11 +113,18 @@ class AttendanceController extends Controller
         $attendanceList = [];
         foreach ($employees as $emp) {
             $exitedAt = $this->resolveExitedAt($emp);
+            $joinedAt = !blank($emp->join_date) ? Carbon::parse($emp->join_date)->startOfDay() : null;
             foreach ($dates as $date) {
                 // A resigned/lefty employee has no attendance to show or edit past
                 // their exit date — mirrors the cutoff already enforced in
                 // EmployeeAttendanceService::getEmployeeAttendanceByDate() for reports.
                 if ($exitedAt && Carbon::parse($date)->gt($exitedAt)) {
+                    continue;
+                }
+                // Symmetric cutoff: nothing to show before the employee even joined —
+                // same reasoning as the exit cutoff above, mirroring the
+                // EmployeeAttendanceService joinedAt clip used by reports.
+                if ($joinedAt && Carbon::parse($date)->lt($joinedAt)) {
                     continue;
                 }
                 $key = $emp->id . '_' . $date;
