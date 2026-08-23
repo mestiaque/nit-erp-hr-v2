@@ -1977,8 +1977,10 @@ class HrReportController extends Controller
 
     public function applyJobCardLock(Request $request)
     {
-        $from = $request->input('from') ?: now()->toDateString();
-        $to   = $request->input('to') ?: $from;
+        // Must match the report screen's own blank-date defaults (jobCardReportScreen)
+        // so "Apply Lock" locks the same period the admin just reviewed on screen.
+        $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
+        $to   = $request->input('to') ?: now()->toDateString();
 
         $employees = $this->employeeReportQuery($request)->get(['id']);
 

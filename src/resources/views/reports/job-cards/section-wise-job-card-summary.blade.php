@@ -16,11 +16,6 @@
             $companyName = $employeeData['company_name'] ?? $t('প্রযোজ্য নয়', 'N/A');
             $companyAddress = $employeeData['company_address'] ?? $t('প্রযোজ্য নয়', 'N/A');
             $section = $employeeData['section'] ?? $t('প্রযোজ্য নয়', 'N/A');
-            $subSection = $employeeData['sub_section'] ?? $t('প্রযোজ্য নয়', 'N/A');
-            $designation = $employeeData['designation'] ?? $t('প্রযোজ্য নয়', 'N/A');
-            $department = $employeeData['department'] ?? $t('প্রযোজ্য নয়', 'N/A');
-            $line = $employeeData['line'] ?? $t('প্রযোজ্য নয়', 'N/A');
-            $workingPlace = $employeeData['working_place'] ?? $t('প্রযোজ্য নয়', 'N/A');
             $factoryNo = hr_factory('factory_no');
             $holidays = $hrOptions['holidays'] ?? collect();
         @endphp
@@ -45,10 +40,8 @@
                     <th>{{ $t('কর্মী আইডি', 'Emp. ID') }}</th>
                     <th>{{ $t('নাম', 'Name') }}</th>
                     <th>{{ $t('পদবী', 'Designation') }}</th>
+                    <th>{{ $t('বিভাগ', 'Department') }}</th>
                     <th>{{ $t('যোগদানের তারিখ', 'DOJ') }}</th>
-                    <th>{{ $t('সেকশন', 'Section') }}</th>
-                    <th>{{ $t('সাব-সেকশন', 'Sub-Section') }}</th>
-                    <th>{{ $t('ব্লক/লাইন', 'Block/Line') }}</th>
                     @foreach($dates as $d)
                         <th class="tc" style="min-width:28px;">{{ $isBangla ? en2bnNumber($d->format('d')) : $d->format('d') }}</th>
                     @endforeach
@@ -67,6 +60,10 @@
             <tbody>
                 @foreach($sectionEmps as $employee)
                     @php
+                        $rowEmployeeData = $employeeDataFn($employee, $request ?? null, $factory ?? null, $salaryKey ?? null, $profile ?? null, $nominee ?? null);
+                        $rowDesignation = $rowEmployeeData['designation'] ?? $t('প্রযোজ্য নয়', 'N/A');
+                        $rowDepartment = $rowEmployeeData['department'] ?? $t('প্রযোজ্য নয়', 'N/A');
+
                         $data = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                             $employee->id,
                             $from,
@@ -80,8 +77,9 @@
                     <tr>
                         <td class="tc">{{ $isBangla ? en2bnNumber($loop->iteration) : $loop->iteration }}</td>
                         <td>{{ $employee->employee_id }}</td>
-                        <td>{{ $employeeData['employee_name'] ?? '--' }}</td>
-                        <td>{{ $designation }}</td>
+                        <td>{{ $rowEmployeeData['employee_name'] ?? '--' }}</td>
+                        <td>{{ $rowDesignation }}</td>
+                        <td>{{ $rowDepartment }}</td>
 
                         <td class="tc">
                             @php
@@ -93,9 +91,6 @@
                                 {{ $joiningDate ? (is_string($joiningDate) ? \Carbon\Carbon::parse($joiningDate)->format('d-M-y') : (method_exists($joiningDate, 'format') ? $joiningDate->format('d-M-y') : '-') ) : '-' }}
                             @endif
                         </td>
-                        <td>{{ $section }}</td>
-                        <td>{{ $subSection }}</td>
-                        <td>{{ $workingPlace }}</td>
 
                         {{-- Daily cells --}}
                         @foreach($attendance as $row)
