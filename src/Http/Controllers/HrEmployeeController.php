@@ -187,6 +187,18 @@ class HrEmployeeController extends Controller
         $employee->created_by = Auth::id();
         $employee->setTypes('employee');
         $employee->save();
+        if (general()->company_s_code == 'SFL') {
+            HrEmployeeNominee::create([
+                'employee_id'      => $employee->id,
+                'name'             => '',
+                'net_payment'      => 100,
+                'provident_fund'   => 0,
+                'insurance'        => 100,
+                'accident_fine'    => 100,
+                'profit'           => 0,
+                'others'           => 0,
+            ]);
+        }
         $this->syncDesignationSalaryToEmployee($employee, $payload, true);
 
         return redirect()->route('hr-center.employees.index')->with('success', 'Employee created successfully.');

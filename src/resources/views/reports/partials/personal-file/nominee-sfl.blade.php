@@ -112,12 +112,12 @@
             <td class="font-weight-bold">জমাখাত</td>
             <td class="font-weight-bold">অংশ</td>
           </tr>
-          <tr><td>বকেয়া মজুরি</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->net_payment) }}</td></tr>
-          <tr><td>প্রভিডেন্ট ফান্ড</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->provident_fund) }}</td></tr>
-          <tr><td>বীমা</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->insurance) }}</td></tr>
-          <tr><td>দুর্ঘটনার ক্ষতিপূরণ</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->accident_fine) }}</td></tr>
-          <tr><td>লভ্যাংশ</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->profit) }}</td></tr>
-          <tr><td>অন্যান্য</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->others) }}</td></tr>
+          <tr><td>বকেয়া মজুরি</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->net_payment ?? 100) }}</td></tr>
+          <tr><td>প্রভিডেন্ট ফান্ড</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->provident_fund ?? 0) }}</td></tr>
+          <tr><td>বীমা</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->insurance ?? 100) }}</td></tr>
+          <tr><td>দুর্ঘটনার ক্ষতিপূরণ</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->accident_fine ?? 100) }}</td></tr>
+          <tr><td>লভ্যাংশ</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->profit ?? 0) }}</td></tr>
+          <tr><td>অন্যান্য</td><td class="text-english">{{ $pctSfl(optional($nomSfl)->others ?? 0) }}</td></tr>
         </tbody>
       </table>
 
