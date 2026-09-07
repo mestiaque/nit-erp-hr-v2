@@ -1991,9 +1991,21 @@ class HrReportController extends Controller
         // to lock; creating an empty placeholder row would wrongly flip its derived
         // status elsewhere from "Absent" to "Punch Missing", so that's deliberately
         // not done here).
-        HrAttendance::whereIn('employee_id', $employees->pluck('id'))
+        $affected = HrAttendance::whereIn('employee_id', $employees->pluck('id'))
             ->whereBetween('date', [$from, $to])
             ->update(['is_locked' => true, 'locked_at' => now(), 'locked_by' => Auth::id()]);
+
+        // A query-builder mass update never fires Eloquent events, so
+        // HasAudit can't see it — record it manually instead. Guarded by
+        // class_exists() so this keeps working if mestiaque/audit is ever
+        // removed (see App\Traits\HasAudit for the same defensive pattern).
+        if (class_exists(\ME\Audit\Facades\Audit::class)) {
+            \ME\Audit\Facades\Audit::event('attendance.job_card_locked')
+                ->module('HR')
+                ->feature('Attendance')
+                ->metadata(['from' => $from, 'to' => $to, 'rows_locked' => $affected])
+                ->save();
+        }
 
         return back()->with('success', 'Job card locked for selected period.');
     }

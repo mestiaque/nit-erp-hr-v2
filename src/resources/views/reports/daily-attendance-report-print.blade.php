@@ -53,6 +53,7 @@
                     <th>Emp. ID</th>
                     <th>Name</th>
                     <th>Designation</th>
+                    <th>Join Date</th>
                     <th>In Time</th>
                     <th>Out Time</th>
                     <th>Status</th>
@@ -66,6 +67,7 @@
                         <td class="tc">{{ $row['employee_id'] }}</td>
                         <td>{{ $row['name'] }}</td>
                         <td>{{ $row['designation'] }}</td>
+                        <td class="tc">{{ optional($row['employee']->joining_date)->format('d/m/Y') ?? '-' }}</td>
                         <td class="tc">{{ $row['in_time'] }}</td>
                         <td class="tc">{{ $row['out_time'] }}</td>
                         <td class="tc status-{{ \Illuminate\Support\Str::slug($row['status']) }}">{{ $row['status'] }}</td>
@@ -77,7 +79,7 @@
     @else
         {{-- Date range: grouped by employee, one mini-table per employee across the range --}}
         @foreach($groupRows as $row)
-            <div class="emp-block-title">{{ $row['employee_id'] }} &mdash; {{ $row['name'] }} ({{ $row['designation'] }})</div>
+            <div class="emp-block-title">{{ $row['employee_id'] }} &mdash; {{ $row['name'] }} ({{ $row['designation'] }}) &mdash; Join Date: {{ optional($row['employee']->joining_date)->format('d/m/Y') ?? '-' }}</div>
             <table class="t">
                 <thead>
                     <tr>

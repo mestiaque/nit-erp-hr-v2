@@ -103,6 +103,7 @@
                         <th style="width:14%;">CardNo</th>
                         <th style="width:23%;">Name</th>
                         <th style="width:22%;">Designation</th>
+                        <th style="width:10%;" class="tc">Join Date</th>
                         <th style="width:14%;">Floor</th>
                         <th style="width:15%;">Line</th>
                         <th style="width:6%;" class="tc">In Time</th>
@@ -126,6 +127,7 @@
                             <td>{{ data_get($row, 'employee_id', 'N/A') }}</td>
                             <td>{{ data_get($row, 'name', 'N/A') }}</td>
                             <td>{{ data_get($row, 'designation', 'N/A') }}</td>
+                            <td class="tc">{{ optional(data_get($row, 'employee')?->joining_date)->format('d/m/Y') ?? '-' }}</td>
                             <td>{{ data_get($row, 'floor', 'N/A') }}</td>
                             <td>{{ data_get($row, 'line', 'N/A') }}</td>
                             <td class="tc">{{ $inTime ?: '0' }}</td>
@@ -135,7 +137,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="section-total-row">
-                        <td colspan="{{ $isSingleDay ? 7 : 8 }}">Section Total: {{ $sectionEmps->count() }}</td>
+                        <td colspan="{{ $isSingleDay ? 8 : 9 }}">Section Total: {{ $sectionEmps->count() }}</td>
                     </tr>
                 </tfoot>
             </table>

@@ -59,6 +59,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Designation</th>
+                <th>Join Date</th>
                 <th>Present</th>
                 <th>Absent</th>
                 <th>Late</th>
@@ -91,6 +92,7 @@
                     <td>{{ $employee->employee_id }}</td>
                     <td>{{ $employee->name }}</td>
                     <td>{{ $desigName }}</td>
+                    <td class="tc">{{ optional($employee->joining_date)->format('d-M-Y') ?? '-' }}</td>
                     <td class="tc present">{{ $present }}</td>
                     <td class="tc {{ $absent > 0 ? 'absent' : '' }}">{{ $absent }}</td>
                     <td class="tc">{{ $late }}</td>
@@ -100,12 +102,12 @@
                     <td class="tr">{{ $otHrs }}</td>
                 </tr>
             @empty
-                <tr><td colspan="11" class="tc">No data.</td></tr>
+                <tr><td colspan="12" class="tc">No data.</td></tr>
             @endforelse
             {{-- Section subtotal row --}}
             @if($sectionEmps->count() > 1)
             <tr style="font-weight:700; background:#f5f5f5;">
-                <td colspan="4" class="tc">Section Total ({{ $sectionEmps->count() }} emp)</td>
+                <td colspan="5" class="tc">Section Total ({{ $sectionEmps->count() }} emp)</td>
                 <td class="tc present">{{ $secPresent }}</td>
                 <td class="tc {{ $secAbsent > 0 ? 'absent' : '' }}">{{ $secAbsent }}</td>
                 <td class="tc">{{ $secLate }}</td>
@@ -131,7 +133,7 @@
 <table class="t" style="margin-top:12px;">
     <thead>
         <tr>
-            <th colspan="4">Grand Total ({{ $employees->count() }} employees)</th>
+            <th colspan="5">Grand Total ({{ $employees->count() }} employees)</th>
             <th>Present</th>
             <th>Absent</th>
             <th>Late</th>
@@ -143,7 +145,7 @@
     </thead>
     <tbody>
         <tr style="font-weight:700;">
-            <td colspan="4" class="tc"></td>
+            <td colspan="5" class="tc"></td>
             <td class="tc present">{{ $grandPresent }}</td>
             <td class="tc {{ $grandAbsent > 0 ? 'absent' : '' }}">{{ $grandAbsent }}</td>
             <td class="tc">{{ $grandLate }}</td>

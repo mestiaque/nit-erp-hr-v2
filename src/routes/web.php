@@ -8,6 +8,7 @@ use ME\Hr\Http\Controllers\HrHolidayController;
 use ME\Hr\Http\Controllers\HrFloorLineController;
 use ME\Hr\Http\Controllers\HrEmployeeGatePassController;
 use ME\Hr\Http\Controllers\HrEmployeeAssetController;
+use ME\Hr\Http\Controllers\HrCompanyAssetController;
 use ME\Hr\Http\Controllers\HrMasterController;
 use ME\Hr\Http\Controllers\HrReportController;
 use ME\Hr\Http\Controllers\ProductionRateController;
@@ -98,6 +99,8 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/reports/gate-pass-report-print', [HrReportController::class, 'gatePassReportPrint'])->name('reports.gate-pass-report-print');
 		Route::get('/reports/asset-report', [HrReportController::class, 'assetReportScreen'])->name('reports.asset-report');
 		Route::get('/reports/asset-report-print', [HrReportController::class, 'assetReportPrint'])->name('reports.asset-report-print');
+		Route::get('/reports/company-asset-report', [HrCompanyAssetController::class, 'reportScreen'])->name('reports.company-asset-report');
+		Route::get('/reports/company-asset-report-print', [HrCompanyAssetController::class, 'reportPrint'])->name('reports.company-asset-report-print');
 		Route::get('/reports/bonus-sheet/{category}', [HrReportController::class, 'bonusSheetByCategory'])->name('reports.bonus-sheet.category');
 		Route::get('/reports/{report}', [HrReportController::class, 'show'])->name('reports.show');
 		Route::post('/reports/monthly/lock-increment', [HrReportController::class, 'lockMonthlyIncrement'])->name('reports.monthly.lock-increment');
@@ -122,6 +125,14 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::put('/employee-assets/{id}', [HrEmployeeAssetController::class, 'update'])->name('employee-assets.update');
 		Route::put('/employee-assets/{id}/return', [HrEmployeeAssetController::class, 'returnAsset'])->name('employee-assets.return');
 		Route::get('/employee-assets/{id}/print', [HrEmployeeAssetController::class, 'print'])->name('employee-assets.print');
+
+		// Company Asset (location/department fixed-asset register)
+		Route::get('/company-assets', [HrCompanyAssetController::class, 'index'])->name('company-assets.index');
+		Route::get('/company-assets/create', [HrCompanyAssetController::class, 'create'])->name('company-assets.create');
+		Route::post('/company-assets', [HrCompanyAssetController::class, 'store'])->name('company-assets.store');
+		Route::get('/company-assets/{id}/edit', [HrCompanyAssetController::class, 'edit'])->name('company-assets.edit');
+		Route::put('/company-assets/{id}', [HrCompanyAssetController::class, 'update'])->name('company-assets.update');
+		Route::delete('/company-assets/{id}', [HrCompanyAssetController::class, 'destroy'])->name('company-assets.destroy');
 
 		// Floor Lines (Block / Line)
 		Route::get('/masters/floor-lines', [HrFloorLineController::class, 'index'])->name('floor-lines.index');

@@ -119,6 +119,10 @@ return [
             'label' => 'Employee Asset Management',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'all' => 'All' ],
         ],
+        'hr_company_asset' => [
+            'label' => 'Company Asset Management',
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
+        ],
         'hr_regular_to_weekend' => [
             'label' => 'Weekend to Regular',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
@@ -214,6 +218,10 @@ return [
         ],
         'hr_asset_report' => [
             'label' => 'Asset Report',
+            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        ],
+        'hr_company_asset_report' => [
+            'label' => 'Current Asset Report',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
         'pay_slip_report' => [

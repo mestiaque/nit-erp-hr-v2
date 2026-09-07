@@ -6,9 +6,11 @@ use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\HasAudit;
 
 class BaseHrModel extends Model
 {
+    use HasAudit;
     use ActivityLoggable;
 
     protected $guarded = ['id'];

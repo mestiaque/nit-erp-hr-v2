@@ -86,7 +86,8 @@
                 <thead>
                     <tr>
                         <th style="width:12%;">Card No.</th>
-                        <th style="width:28%;">Name</th>
+                        <th style="width:23%;">Name</th>
+                        <th style="width:10%;" class="tc">Join Date</th>
                         <th style="width:15%;">Date</th>
                         <th style="width:22%;">Punching Time</th>
                         <th style="width:23%;">Missing Time</th>
@@ -104,6 +105,7 @@
                         <tr>
                             <td>{{ $employee ? $employee->employee_id : 'N/A' }}</td>
                             <td>{{ $employee ? $employee->name : 'N/A' }}</td>
+                            <td class="tc">{{ optional($employee?->joining_date)->format('d/m/Y') ?? '-' }}</td>
                             <td class="tc">{{ \Carbon\Carbon::parse($record->date)->format('d/m/Y') }}</td>
                             <td>{{ $punchingTime }}</td>
                             <td>
@@ -119,7 +121,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="section-total-row">
-                        <td colspan="5">Section Total: {{ $sectionRecords->count() }}</td>
+                        <td colspan="6">Section Total: {{ $sectionRecords->count() }}</td>
                     </tr>
                 </tfoot>
             </table>

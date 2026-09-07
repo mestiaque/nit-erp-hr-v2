@@ -148,6 +148,7 @@
                     <th style="width: 16%;">CardNo</th>
                     <th style="width: 24%;">Name</th>
                     <th style="width: 22%;">DesignationName</th>
+                    <th class="tc" style="width: 10%;">Join Date</th>
                     <th class="tc" style="width: 12%;">In Time</th>
                     <th class="tc" style="width: 6%;">Late</th>
                     <th class="tc" style="width: 12%;">Out Time</th>
@@ -177,6 +178,7 @@
                         <td>{{ $row['card_no'] ?: '-' }}</td>
                         <td>{{ $row['name'] ?: '-' }}</td>
                         <td>{{ $row['designation'] ?: '-' }}</td>
+                        <td class="tc">{{ optional(data_get($row, 'employee')?->joining_date)->format('d/m/Y') ?? '-' }}</td>
                         <td class="tc">{{ $inTime }}</td>
                         <td class="tc">{{ $row['late'] }}</td>
                         <td class="tc">{{ $outTime }}</td>
@@ -187,7 +189,7 @@
                 <tr class="total-row">
                     <td colspan="2" class="tr">Section Total :</td>
                     <td class="tc">{{ $sectionRows->count() }}</td>
-                    <td colspan="5"></td>
+                    <td colspan="6"></td>
                 </tr>
             </tbody>
         </table>

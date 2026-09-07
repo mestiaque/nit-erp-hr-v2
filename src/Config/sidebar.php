@@ -234,6 +234,13 @@ return [
                     'permission' => 'hr_employee_asset',
                 ],
                 [
+                    'title'      => 'Company Assets',
+                    'icon'       => 'fa-solid fa-boxes-stacked',
+                    'route'      => '/admin/hr-center/company-assets',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_company_asset',
+                ],
+                [
                     'title'      => 'Weekend to Regular',
                     'icon'       => 'fa-solid fa-arrow-right',
                     'route'      => '/admin/hr-center/regular-to-weekend',
@@ -451,6 +458,13 @@ return [
                             'icon_color' => 'text-secondary',
                             'permission' => '',
                             'children'   => [
+                                [
+                                    'title'      => 'Current Asset Report',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/company-asset-report',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_company_asset_report',
+                                ],
                                 [
                                     'title'      => 'Asset Report',
                                     'icon'       => 'fa-solid fa-arrow-right',
