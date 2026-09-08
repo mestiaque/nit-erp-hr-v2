@@ -1,5 +1,7 @@
 @extends('printMaster2')
 
+@php $hideGeneratedNote = true; @endphp
+
 @section('title', 'Personal File - ' . $reportTypeLabel)
 
 @push('css')
