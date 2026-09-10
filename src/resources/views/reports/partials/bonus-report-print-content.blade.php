@@ -48,8 +48,6 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
-	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
-	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
 	$fmt = fn($v) => number_format((float) $v, 2);
 @endphp
 
@@ -185,13 +183,16 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	@endif
 
 	<div class="rpt-footer">
-		<div class="sig-row">
-			<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Prepared By</div></div>
-			<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Checked By</div></div>
-			<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">HR Manager</div></div>
-			<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Accounts Manager</div></div>
-			<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Managing Director</div></div>
-		</div>
-		<div class="rpt-footer-note">This is a system-generated report. &mdash; {{ $company }} &mdash; Confidential</div>
+		@if($withSignature ?? false)
+			<div class="sig-row">
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Prepared By</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Checked By</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">HR Manager</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Accounts Manager</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Managing Director</div></div>
+			</div>
+		@else
+			<div class="rpt-footer-note">This is a system generated report, no signature required. &mdash; {{ $company }} &mdash; Confidential</div>
+		@endif
 	</div>
 @endif

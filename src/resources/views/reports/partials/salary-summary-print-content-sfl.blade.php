@@ -23,7 +23,8 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 .sig-row { display:flex; justify-content:space-between; }
 .sig-box { width:30%; font-size:11px; line-height:1.5; }
 .sig-box .sig-role { font-weight:700; }
-.sig-box .sig-line { margin-top:32px; }
+.sig-box .sig-line { margin-top:50px; }
+.rpt-footer-note { font-size:10px; color:#666; text-align:center; margin-top:8px; font-style:italic; }
 
 @media print {
 	@page { size: A4 landscape; margin: 10mm; }
@@ -35,8 +36,6 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
-	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
-	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
 	$fmt = fn ($v) => number_format((float) $v);
 	$fmtHrs = fn ($v) => number_format((float) $v, 2);
 
@@ -110,24 +109,28 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 </table>
 
 <div class="rpt-footer">
-	<div class="sig-row">
-		<div class="sig-box">
-			<div class="sig-role">Prepared By</div>
-			<div>IT Department</div>
-			<div class="sig-line">Signature:_______________</div>
-			<div>Date:_______________</div>
+	@if($withSignature ?? false)
+		<div class="sig-row">
+			<div class="sig-box">
+				<div class="sig-role">Prepared By</div>
+				<div>IT Department</div>
+				<div class="sig-line">Signature:_______________</div>
+				<div>Date:_______________</div>
+			</div>
+			<div class="sig-box">
+				<div class="sig-role">Checked By</div>
+				<div>HR Admin Department</div>
+				<div class="sig-line">Signature:_______________</div>
+				<div>Date:_______________</div>
+			</div>
+			<div class="sig-box">
+				<div class="sig-role">Approved By</div>
+				<div>Managing Director</div>
+				<div class="sig-line">Signature:_______________</div>
+				<div>Date:_______________</div>
+			</div>
 		</div>
-		<div class="sig-box">
-			<div class="sig-role">Checked By</div>
-			<div>HR Admin Department</div>
-			<div class="sig-line">Signature:_______________</div>
-			<div>Date:_______________</div>
-		</div>
-		<div class="sig-box">
-			<div class="sig-role">Approved By</div>
-			<div>Managing Director</div>
-			<div class="sig-line">Signature:_______________</div>
-			<div>Date:_______________</div>
-		</div>
-	</div>
+	@else
+		<div class="rpt-footer-note">This is a system generated report, no signature required.</div>
+	@endif
 </div>

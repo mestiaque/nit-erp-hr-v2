@@ -206,6 +206,20 @@
                     </div>
 
                     <div class="col-md-3 mb-3">
+                        <label class="mb-1">Salary Date <small class="text-muted">(leave blank for the active Salary Key's date)</small></label>
+                        <input type="date" name="salary_date" class="form-control form-control-sm" value="{{ $request->salary_date }}">
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label class="mb-1 d-block">Signature</label>
+                        <div class="form-check form-switch mt-1">
+                            <input class="form-check-input" type="checkbox" name="with_signature" value="1"
+                                   id="withSignature" @checked($request->boolean('with_signature'))>
+                            <label class="form-check-label" for="withSignature">Show Signature Box</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
                         <label class="mb-1 d-block">Lock Salary</label>
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" name="lock_salary" value="1"

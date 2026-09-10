@@ -21,6 +21,7 @@ use ME\Hr\Models\HrHoliday;
 use ME\Hr\Models\HrLeaveInfo;
 use ME\Hr\Models\HrLock;
 use ME\Hr\Models\HrProductionBonus;
+use ME\Hr\Models\HrSalaryKey;
 use ME\Hr\Models\HrSection;
 use ME\Hr\Models\HrShift;
 use ME\Hr\Models\HrSubSection;
@@ -3657,6 +3658,21 @@ class HrReportController extends Controller
             $r->id => trim(($r->name ?? '') . (filled($r->slug ?? null) ? ' - ' . $r->slug : '')),
         ]);
 
+        // Salary Date shown on every salary print: an explicit ?salary_date= from
+        // the filter form always wins (this is what lets the same generated
+        // report be printed/re-printed under whatever date the user is actually
+        // disbursing on); with none given, falls back to the active Salary Key's
+        // own payment_date exactly as before, then today.
+        $salaryDateInput = $request->input('salary_date');
+        if (filled($salaryDateInput)) {
+            $salaryDate = Carbon::parse($salaryDateInput)->format('d M Y');
+        } else {
+            $salaryKey = HrSalaryKey::where('status', 'active')->latest('id')->first();
+            $salaryDate = $salaryKey?->payment_date
+                ? Carbon::parse($salaryKey->payment_date)->format('d M Y')
+                : now()->format('d M Y');
+        }
+
         return [
             'request' => $request,
             'employees' => $employees,
@@ -3675,6 +3691,13 @@ class HrReportController extends Controller
             'fromLabel' => Carbon::parse($from)->format('d-M-Y'),
             'toLabel' => Carbon::parse($to)->format('d-M-Y'),
             'reportTypeLabel' => self::SALARY_REPORT_TYPES[$reportType],
+            'salaryDate' => $salaryDate,
+            // Checked -> show real signature lines for manual sign-off; unchecked
+            // (default) -> the report prints its own "system generated, no
+            // signature required" note instead (and the printMaster2 layout's
+            // duplicate copy of that same note is suppressed by each wrapper
+            // view's $hideGeneratedNote, so it's never shown twice).
+            'withSignature' => $request->boolean('with_signature'),
         ];
     }
 

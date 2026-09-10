@@ -34,6 +34,13 @@
 	.sheet-inwords { margin-top:10px; font-size:10px; font-weight:700; }
 	.stamp-box { width:25mm; height:20mm; padding:0; }
 
+	.rpt-footer { margin-top:18px; }
+	.sig-row { display:flex; justify-content:space-between; }
+	.sig-box { text-align:center; width:18%; }
+	.sig-box .sig-line { border-top:1px solid #333; margin-top:28px; margin-bottom:3px; }
+	.sig-box .sig-lbl { font-size:9px; color:#333; }
+	.rpt-footer-note { font-size:9px; color:#666; text-align:center; margin-top:14px; font-style:italic; }
+
 	@media print {
 		@page { size: A4 landscape; margin: 7mm; }
 		body { margin: 0; }
@@ -45,8 +52,6 @@
 @php
 	$company = hr_factory('name') ?? 'Company Name';
 	$address = hr_factory('address') ?? '';
-	$salaryKey = \ME\Hr\Models\HrSalaryKey::where('status', 'active')->latest('id')->first();
-	$salaryDate = $salaryKey?->payment_date ? \Carbon\Carbon::parse($salaryKey->payment_date)->format('d M Y') : now()->format('d M Y');
 	$leaveCols = 3 + $leaveInfos->count();
 	$totalCols = ($withPicture ? 37 : 36) + $leaveInfos->count();
 @endphp
@@ -256,6 +261,20 @@
 			Taka {{ ucfirst($inWords) }} only
 		@else
 			Taka {{ number_format($grand['net'], 2) }} only
+		@endif
+	</div>
+
+	<div class="rpt-footer">
+		@if($withSignature ?? false)
+			<div class="sig-row">
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Prepared By</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Checked By</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">HR Manager</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Accounts Manager</div></div>
+				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Managing Director</div></div>
+			</div>
+		@else
+			<div class="rpt-footer-note">This is a system generated report, no signature required.</div>
 		@endif
 	</div>
 @endif
