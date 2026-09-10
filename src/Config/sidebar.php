@@ -380,6 +380,13 @@ return [
                                     'permission' => 'hr_salary_report_wage',
                                 ],
                                 [
+                                    'title'      => 'Salary Summary SFL',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/salary-summary-sfl',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_salary_summary_sfl_report',
+                                ],
+                                [
                                     'title'      => 'OT Summary',
                                     'icon'       => 'fa-solid fa-arrow-right',
                                     'route'      => '/admin/hr-center/reports/ot-summary',

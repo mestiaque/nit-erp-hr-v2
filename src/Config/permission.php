@@ -204,6 +204,10 @@ return [
             'label' => 'Salary Report (Wage)',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]
         ],
+        'hr_salary_summary_sfl_report' => [
+            'label' => 'Salary Summary SFL',
+            'permissions' => [ 'view' => 'View', 'all'  => 'All',]
+        ],
         'hr_ot_summary_report' => [
             'label' => 'OT Summary Report',
             'permissions' => [ 'view' => 'View', 'all'  => 'All',]

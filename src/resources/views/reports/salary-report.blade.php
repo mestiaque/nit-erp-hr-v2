@@ -25,12 +25,14 @@
         'production' => route('hr-center.reports.production-salary-print'),
         'bonus' => route('hr-center.reports.bonus-salary-print'),
         'wages-salary-summary' => route('hr-center.reports.wages-salary-summary-print'),
+        'salary-summary-sfl' => route('hr-center.reports.salary-summary-sfl-print'),
     ];
     $salaryScreenRoutes = [
         'fixed' => route('hr-center.reports.fixed-salary'),
         'production' => route('hr-center.reports.production-salary'),
         'bonus' => route('hr-center.reports.bonus-salary'),
         'wages-salary-summary' => route('hr-center.reports.wages-salary-summary'),
+        'salary-summary-sfl' => route('hr-center.reports.salary-summary-sfl'),
     ];
 
     // Use central HR options service for all lookups

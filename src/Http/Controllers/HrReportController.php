@@ -3409,6 +3409,7 @@ class HrReportController extends Controller
         'production'           => 'Production Salary',
         'bonus'                => 'Bonus Salary',
         'wages-salary-summary' => 'Wages & Salary Summary',
+        'salary-summary-sfl'   => 'Salary Summary SFL',
     ];
 
     private function salaryReportScreen(Request $request, string $report)
@@ -3464,6 +3465,14 @@ class HrReportController extends Controller
     public function wagesSalarySummaryReportScreen(Request $request)
     {
         return $this->salaryReportScreenFor($request, 'wages-salary-summary');
+    }
+
+    /**
+     * Route: GET /reports/salary-summary-sfl (filter form)
+     */
+    public function salarySummarySflReportScreen(Request $request)
+    {
+        return $this->salaryReportScreenFor($request, 'salary-summary-sfl');
     }
 
     private function salaryReportScreenFor(Request $request, string $reportType)
@@ -3553,6 +3562,38 @@ class HrReportController extends Controller
         );
 
         return $this->viewOrXlsx($request, 'hr::reports.salary-report-print-wages', $payload, 'wages-salary-summary');
+    }
+
+    /**
+     * Route: GET /reports/salary-summary-sfl-print
+     *
+     * Suhana Fashions Ltd's own fixed-layout Salary Summary — Management Staff /
+     * Staff / each production Department, in the company's fixed employee_id
+     * badge-block order (1000-12000). Unlike Wages & Salary Summary above, the
+     * bucketing here is hardcoded to that layout (see
+     * SalaryReportService::buildSflSalarySummaryData()), not a selectable Group By axis.
+     */
+    public function salarySummarySflReportPrint(Request $request)
+    {
+        if (!$request->boolean('_render')) {
+            return view('hr::partials.report-loader-render', [
+                'request' => $request,
+            ]);
+        }
+
+        $payload = $this->salaryReportBasePayload($request, 'salary-summary-sfl');
+
+        $payload = array_merge(
+            $payload,
+            SalaryReportService::buildSflSalarySummaryData(
+                $payload['employees'],
+                $payload['from'],
+                $payload['to'],
+                $request
+            )
+        );
+
+        return $this->viewOrXlsx($request, 'hr::reports.salary-report-print-summary-sfl', $payload, 'salary-summary-sfl');
     }
 
     private function renderSalarySheetReport(Request $request, string $reportType, string $view)

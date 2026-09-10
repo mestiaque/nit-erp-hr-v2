@@ -89,6 +89,8 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/reports/bonus-salary-print', [HrReportController::class, 'bonusSalaryReportPrint'])->name('reports.bonus-salary-print');
 		Route::get('/reports/wages-salary-summary', [HrReportController::class, 'wagesSalarySummaryReportScreen'])->name('reports.wages-salary-summary');
 		Route::get('/reports/wages-salary-summary-print', [HrReportController::class, 'wagesSalarySummaryReportPrint'])->name('reports.wages-salary-summary-print');
+		Route::get('/reports/salary-summary-sfl', [HrReportController::class, 'salarySummarySflReportScreen'])->name('reports.salary-summary-sfl');
+		Route::get('/reports/salary-summary-sfl-print', [HrReportController::class, 'salarySummarySflReportPrint'])->name('reports.salary-summary-sfl-print');
 		Route::get('/reports/daily-attendance-report', [HrReportController::class, 'dailyAttendanceReportScreen'])->name('reports.daily-attendance-report');
 		Route::get('/reports/daily-attendance-report-print', [HrReportController::class, 'dailyAttendanceReportPrint'])->name('reports.daily-attendance-report-print');
 		Route::get('/reports/ot-summary', [HrReportController::class, 'otSummaryReportScreen'])->name('reports.ot-summary');

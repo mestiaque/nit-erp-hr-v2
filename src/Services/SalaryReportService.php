@@ -797,6 +797,109 @@ class SalaryReportService
     }
 
     /**
+     * Suhana Fashions Ltd's own fixed bucketing for the "Salary Summary SFL"
+     * report — the company's own badge/ID-card numbering convention, where every
+     * employee_id was assigned out of a fixed per-category block (1000-1999 =
+     * Management Staff, 2000-2999 = Staff, 3000-3999 = Cutting, ... 12000-12999 =
+     * Admin). This is the company's real, authoritative grouping: hr_employees'
+     * department_id/classification_id fields are filled in inconsistently (e.g.
+     * most "Iron Man"-designation employees are logged under the Sewing
+     * department, not a dedicated "Iron" department — there isn't one — but they
+     * all carry employee_id 6001-6019, the company's own Iron block), so this
+     * report deliberately buckets by employee_id instead of those fields. NOT one
+     * of the generic Group By axes — hardcoded to match the company's fixed
+     * report layout/order.
+     */
+    private const SFL_FIXED_BUCKETS = [
+        1000  => 'Management Staff',
+        2000  => 'Staff',
+        3000  => 'Cutting',
+        4000  => 'Sewing',
+        5000  => 'Embroidery',
+        6000  => 'Iron',
+        7000  => 'Quality',
+        8000  => 'Finishing',
+        9000  => 'Learner',
+        10000 => 'Sample',
+        11000 => 'Jacquard',
+        12000 => 'Admin',
+    ];
+
+    /**
+     * employee_id -> its fixed bucket code, by which 1000-wide block it falls in
+     * (1005 -> 1000, 6019 -> 6000, 12010 -> 12000, ...). Anything non-numeric or
+     * outside the company's defined 1000-12999 badge range folds into Admin
+     * (12000) rather than being dropped or shown under a made-up label.
+     */
+    private static function sflSummaryBucketCodeFor(?string $employeeId): int
+    {
+        $numeric = (int) preg_replace('/\D/', '', (string) $employeeId);
+        $code = intdiv($numeric, 1000) * 1000;
+
+        return array_key_exists($code, self::SFL_FIXED_BUCKETS) ? $code : 12000;
+    }
+
+    /**
+     * Aggregated rows for the "Salary Summary SFL" report — reuses the SFL Salary
+     * Sheet's own per-employee figures (buildSalarySheetData with groupBy 'none',
+     * so every employee is computed once) and re-buckets them by employee_id into
+     * the company's fixed Management Staff / Staff / Department rows via
+     * sflSummaryBucketCodeFor(). Every one of the 12 fixed rows is always present
+     * (even with zero employees), so the printed report always matches the
+     * company's fixed template/order.
+     */
+    public static function buildSflSalarySummaryData(
+        $employees,
+        string $from,
+        string $to,
+        $request
+    ): array {
+        $flat = self::buildSalarySheetData($employees, $from, $to, $request, collect(), 'none');
+        $allRows = $flat['sheetRows'][0]['rows'] ?? [];
+
+        $emptyTotals = [
+            'emp' => 0, 'basic' => 0, 'gross' => 0, 'total' => 0,
+            'ot_hours' => 0, 'ot_amount' => 0, 'net' => 0,
+            'advance' => 0, 'revenue' => 0, 'payable' => 0,
+        ];
+
+        $buckets = [];
+        foreach (self::SFL_FIXED_BUCKETS as $code => $label) {
+            $buckets[$code] = ['label' => $label] + $emptyTotals;
+        }
+
+        foreach ($allRows as $row) {
+            $emp = $row['emp'];
+            $code = self::sflSummaryBucketCodeFor($emp->employee_id);
+
+            $buckets[$code]['emp']++;
+            $buckets[$code]['basic']     += (float) $row['basic'];
+            $buckets[$code]['gross']     += (float) $row['gross'];
+            $buckets[$code]['total']     += (float) $row['sfl_total'];
+            $buckets[$code]['ot_hours']  += (float) $row['ot_hours'];
+            $buckets[$code]['ot_amount'] += (float) $row['ot_total'];
+            $buckets[$code]['net']       += (float) $row['sfl_net'];
+            $buckets[$code]['advance']   += (float) $row['loan'];
+            $buckets[$code]['revenue']   += (float) $row['stamp'];
+            $buckets[$code]['payable']   += (float) $row['sfl_payable'];
+        }
+
+        ksort($buckets);
+
+        $grandTotals = $emptyTotals;
+        foreach ($buckets as $row) {
+            foreach ($grandTotals as $k => $v) {
+                $grandTotals[$k] += $row[$k];
+            }
+        }
+
+        return [
+            'summaryRows' => $buckets,
+            'grandTotals' => $grandTotals,
+        ];
+    }
+
+    /**
      * Per-employee, date-wise OT sheet (like the Salary Sheet, but each day of the
      * period is its own column of OT hours) for the OT Sheet report.
      */
