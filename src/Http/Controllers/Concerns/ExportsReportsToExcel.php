@@ -42,8 +42,33 @@ trait ExportsReportsToExcel
         $sections = view($view, $payload)->renderSections();
         $contentsHtml = $sections['contents'] ?? implode('', $sections);
 
+        // Belt-and-braces: PhpSpreadsheet's HTML reader escapes non-ASCII characters via a
+        // preg_replace_callback() with the /u (UTF-8) modifier, which returns null — not an
+        // error, just null — the instant it hits a single invalid UTF-8 byte anywhere in the
+        // string. Report data (names, addresses, geo-location names, etc., often
+        // Bengali-script and sometimes imported from legacy sources) can contain a stray
+        // invalid byte that a browser renders fine but that call can't tolerate. Re-encoding
+        // UTF-8 to UTF-8 replaces any ill-formed bytes while leaving valid text untouched.
+        $contentsHtml = mb_convert_encoding($contentsHtml, 'UTF-8', 'UTF-8');
+
+        // The actual cause of "Failed to load content as a DOM Document": DOMDocument's
+        // HTML parser only *warns* (via PHP's E_WARNING) on recoverable markup issues like
+        // an unescaped "&" in ordinary text (e.g. a table header reading "Car & Fuel") — it
+        // still parses the document. But Laravel's error handler turns that E_WARNING into a
+        // thrown ErrorException, which PhpSpreadsheet's loadFromString() catches as a
+        // Throwable and reports as a hard failure, even though the parse actually succeeded.
+        // libxml_use_internal_errors(true) redirects libxml's warnings into its own internal
+        // buffer instead of raising a PHP warning, so they never reach Laravel's handler.
+        $previousLibxmlSetting = libxml_use_internal_errors(true);
+
         $reader = new HtmlReader();
-        $spreadsheet = $reader->loadFromString('<!doctype html><html><body>' . $contentsHtml . '</body></html>');
+
+        try {
+            $spreadsheet = $reader->loadFromString('<!doctype html><html><body>' . $contentsHtml . '</body></html>');
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousLibxmlSetting);
+        }
 
         // The HTML reader never sets column widths, so every column opens at Excel's
         // narrow default — long text truncates and any date/number column shows as a
