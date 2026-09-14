@@ -7,11 +7,16 @@
         margin: 5;
     }
 
+    body{
+        text-align: center;
+    }
+
     .sfl-front-grid,
     .sfl-back-grid {
         display: flex;
         flex-wrap: wrap;
         gap: 5.5mm;
+        justify-content: center;
     }
 
     .sfl-page-break {
@@ -75,9 +80,9 @@
     /*.sfl-decor-bh-navy { clip-path: polygon(40.5% 0%, 100% 0%, 100% 100%, 37.5% 100%); height: 1.5rem; }*/
     /*.sfl-decor-bf-gold { clip-path: polygon(0% 0%, 38% 0%, 35% 100%, 0% 100%); height: 1.5rem; }*/
     /*.sfl-decor-bf-navy { clip-path: polygon(38.5% 0%, 100% 0%, 100% 100%, 35.5% 100%); height: 1rem; }*/
-    
-    
-    
+
+
+
         .sfl-decor-bh-navy {
         clip-path: polygon(0% 0%, 40% 0%, 37% 100%, 0% 100%);
         height: 1.5rem;
@@ -132,7 +137,7 @@
         text-align: center;
         flex-shrink: 0;
         margin: 0.8mm 0;
-        margin-top: -3mm; 
+        margin-top: -3mm;
     }
     .sfl-photo {
         width: 20mm;
@@ -206,7 +211,7 @@
         padding: 1mm 10mm;
         margin: 1mm 0;
         /* clip-path: polygon(4mm 0%, calc(100% - 4mm) 0%, 100% 50%, calc(100% - 4mm) 100%, 4mm 100%, 0% 50%); */
-        clip-path: polygon(0% 0%, 100% 0%, calc(100% - 2.6mm) 50%, 100% 100%, 0% 100%, 2.6mm 50%); 
+        clip-path: polygon(0% 0%, 100% 0%, calc(100% - 2.6mm) 50%, 100% 100%, 0% 100%, 2.6mm 50%);
         text-align: center;
         letter-spacing: 0.2mm;
     }
@@ -262,6 +267,7 @@
         font-size: 2.2mm;
         line-height: 1.5;
     }
+
 </style>
 @endpush
 @endonce
