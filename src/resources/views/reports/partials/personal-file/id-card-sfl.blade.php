@@ -291,7 +291,7 @@
     $joinDateRaw = data_get($employee, 'joining_date') ?? data_get($employee, 'join_date');
     $joinDate = '';
     if ($joinDateRaw) {
-        try {
+        try {   
             $joinDate = $isBangla && function_exists('bn_date')
                 ? bn_date($joinDateRaw, 'd/m/Y')
                 : \Carbon\Carbon::parse($joinDateRaw)->format('d/m/Y');

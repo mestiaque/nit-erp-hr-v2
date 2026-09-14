@@ -7,10 +7,6 @@
         margin: 5;
     }
 
-    body{
-        text-align: center;
-    }
-
     .sfl-front-grid,
     .sfl-back-grid {
         display: flex;
