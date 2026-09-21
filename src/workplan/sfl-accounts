@@ -42,3 +42,4 @@ Employee   Gross Salary  Absent Amt TK   Total Salary  OT-Amount     Net Salary 
 gross salary  (- Absent Amt TK) (+Att: Bonus) (+Other Alowance) = Total Salary
 Total salary +  OT-Amount = Net Salary
 Net Salary (- Advance Paid) (-Revenue) = Payable 
+

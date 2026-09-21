@@ -40,6 +40,13 @@ return [
                             'permission' => 'hr_asset_category',
                         ],
                         [
+                            'title'      => 'Asset Location',
+                            'icon'       => 'fa-solid fa-arrow-right',
+                            'route'      => '/admin/hr-center/masters/asset-locations',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_asset_location',
+                        ],
+                        [
                             'title'      => 'Block/Line',
                             'icon'       => 'fa-solid fa-arrow-right',
                             'route'      => '/admin/hr-center/masters/floor-lines',
@@ -227,14 +234,14 @@ return [
                     'permission' => 'hr_employee_gate_pass',
                 ],
                 [
-                    'title'      => 'Asset Management',
+                    'title'      => 'Asset Handover',
                     'icon'       => 'fa-solid fa-laptop',
                     'route'      => '/admin/hr-center/employee-assets',
                     'icon_color' => 'text-warning',
                     'permission' => 'hr_employee_asset',
                 ],
                 [
-                    'title'      => 'Company Assets',
+                    'title'      => 'Asset Management',
                     'icon'       => 'fa-solid fa-boxes-stacked',
                     'route'      => '/admin/hr-center/company-assets',
                     'icon_color' => 'text-warning',

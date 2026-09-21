@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use ME\Hr\Http\Controllers\Concerns\ExportsReportsToExcel;
 use ME\Hr\Models\HrAssetCategory;
+use ME\Hr\Models\HrAssetLocation;
 use ME\Hr\Models\HrCompanyAsset;
-use ME\Hr\Models\HrDepartment;
 
 class HrCompanyAssetController extends Controller
 {
@@ -16,7 +16,7 @@ class HrCompanyAssetController extends Controller
 
     public function index(Request $request)
     {
-        $query = HrCompanyAsset::with(['category', 'department'])->latest('id');
+        $query = HrCompanyAsset::with(['category', 'location'])->latest('id');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -31,8 +31,8 @@ class HrCompanyAssetController extends Controller
             $query->where('asset_category_id', $request->asset_category_id);
         }
 
-        if ($request->filled('department_id')) {
-            $query->where('department_id', $request->department_id);
+        if ($request->filled('location_id')) {
+            $query->where('location_id', $request->location_id);
         }
 
         if ($request->filled('status')) {
@@ -42,21 +42,21 @@ class HrCompanyAssetController extends Controller
         $assets = $query->paginate(20)->appends($request->query());
 
         return view('hr::company-assets.index', [
-            'assets'      => $assets,
-            'request'     => $request,
-            'categories'  => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
-            'departments' => HrDepartment::orderBy('name')->get(),
-            'statuses'    => HrCompanyAsset::STATUSES,
+            'assets'     => $assets,
+            'request'    => $request,
+            'categories' => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
+            'locations'  => HrAssetLocation::where('status', 'active')->orderBy('name')->get(),
+            'statuses'   => HrCompanyAsset::STATUSES,
         ]);
     }
 
     public function create()
     {
         return view('hr::company-assets.form', [
-            'asset'       => new HrCompanyAsset(),
-            'categories'  => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
-            'departments' => HrDepartment::orderBy('name')->get(),
-            'statuses'    => HrCompanyAsset::STATUSES,
+            'asset'      => new HrCompanyAsset(),
+            'categories' => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
+            'locations'  => HrAssetLocation::where('status', 'active')->orderBy('name')->get(),
+            'statuses'   => HrCompanyAsset::STATUSES,
         ]);
     }
 
@@ -77,10 +77,10 @@ class HrCompanyAssetController extends Controller
         $asset = HrCompanyAsset::findOrFail($id);
 
         return view('hr::company-assets.form', [
-            'asset'       => $asset,
-            'categories'  => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
-            'departments' => HrDepartment::orderBy('name')->get(),
-            'statuses'    => HrCompanyAsset::STATUSES,
+            'asset'      => $asset,
+            'categories' => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
+            'locations'  => HrAssetLocation::where('status', 'active')->orderBy('name')->get(),
+            'statuses'   => HrCompanyAsset::STATUSES,
         ]);
     }
 
@@ -104,10 +104,10 @@ class HrCompanyAssetController extends Controller
     public function reportScreen(Request $request)
     {
         return view('hr::reports.company-asset-report', [
-            'request'     => $request,
-            'categories'  => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
-            'departments' => HrDepartment::orderBy('name')->get(),
-            'statuses'    => HrCompanyAsset::STATUSES,
+            'request'    => $request,
+            'categories' => HrAssetCategory::where('status', 'active')->orderBy('name')->get(),
+            'locations'  => HrAssetLocation::where('status', 'active')->orderBy('name')->get(),
+            'statuses'   => HrCompanyAsset::STATUSES,
         ]);
     }
 
@@ -119,7 +119,7 @@ class HrCompanyAssetController extends Controller
             ]);
         }
 
-        $query = HrCompanyAsset::with(['category', 'department']);
+        $query = HrCompanyAsset::with(['category', 'location']);
 
         if ($request->filled('asset_category_id')) {
             $values = array_filter((array) $request->asset_category_id);
@@ -128,10 +128,10 @@ class HrCompanyAssetController extends Controller
             }
         }
 
-        if ($request->filled('department_id')) {
-            $values = array_filter((array) $request->department_id);
+        if ($request->filled('location_id')) {
+            $values = array_filter((array) $request->location_id);
             if (! empty($values)) {
-                $query->whereIn('department_id', $values);
+                $query->whereIn('location_id', $values);
             }
         }
 
@@ -150,12 +150,12 @@ class HrCompanyAssetController extends Controller
             $query->whereDate('purchase_date', '<=', $request->to);
         }
 
-        $assets = $query->orderBy('department_id')->orderBy('asset_code')->get();
+        $assets = $query->orderBy('location_id')->orderBy('asset_code')->get();
 
         return $this->viewOrXlsx($request, 'hr::reports.company-asset-report-print', [
-            'assets'      => $assets,
-            'totalQty'    => $assets->sum('quantity'),
-            'totalCost'   => $assets->sum('total_acquisition_cost'),
+            'assets'    => $assets,
+            'totalQty'  => $assets->sum('quantity'),
+            'totalCost' => $assets->sum('total_acquisition_cost'),
         ], 'current-asset-report');
     }
 
@@ -165,7 +165,7 @@ class HrCompanyAssetController extends Controller
             'asset_category_id' => 'nullable|exists:hr_asset_categories,id',
             'description'       => 'required|string|max:255',
             'quantity'          => 'required|integer|min:1',
-            'department_id'     => 'nullable|exists:hr_departments,id',
+            'location_id'       => 'nullable|exists:hr_asset_locations,id',
             'purchase_date'     => 'nullable|date',
             'supplier_vendor'   => 'nullable|string|max:150',
             'unit_cost'         => 'nullable|numeric|min:0',

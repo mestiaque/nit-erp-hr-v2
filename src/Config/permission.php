@@ -14,6 +14,10 @@ return [
             'label' => 'Asset Category',
             'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
         ],
+        'hr_asset_location' => [
+            'label' => 'Asset Location',
+            'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
+        ],
         'hr_block' => [
             'label' => 'Block',
             'permissions' => [ 'list'   => 'List', 'add'    => 'Create', 'edit'   => 'Edit', 'view'   => 'View', 'delete' => 'Delete', 'all'    => 'All', ],
@@ -116,11 +120,11 @@ return [
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'all' => 'All' ],
         ],
         'hr_employee_asset' => [
-            'label' => 'Employee Asset Management',
+            'label' => 'Asset Handover',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'all' => 'All' ],
         ],
         'hr_company_asset' => [
-            'label' => 'Company Asset Management',
+            'label' => 'Asset Management',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
         'hr_regular_to_weekend' => [

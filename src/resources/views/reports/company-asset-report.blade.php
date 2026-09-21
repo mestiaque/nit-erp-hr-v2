@@ -27,9 +27,9 @@
 
                     <div class="col-md-3 mb-3">
                         <label class="mb-1">Location / Dept</label>
-                        <select name="department_id[]" class="form-control form-control-sm select2" multiple>
-                            @foreach($departments as $item)
-                                <option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->department_id))>{{ $item->name }}</option>
+                        <select name="location_id[]" class="form-control form-control-sm select2" multiple>
+                            @foreach($locations as $item)
+                                <option value="{{ $item->id }}" @selected(in_array((string)$item->id, (array)$request->location_id))>{{ $item->name }}</option>
                             @endforeach
                         </select>
                     </div>

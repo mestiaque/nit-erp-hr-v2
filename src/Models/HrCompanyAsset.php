@@ -25,9 +25,9 @@ class HrCompanyAsset extends BaseHrModel
         return $this->belongsTo(HrAssetCategory::class, 'asset_category_id');
     }
 
-    public function department(): BelongsTo
+    public function location(): BelongsTo
     {
-        return $this->belongsTo(HrDepartment::class, 'department_id');
+        return $this->belongsTo(HrAssetLocation::class, 'location_id');
     }
 
     public function getTotalAcquisitionCostAttribute(): ?float

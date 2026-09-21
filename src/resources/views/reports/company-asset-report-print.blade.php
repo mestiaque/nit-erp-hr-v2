@@ -70,7 +70,7 @@
                     <td>{{ $asset->category->name ?? '-' }}</td>
                     <td>{{ $asset->description }}</td>
                     <td class="tc">{{ $asset->quantity }}</td>
-                    <td>{{ $asset->department->name ?? '-' }}</td>
+                    <td>{{ $asset->location->name ?? '-' }}</td>
                     <td class="tc">{{ optional($asset->purchase_date)->format('d M Y') ?? '-' }}</td>
                     <td>{{ $asset->supplier_vendor ?? '-' }}</td>
                     <td class="tr">{{ $asset->unit_cost !== null ? number_format((float)$asset->unit_cost, 2) : '-' }}</td>

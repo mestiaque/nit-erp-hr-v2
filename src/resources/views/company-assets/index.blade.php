@@ -1,7 +1,7 @@
 @extends('admin.layouts.app')
 
 @section('title')
-<title>Company Asset Management</title>
+<title>Asset Management</title>
 @endsection
 
 @push('css')
@@ -17,10 +17,15 @@
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Company Asset Management</h4>
-            <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
-                <i class="fa-solid fa-plus"></i> Add Asset
-            </a>
+            <h4 class="mb-0">Asset Management</h4>
+            <div class="d-flex gap-2">
+                <a href="{{ route('hr-center.reports.company-asset-report') }}" class="btn btn-light btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-print"></i> Asset Register Report
+                </a>
+                <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-plus"></i> Add Asset
+                </a>
+            </div>
         </div>
         <div class="card-body">
 
@@ -48,10 +53,10 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label mb-1">Location / Dept</label>
-                    <select name="department_id" class="form-control form-control-sm">
+                    <select name="location_id" class="form-control form-control-sm">
                         <option value="">All</option>
-                        @foreach($departments as $d)
-                            <option value="{{ $d->id }}" @selected($request->department_id == $d->id)>{{ $d->name }}</option>
+                        @foreach($locations as $l)
+                            <option value="{{ $l->id }}" @selected($request->location_id == $l->id)>{{ $l->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -79,10 +84,15 @@
                             <th width="50">SL</th>
                             <th>Asset ID</th>
                             <th>Category</th>
-                            <th>Description</th>
-                            <th width="80">Qty</th>
+                            <th>Item</th>
+                            <th width="70">Qty</th>
                             <th>Location / Dept</th>
                             <th>Purchase Date</th>
+                            <th>Supplier / Vendor</th>
+                            <th class="text-end">Unit Cost</th>
+                            <th class="text-end">Total Acquisition Cost</th>
+                            <th class="text-center">Useful Life (Yrs)</th>
+                            <th class="text-center">Age (Yrs)</th>
                             <th width="110">Status</th>
                             <th width="100">Action</th>
                         </tr>
@@ -95,8 +105,13 @@
                             <td>{{ $asset->category->name ?? '-' }}</td>
                             <td>{{ $asset->description }}</td>
                             <td>{{ $asset->quantity }}</td>
-                            <td>{{ $asset->department->name ?? '-' }}</td>
+                            <td>{{ $asset->location->name ?? '-' }}</td>
                             <td>{{ optional($asset->purchase_date)->format('d M Y') ?? '-' }}</td>
+                            <td>{{ $asset->supplier_vendor ?? '-' }}</td>
+                            <td class="text-end">{{ $asset->unit_cost !== null ? number_format((float) $asset->unit_cost, 2) : '-' }}</td>
+                            <td class="text-end">{{ $asset->total_acquisition_cost !== null ? number_format($asset->total_acquisition_cost, 2) : '-' }}</td>
+                            <td class="text-center">{{ $asset->useful_life_years ?? '-' }}</td>
+                            <td class="text-center">{{ $asset->age_years ?? '-' }}</td>
                             <td>
                                 <span class="badge-soft-{{ \Illuminate\Support\Str::slug($asset->status) }}">{{ $asset->status }}</span>
                             </td>
@@ -115,7 +130,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted">No assets found.</td>
+                            <td colspan="14" class="text-center text-muted">No assets found.</td>
                         </tr>
                         @endforelse
                     </tbody>

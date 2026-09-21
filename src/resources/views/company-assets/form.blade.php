@@ -52,10 +52,10 @@
                     </div>
                     <div class="col-md-3 mb-2">
                         <label class="form-label mb-1">Location / Dept</label>
-                        <select name="department_id" class="form-control form-control-sm select2">
+                        <select name="location_id" class="form-control form-control-sm select2">
                             <option value="">— Select —</option>
-                            @foreach($departments as $department)
-                                <option value="{{ $department->id }}" @selected($asset->department_id == $department->id)>{{ $department->name }}</option>
+                            @foreach($locations as $location)
+                                <option value="{{ $location->id }}" @selected($asset->location_id == $location->id)>{{ $location->name }}</option>
                             @endforeach
                         </select>
                     </div>
