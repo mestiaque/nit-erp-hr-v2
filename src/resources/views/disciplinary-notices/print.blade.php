@@ -71,7 +71,7 @@
         <p style="margin-bottom:0;">ধন্যবাদসহ,</p>
     </div>
 
-    <div style="margin-top:60px; display:flex; justify-content:space-between; text-align:center;">
+    <div style="margin-top:200px; display:flex; justify-content:space-between; text-align:center;">
         <div style="width:32%;">
             _______________<br>
             {{ $employeeName }}
