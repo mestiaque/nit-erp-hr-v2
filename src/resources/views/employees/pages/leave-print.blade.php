@@ -417,7 +417,7 @@ body {
         <div class="right-col">
             <div class="sidebar">
                 <div class="sidebar-header">এ.এইচ.আর. ডিপার্টমেন্ট</div>
-                <div class="sidebar-subheader">চলতি বছরের ছুটির হিসাব</div>
+                {{-- <div class="sidebar-subheader">চলতি বছরের ছুটির হিসাব</div>
                 <table>
                     <thead>
                         <tr>
@@ -437,7 +437,7 @@ body {
                         </tr>
                         @endforeach
                     </tbody>
-                </table>
+                </table> --}}
 
                 <div class="recommender-box">
                     <div class="sig-label">স্বাক্ষর</div>
@@ -535,7 +535,7 @@ body {
                 তারিখ : <span class="dotted" style="width:140px;">&nbsp;</span>
             </div>
 
-            <div class="sidebar">
+            {{-- <div class="sidebar">
                 <div class="sidebar-subheader">চলতি বছরের ছুটির হিসাব</div>
                 <table>
                     <thead>
@@ -557,7 +557,7 @@ body {
                         @endforeach
                     </tbody>
                 </table>
-            </div>
+            </div> --}}
 
             <div class="hr-sig-area">
                 <div class="hr-sig-line">&nbsp;</div>
