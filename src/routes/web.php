@@ -9,6 +9,7 @@ use ME\Hr\Http\Controllers\HrFloorLineController;
 use ME\Hr\Http\Controllers\HrEmployeeGatePassController;
 use ME\Hr\Http\Controllers\HrEmployeeAssetController;
 use ME\Hr\Http\Controllers\HrCompanyAssetController;
+use ME\Hr\Http\Controllers\HrDisciplinaryNoticeController;
 use ME\Hr\Http\Controllers\HrMasterController;
 use ME\Hr\Http\Controllers\HrReportController;
 use ME\Hr\Http\Controllers\ProductionRateController;
@@ -135,6 +136,15 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/company-assets/{id}/edit', [HrCompanyAssetController::class, 'edit'])->name('company-assets.edit');
 		Route::put('/company-assets/{id}', [HrCompanyAssetController::class, 'update'])->name('company-assets.update');
 		Route::delete('/company-assets/{id}', [HrCompanyAssetController::class, 'destroy'])->name('company-assets.destroy');
+
+		// Disciplinary Notice (Show Cause Notice for salary deduction, with saved history)
+		Route::get('/disciplinary-notices', [HrDisciplinaryNoticeController::class, 'index'])->name('disciplinary-notices.index');
+		Route::get('/disciplinary-notices/create', [HrDisciplinaryNoticeController::class, 'create'])->name('disciplinary-notices.create');
+		Route::post('/disciplinary-notices', [HrDisciplinaryNoticeController::class, 'store'])->name('disciplinary-notices.store');
+		Route::get('/disciplinary-notices/{id}/edit', [HrDisciplinaryNoticeController::class, 'edit'])->name('disciplinary-notices.edit');
+		Route::put('/disciplinary-notices/{id}', [HrDisciplinaryNoticeController::class, 'update'])->name('disciplinary-notices.update');
+		Route::delete('/disciplinary-notices/{id}', [HrDisciplinaryNoticeController::class, 'destroy'])->name('disciplinary-notices.destroy');
+		Route::get('/disciplinary-notices/{id}/print', [HrDisciplinaryNoticeController::class, 'print'])->name('disciplinary-notices.print');
 
 		// Floor Lines (Block / Line)
 		Route::get('/masters/floor-lines', [HrFloorLineController::class, 'index'])->name('floor-lines.index');

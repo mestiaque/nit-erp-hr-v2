@@ -127,6 +127,10 @@ return [
             'label' => 'Asset Management',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
+        'hr_disciplinary_notice' => [
+            'label' => 'Disciplinary Notice',
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
+        ],
         'hr_regular_to_weekend' => [
             'label' => 'Weekend to Regular',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],

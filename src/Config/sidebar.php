@@ -248,6 +248,13 @@ return [
                     'permission' => 'hr_company_asset',
                 ],
                 [
+                    'title'      => 'Disciplinary Notice',
+                    'icon'       => 'fa-solid fa-triangle-exclamation',
+                    'route'      => '/admin/hr-center/disciplinary-notices',
+                    'icon_color' => 'text-warning',
+                    'permission' => 'hr_disciplinary_notice',
+                ],
+                [
                     'title'      => 'Weekend to Regular',
                     'icon'       => 'fa-solid fa-arrow-right',
                     'route'      => '/admin/hr-center/regular-to-weekend',
