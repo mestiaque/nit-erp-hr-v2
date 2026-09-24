@@ -46,7 +46,11 @@ class HrDisciplinaryNoticeController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $notice = HrDisciplinaryNotice::create($this->validated($request));
+        $validated = $this->validated($request);
+
+        $notice = HrDisciplinaryNotice::create(array_merge($validated, [
+            'memo_no' => $this->nextMemoNo($validated['notice_date']),
+        ]));
 
         return redirect()->route('hr-center.disciplinary-notices.index')
             ->with('success', 'Notice saved successfully.')
@@ -100,7 +104,21 @@ class HrDisciplinaryNoticeController extends Controller
             'incident_date'         => 'nullable|date',
             'incident_description'  => 'nullable|string|max:2000',
             'deduction_days'        => 'required|integer|min:1',
-            'memo_no'               => 'nullable|string|max:100',
         ]);
+    }
+
+    /**
+     * SFL/HR/{month}/{day}/{2-digit year}/{running number for that year} — same
+     * shape as the sample memo the user gave (SFL/HR/08/19/26/001). Dated off the
+     * notice's own notice_date, not today, so a backdated notice still gets a memo
+     * number matching the date printed on it.
+     */
+    private function nextMemoNo(string $noticeDate): string
+    {
+        $date = \Carbon\Carbon::parse($noticeDate);
+        $companyCode = optional(general())->company_s_code ?: 'SFL';
+        $count = HrDisciplinaryNotice::whereYear('notice_date', $date->year)->count() + 1;
+
+        return sprintf('%s/HR/%s/%s/%s/%03d', $companyCode, $date->format('m'), $date->format('d'), $date->format('y'), $count);
     }
 }

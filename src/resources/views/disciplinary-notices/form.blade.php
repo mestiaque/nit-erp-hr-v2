@@ -63,10 +63,12 @@
                         <label class="form-label mb-1">Deduction (Days) <span class="text-danger">*</span></label>
                         <input type="number" min="1" name="deduction_days" class="form-control form-control-sm" value="{{ old('deduction_days', $notice->deduction_days) }}" required>
                     </div>
+                    @if($notice->id)
                     <div class="col-md-6 mb-2">
-                        <label class="form-label mb-1">Memo No <small class="text-muted">(leave blank to fill by hand)</small></label>
-                        <input type="text" name="memo_no" class="form-control form-control-sm" value="{{ old('memo_no', $notice->memo_no) }}" placeholder="SFL/HR/08/19/26/001">
+                        <label class="form-label mb-1">Memo No <small class="text-muted">(auto-generated)</small></label>
+                        <input type="text" class="form-control form-control-sm" value="{{ $notice->memo_no }}" disabled>
                     </div>
+                    @endif
 
                     <div class="col-md-12 mb-2">
                         <label class="form-label mb-1">Incident Description <small class="text-muted">(what happened — printed in the notice body)</small></label>
