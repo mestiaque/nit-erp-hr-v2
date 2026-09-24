@@ -201,7 +201,7 @@ class HrEmployeeController extends Controller
         }
         $this->syncDesignationSalaryToEmployee($employee, $payload, true);
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Employee created successfully.');
+        return redirect()->back()->with('success', 'Employee created successfully.');
     }
 
     public function updateProfile(Request $request, HrEmployee $employee): RedirectResponse
@@ -243,7 +243,7 @@ class HrEmployeeController extends Controller
             uploadFile($request->file('profile_image'), $employee->id, 8, 1, Auth::id());
         }
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Employee profile updated.');
+        return redirect()->back()->with('success', 'Employee profile updated.');
     }
 
     public function updateSalary(Request $request, HrEmployee $employee): RedirectResponse
@@ -268,7 +268,7 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Salary info updated.');
+        return redirect()->back()->with('success', 'Salary info updated.');
     }
 
     /**
@@ -294,7 +294,7 @@ class HrEmployeeController extends Controller
             }
         });
 
-        return redirect()->route('hr-center.employees.index')
+        return redirect()->back()
             ->with('success', "Synced designation salary fields for {$synced} employee(s).");
     }
 
@@ -320,7 +320,7 @@ class HrEmployeeController extends Controller
         $this->upsertAddressInfo($employee, $payload);
         $employee->save();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Address info updated.');
+        return redirect()->back()->with('success', 'Address info updated.');
     }
 
     public function updateBasicInfo(Request $request, HrEmployee $employee): RedirectResponse
@@ -466,7 +466,7 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Basic info updated.');
+        return redirect()->back()->with('success', 'Basic info updated.');
     }
 
     public function updateNominee(Request $request, HrEmployee $employee): RedirectResponse
@@ -517,7 +517,7 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Nominee info updated.');
+        return redirect()->back()->with('success', 'Nominee info updated.');
     }
 
     public function updateAgeVerification(Request $request, HrEmployee $employee): RedirectResponse
@@ -537,7 +537,7 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Age verification info updated.');
+        return redirect()->back()->with('success', 'Age verification info updated.');
     }
 
     public function updateResign(Request $request, HrEmployee $employee): RedirectResponse
@@ -558,7 +558,7 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Lefty/Resign info updated.');
+        return redirect()->back()->with('success', 'Lefty/Resign info updated.');
     }
 
     public function showResignLetter(HrEmployee $employee)
@@ -605,7 +605,7 @@ class HrEmployeeController extends Controller
             return redirect()->route('hr-center.employees.final-settlement.print.show', $employee);
         }
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Final settlement info updated.');
+        return redirect()->back()->with('success', 'Final settlement info updated.');
     }
 
     public function showFinalSettlementLetter(HrEmployee $employee)
@@ -1620,7 +1620,7 @@ class HrEmployeeController extends Controller
         $this->ensureEmployee($employee);
         $employee->delete();
 
-        return redirect()->route('hr-center.employees.index')->with('success', 'Employee deleted successfully.');
+        return redirect()->back()->with('success', 'Employee deleted successfully.');
     }
 
     private function ensureEmployee(HrEmployee $employee): void
