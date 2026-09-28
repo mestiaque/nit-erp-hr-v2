@@ -2,6 +2,7 @@
 
 namespace ME\Hr\Http\Controllers;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -10,17 +11,23 @@ use ME\Hr\Services\CompanyAssetImportService;
 
 class CompanyAssetImportController extends Controller
 {
+    use AuthorizesRequests;
+
     public function __construct(private readonly CompanyAssetImportService $importer)
     {
     }
 
     public function create(): View
     {
+        $this->authorize('hr_company_asset.import');
+
         return view('hr::company-assets.import');
     }
 
     public function preview(Request $request): JsonResponse
     {
+        $this->authorize('hr_company_asset.import');
+
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
 
         return response()->json($this->importer->preview($request->file('file')));
@@ -28,6 +35,8 @@ class CompanyAssetImportController extends Controller
 
     public function save(Request $request): JsonResponse
     {
+        $this->authorize('hr_company_asset.import');
+
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
 
         return response()->json($this->importer->import($request->file('file')));
@@ -35,6 +44,8 @@ class CompanyAssetImportController extends Controller
 
     public function recheck(Request $request): JsonResponse
     {
+        $this->authorize('hr_company_asset.import');
+
         $data = $request->validate(['row' => ['required']]);
 
         return response()->json(['row' => $data['row'], ...$this->importer->validateRow($request->input('fields', []))]);
@@ -45,6 +56,8 @@ class CompanyAssetImportController extends Controller
      */
     public function template()
     {
+        $this->authorize('hr_company_asset.import');
+
         if (! class_exists(\PhpOffice\PhpSpreadsheet\Spreadsheet::class)) {
             abort(501, 'Excel import requires the phpoffice/phpspreadsheet package. Run "composer require phpoffice/phpspreadsheet" in this application, then try again.');
         }

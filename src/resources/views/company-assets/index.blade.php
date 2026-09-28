@@ -22,9 +22,11 @@
                 <a href="{{ route('hr-center.reports.company-asset-report') }}" class="btn btn-light btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-print"></i> Asset Register Report
                 </a>
+                @can('hr_company_asset.import')
                 <a href="{{ route('hr-center.company-assets.import') }}" class="btn btn-light btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-file-import"></i> Import Excel
                 </a>
+                @endcan
                 <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-plus"></i> Add Asset
                 </a>

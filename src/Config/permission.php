@@ -125,7 +125,7 @@ return [
         ],
         'hr_company_asset' => [
             'label' => 'Asset Management',
-            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'import' => 'Import', 'all' => 'All' ],
         ],
         'hr_disciplinary_notice' => [
             'label' => 'Disciplinary Notice',
