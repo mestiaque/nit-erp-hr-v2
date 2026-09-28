@@ -9,6 +9,7 @@ use ME\Hr\Http\Controllers\HrFloorLineController;
 use ME\Hr\Http\Controllers\HrEmployeeGatePassController;
 use ME\Hr\Http\Controllers\HrEmployeeAssetController;
 use ME\Hr\Http\Controllers\HrCompanyAssetController;
+use ME\Hr\Http\Controllers\CompanyAssetImportController;
 use ME\Hr\Http\Controllers\HrDisciplinaryNoticeController;
 use ME\Hr\Http\Controllers\HrMasterController;
 use ME\Hr\Http\Controllers\HrReportController;
@@ -133,6 +134,12 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/company-assets', [HrCompanyAssetController::class, 'index'])->name('company-assets.index');
 		Route::get('/company-assets/create', [HrCompanyAssetController::class, 'create'])->name('company-assets.create');
 		Route::post('/company-assets', [HrCompanyAssetController::class, 'store'])->name('company-assets.store');
+		// "import" segment isn't swallowed as an asset id — these must stay above the {id} routes below.
+		Route::get('/company-assets/import', [CompanyAssetImportController::class, 'create'])->name('company-assets.import');
+		Route::get('/company-assets/import/template', [CompanyAssetImportController::class, 'template'])->name('company-assets.import.template');
+		Route::post('/company-assets/import/preview', [CompanyAssetImportController::class, 'preview'])->name('company-assets.import.preview');
+		Route::post('/company-assets/import/save', [CompanyAssetImportController::class, 'save'])->name('company-assets.import.save');
+		Route::post('/company-assets/import/recheck', [CompanyAssetImportController::class, 'recheck'])->name('company-assets.import.recheck');
 		Route::get('/company-assets/{id}/edit', [HrCompanyAssetController::class, 'edit'])->name('company-assets.edit');
 		Route::put('/company-assets/{id}', [HrCompanyAssetController::class, 'update'])->name('company-assets.update');
 		Route::delete('/company-assets/{id}', [HrCompanyAssetController::class, 'destroy'])->name('company-assets.destroy');

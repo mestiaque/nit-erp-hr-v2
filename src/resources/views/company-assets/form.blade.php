@@ -45,6 +45,14 @@
                         <label class="form-label mb-1">Description <span class="text-danger">*</span></label>
                         <input type="text" name="description" class="form-control form-control-sm" value="{{ old('description', $asset->description) }}" required>
                     </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label mb-1">Brand</label>
+                        <input type="text" name="brand" class="form-control form-control-sm" value="{{ old('brand', $asset->brand) }}">
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label mb-1">Model</label>
+                        <input type="text" name="model" class="form-control form-control-sm" value="{{ old('model', $asset->model) }}">
+                    </div>
 
                     <div class="col-md-3 mb-2">
                         <label class="form-label mb-1">Quantity <span class="text-danger">*</span></label>
@@ -75,6 +83,19 @@
                     <div class="col-md-3 mb-2">
                         <label class="form-label mb-1">Useful Life (Years)</label>
                         <input type="number" min="0" name="useful_life_years" class="form-control form-control-sm" value="{{ old('useful_life_years', $asset->useful_life_years) }}">
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label mb-1">Depreciation Method</label>
+                        <select name="depreciation_method" class="form-control form-control-sm">
+                            <option value="">— None —</option>
+                            @foreach(\ME\Hr\Models\HrCompanyAsset::DEPRECIATION_METHODS as $method)
+                                <option value="{{ $method }}" @selected(old('depreciation_method', $asset->depreciation_method) === $method)>{{ $method }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <label class="form-label mb-1">Salvage Value (BDT)</label>
+                        <input type="number" step="0.01" min="0" name="salvage_value" class="form-control form-control-sm" value="{{ old('salvage_value', $asset->salvage_value) }}">
                     </div>
                     <div class="col-md-3 mb-2">
                         <label class="form-label mb-1">Status <span class="text-danger">*</span></label>

@@ -22,6 +22,9 @@
                 <a href="{{ route('hr-center.reports.company-asset-report') }}" class="btn btn-light btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-print"></i> Asset Register Report
                 </a>
+                <a href="{{ route('hr-center.company-assets.import') }}" class="btn btn-light btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-file-import"></i> Import Excel
+                </a>
                 <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-plus"></i> Add Asset
                 </a>
@@ -32,6 +35,18 @@
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show">
                     {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            @endif
+            @if(session('warning'))
+                <div class="alert alert-warning alert-dismissible fade show">
+                    {{ session('warning') }}
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show">
+                    {{ session('error') }}
                     <button type="button" class="close" data-dismiss="alert">&times;</button>
                 </div>
             @endif
@@ -85,6 +100,7 @@
                             <th>Asset ID</th>
                             <th>Category</th>
                             <th>Item</th>
+                            <th>Brand / Model</th>
                             <th width="70">Qty</th>
                             <th>Location / Dept</th>
                             <th>Purchase Date</th>
@@ -104,6 +120,7 @@
                             <td>{{ $asset->asset_code }}</td>
                             <td>{{ $asset->category->name ?? '-' }}</td>
                             <td>{{ $asset->description }}</td>
+                            <td>{{ trim(($asset->brand ?? '') . ' ' . ($asset->model ?? '')) ?: '-' }}</td>
                             <td>{{ $asset->quantity }}</td>
                             <td>{{ $asset->location->name ?? '-' }}</td>
                             <td>{{ optional($asset->purchase_date)->format('d M Y') ?? '-' }}</td>
@@ -130,14 +147,14 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="14" class="text-center text-muted">No assets found.</td>
+                            <td colspan="15" class="text-center text-muted">No assets found.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            {{ $assets->links() }}
+            {{ $assets->links('pagination::bootstrap-5') }}
 
         </div>
     </div>

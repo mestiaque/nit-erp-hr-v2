@@ -162,16 +162,20 @@ class HrCompanyAssetController extends Controller
     private function validated(Request $request): array
     {
         return $request->validate([
-            'asset_category_id' => 'nullable|exists:hr_asset_categories,id',
-            'description'       => 'required|string|max:255',
-            'quantity'          => 'required|integer|min:1',
-            'location_id'       => 'nullable|exists:hr_asset_locations,id',
-            'purchase_date'     => 'nullable|date',
-            'supplier_vendor'   => 'nullable|string|max:150',
-            'unit_cost'         => 'nullable|numeric|min:0',
-            'useful_life_years' => 'nullable|integer|min:0',
-            'status'            => 'required|in:' . implode(',', HrCompanyAsset::STATUSES),
-            'remarks'           => 'nullable|string|max:1000',
+            'asset_category_id'   => 'nullable|exists:hr_asset_categories,id',
+            'description'         => 'required|string|max:255',
+            'brand'               => 'nullable|string|max:150',
+            'model'               => 'nullable|string|max:150',
+            'quantity'            => 'required|integer|min:1',
+            'location_id'         => 'nullable|exists:hr_asset_locations,id',
+            'purchase_date'       => 'nullable|date',
+            'supplier_vendor'     => 'nullable|string|max:150',
+            'unit_cost'           => 'nullable|numeric|min:0',
+            'useful_life_years'   => 'nullable|integer|min:0',
+            'depreciation_method' => 'nullable|string|max:50',
+            'salvage_value'       => 'nullable|numeric|min:0',
+            'status'              => 'required|in:' . implode(',', HrCompanyAsset::STATUSES),
+            'remarks'             => 'nullable|string|max:1000',
         ]);
     }
 
