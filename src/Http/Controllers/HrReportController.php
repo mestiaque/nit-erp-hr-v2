@@ -2451,7 +2451,54 @@ class HrReportController extends Controller
             'dateLabel' => $isRange
                 ? Carbon::parse($from)->format('d-M-Y') . ' to ' . Carbon::parse($to)->format('d-M-Y')
                 : Carbon::parse($from)->format('d-M-Y'),
-        ], 'daily-attendance-report');
+        ], 'daily-attendance-report', [$this, 'styleTableSheetXlsx']);
+    }
+
+    /**
+     * Excel polish for multi-table reports (the HTML reader keeps none of the print
+     * CSS): every table row — any row with 2+ filled cells, so merged title/section
+     * rows are left alone — gets thin cell borders; each table's first row (its <th>
+     * header, which the reader doesn't style) is bolded and shaded; and the page
+     * prints landscape, fit to width.
+     */
+    public function styleTableSheetXlsx(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): void
+    {
+        $highestCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($sheet->getHighestColumn());
+        $previousWasTableRow = false;
+        foreach ($sheet->getRowIterator() as $row) {
+            $r = $row->getRowIndex();
+            $lastFilled = 0;
+            $filled = 0;
+            for ($c = 1; $c <= $highestCol; $c++) {
+                $value = $sheet->getCell([$c, $r])->getValue();
+                if ($value !== null && $value !== '') {
+                    $filled++;
+                    $lastFilled = $c;
+                }
+            }
+            if ($filled < 2) {
+                $previousWasTableRow = false;
+                continue;
+            }
+            $isHeader = !$previousWasTableRow;
+            $previousWasTableRow = true;
+            $range = 'A' . $r . ':' . \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($lastFilled) . $r;
+            $sheet->getStyle($range)->getBorders()->getAllBorders()
+                ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            if ($isHeader) {
+                $sheet->getStyle($range)->getFont()->setBold(true);
+                $sheet->getStyle($range)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('EEF1D4');
+                $sheet->getStyle($range)->getAlignment()
+                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            }
+        }
+
+        $sheet->getPageSetup()
+            ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
+            ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4)
+            ->setFitToWidth(1)
+            ->setFitToHeight(0);
     }
 
     public function otSummaryReportScreen(Request $request)
@@ -3630,7 +3677,56 @@ class HrReportController extends Controller
             ]
         );
 
-        return $this->viewOrXlsx($request, $view, $payload, 'salary-sheet-' . $reportType);
+        return $this->viewOrXlsx($request, $view, $payload, 'salary-sheet-' . $reportType, [$this, 'styleSalarySheetXlsx']);
+    }
+
+    /**
+     * Excel polish for the salary sheet export: the HTML reader keeps none of the print
+     * view's CSS, so the column-header row through the Grand Total row gets real cell
+     * borders, a wrapped/bold header, frozen panes (Sl/Card/Name stay visible while
+     * scrolling) and a legal-landscape, fit-to-width print setup.
+     */
+    public function styleSalarySheetXlsx(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet): void
+    {
+        $headerRow = null;
+        $lastRow = null;
+        foreach ($sheet->getRowIterator() as $row) {
+            $r = $row->getRowIndex();
+            $label = trim((string) $sheet->getCell('A' . $r)->getValue());
+            if ($headerRow === null && strcasecmp($label, 'Sl-NO') === 0) {
+                $headerRow = $r;
+            } elseif ($headerRow !== null && stripos($label, 'Grand Total') === 0) {
+                $lastRow = $r;
+                break;
+            }
+        }
+        if ($headerRow === null) {
+            return;
+        }
+        $lastRow = $lastRow ?? $headerRow;
+        $lastCol = $sheet->getHighestColumn($headerRow);
+
+        $sheet->getStyle("A{$headerRow}:{$lastCol}{$lastRow}")->getBorders()->getAllBorders()
+            ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+        $header = $sheet->getStyle("A{$headerRow}:{$lastCol}{$headerRow}");
+        $header->getFont()->setBold(true);
+        $header->getAlignment()->setWrapText(true)
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER)
+            ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        $header->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('EFEFEF');
+        $sheet->getRowDimension($headerRow)->setRowHeight(30);
+
+        $sheet->freezePane('D' . ($headerRow + 1));
+
+        $sheet->getPageSetup()
+            ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE)
+            ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL)
+            ->setFitToWidth(1)
+            ->setFitToHeight(0)
+            ->setRowsToRepeatAtTopByStartAndEnd($headerRow, $headerRow);
+        $sheet->getPageMargins()->setTop(0.3)->setBottom(0.3)->setLeft(0.25)->setRight(0.25);
     }
 
     /**

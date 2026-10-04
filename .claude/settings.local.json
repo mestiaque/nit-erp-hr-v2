@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php -l /home/estiaque/Desktop/NIT/hr-new/src/Http/Controllers/RosterController.php)"
+    ]
+  }
+}

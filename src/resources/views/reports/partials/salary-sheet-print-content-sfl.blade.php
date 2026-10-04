@@ -53,8 +53,13 @@ th{ font-size: 9px; }
 	$address = hr_factory('address') ?? '';
 	$totalCols = ($withPicture ? 31 : 30) + $leaveInfos->count();
 	$labelCols = $withPicture ? 8 : 7;
+	// Excel export: the print-only header/footer blocks below are divs, which the
+	// HTML->XLSX reader drops into column A as plain cells (blowing that column's
+	// width up). In that mode they're emitted as full-width merged table rows instead.
+	$isExcel = $isExcelExport ?? false;
 @endphp
 
+@unless($isExcel)
 <div class="rpt-header">
 	@if(!blank(optional(general())->logo()))
 		<img src="{{ asset(optional(general())->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
@@ -83,12 +88,21 @@ th{ font-size: 9px; }
 		<div class="row"><span>Others Holiday's :</span><strong>{{ $otherHolidayCount }}</strong></div>
 	</div>
 </div>
+@endunless
 
 @if(empty($sheetRows))
 	<p style="text-align:center;color:#888;padding:10px 0;">No employees found.</p>
 @else
 	<table class="sheet-table">
 		<thead>
+			@if($isExcel)
+				<tr><td colspan="{{ $totalCols }}" style="text-align:center;font-weight:bold;font-size:16px;">{{ $company }}</td></tr>
+				<tr><td colspan="{{ $totalCols }}" style="text-align:center;">{{ $address }}</td></tr>
+				<tr><td colspan="{{ $totalCols }}" style="text-align:center;font-weight:bold;font-size:13px;">{{ $reportTypeLabel }}</td></tr>
+				<tr><td colspan="{{ $totalCols }}" style="text-align:center;">Period: {{ $fromLabel }} - {{ $toLabel }}</td></tr>
+				<tr><td colspan="{{ $totalCols }}" style="text-align:left;">Salary Date: {{ $salaryDate }} | Currency: BDT (Bangladeshi Taka) | Total Month Day's: {{ $totalMonthDays }} | Total Working Day's: {{ $totalWorkingDays }} | Weekly holiday's: {{ $weekendCount }} | Others Holiday's: {{ $otherHolidayCount }}</td></tr>
+				<tr><td colspan="{{ $totalCols }}"></td></tr>
+			@endif
 			<tr>
 				<th>Sl-NO</th>
 				<th>Card no</th>
@@ -251,8 +265,22 @@ th{ font-size: 9px; }
 				<td class="tr"></td>
 				{{-- <td class="tr"></td> --}}
 			</tr>
+			@if($isExcel)
+				<tr><td colspan="{{ $totalCols }}"></td></tr>
+				<tr>
+					<td colspan="{{ $totalCols }}" style="font-weight:bold;">
+						In Words :
+						@if($sflInWords ?? null)
+							Taka {{ ucfirst($sflInWords) }} only
+						@else
+							Taka {{ number_format($grand['sfl_payable'], 2) }} only
+						@endif
+					</td>
+				</tr>
+			@endif
 		</tbody>
 	</table>
+	@unless($isExcel)
 	<div class="sheet-inwords">
 		In Words :
 		@if($sflInWords ?? null)
@@ -275,4 +303,5 @@ th{ font-size: 9px; }
 			<div class="rpt-footer-note">This is a system generated report, no signature required.</div>
 		@endif
 	</div>
+	@endunless
 @endif
