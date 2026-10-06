@@ -161,7 +161,11 @@
                         @csrf
                         {{-- Preserve filter params --}}
                         @foreach(['employee','status','date_from','date_to','department','section','sub_section','classification','designation'] as $p)
-                            @if(request($p))
+                            @if(is_array(request($p)))
+                                @foreach(request($p) as $v)
+                                    <input type="hidden" name="{{ $p }}[]" value="{{ $v }}">
+                                @endforeach
+                            @elseif(request($p))
                                 <input type="hidden" name="{{ $p }}" value="{{ request($p) }}">
                             @endif
                         @endforeach
