@@ -63,6 +63,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	<thead>
 		<tr>
 			<th>Department</th>
+			<th>Manpower</th>
 			<th>Basic</th>
 			<th>Gross Salary</th>
 			<th>Total Salary</th>
@@ -78,6 +79,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 		@forelse($summaryRows as $row)
 			<tr>
 				<td class="tl">{{ $row['label'] }}</td>
+				<td class="tc">{{ $row['emp'] }}</td>
 				<td class="tr">{{ $fmt($row['basic']) }}</td>
 				<td class="tr">{{ $fmt($row['gross']) }}</td>
 				<td class="tr">{{ $fmt($row['total']) }}</td>
@@ -89,12 +91,13 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tr">{{ $fmt($row['payable']) }}</td>
 			</tr>
 		@empty
-			<tr><td colspan="10" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
+			<tr><td colspan="11" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
 		@endforelse
 	</tbody>
 	<tfoot>
 		<tr class="grand-total">
 			<td class="tl">Grand Total Amount :</td>
+			<td class="tc">{{ $grandTotals['emp'] }}</td>
 			<td class="tr">{{ $fmt($grandTotals['basic']) }}</td>
 			<td class="tr">{{ $fmt($grandTotals['gross']) }}</td>
 			<td class="tr">{{ $fmt($grandTotals['total']) }}</td>
