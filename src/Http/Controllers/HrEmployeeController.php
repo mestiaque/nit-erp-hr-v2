@@ -846,7 +846,7 @@ class HrEmployeeController extends Controller
     public function incrementsLock(HrEmployee $employee, HrEmployeeSalaryIncrement $increment): RedirectResponse
     {
         $this->ensureEmployee($employee);
-        abort_unless($increment->employee_id === $employee->id, 404);
+        abort_unless((int) $increment->employee_id === (int) $employee->id, 404);
 
         $increment->update([
             'is_locked' => true,
@@ -861,7 +861,7 @@ class HrEmployeeController extends Controller
     public function incrementsUnlock(HrEmployee $employee, HrEmployeeSalaryIncrement $increment): RedirectResponse
     {
         $this->ensureEmployee($employee);
-        abort_unless($increment->employee_id === $employee->id, 404);
+        abort_unless((int) $increment->employee_id === (int) $employee->id, 404);
 
         $increment->update([
             'is_locked' => false,
