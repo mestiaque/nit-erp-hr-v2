@@ -5,17 +5,23 @@
 @section('title', 'Advance Application - ' . ($application->employee->employee_id ?? ''))
 
 @push('css')
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;700&display=swap" rel="stylesheet">
 <style>
 @media print {
     @page { size: A4; margin: 15mm; }
     body { margin: 0; }
 }
-.adv-letter { font-family: 'Nikosh', 'Arial', sans-serif; max-width: 800px; margin: auto; color: #000; line-height: 1.75; padding: 10px; font-size: 15px; }
+/* A real Bengali web font everywhere (table cells included): with Nikosh missing, Windows fell
+   back to Arial, which can't join conjuncts like ঞ্জ in মঞ্জুর. */
+.adv-letter, .adv-letter * { font-family: 'Noto Sans Bengali', 'Nirmala UI', 'SolaimanLipi', 'Nikosh', sans-serif !important; }
+.adv-letter { max-width: 800px; margin: auto; color: #000; line-height: 1.75; padding: 10px; font-size: 15px; }
 .adv-letter p { margin: 0 0 14px; }
 .adv-bottom { width: 100%; border-collapse: collapse; margin-top: 10px; }
-.adv-bottom > tbody > tr > td { vertical-align: top; }
-.adv-office { border: 1px solid #000; width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6; }
-.adv-office td { border: 1px solid #000; padding: 6px 8px; vertical-align: top; }
+.adv-bottom { margin-bottom: 0; }
+/* printMaster2 borders every td - the outer layout table must stay borderless. */
+.adv-bottom > tbody > tr > td { vertical-align: top; border: 0 !important; padding: 0; font-size: 14px; }
+.adv-office { border: 1px solid #000; width: 100%; border-collapse: collapse; line-height: 1.6; margin-bottom: 0; }
+.adv-office td { border: 1px solid #000 !important; padding: 6px 8px; vertical-align: top; font-size: 13px; }
 .adv-office .adv-office-head { text-align: center; font-weight: 700; background: #e7e7e7; }
 .adv-office .adv-office-title { font-weight: 700; }
 .adv-blank { display: inline-block; border-bottom: 1px solid #000; min-width: 140px; }
@@ -58,9 +64,9 @@
     <p style="margin-top:22px;">মহোদয়,</p>
 
     <p style="text-align: justify;">
-        বিনীত নিবেদন এই যে, আমি {{ $employeeName }}, আপনার প্রতিষ্ঠানে {{ $designationName }} হিসেবে কর্মরত আছি। আমার আইডি নম্বর {{ $employeeId }}।
+        বিনীত নিবেদন এই যে, আমি {{ $employeeName }}, আপনার প্রতিষ্ঠানে {{$departmentName}} এ {{ $designationName }} হিসেবে কর্মরত আছি। আমার আইডি নম্বর {{ $employeeId }}।
         আমি অত্যন্ত জরুরি {{ $reason }} কারণে আর্থিক সমস্যার সম্মুখীন হয়েছি। এই পরিস্থিতি মোকাবিলার জন্য আমার কিছু জরুরি অর্থের প্রয়োজন।
-        এমতাবস্থায়, আগামী মাসের বেতন থেকে আমার {{ $bnAmount }} টাকা অগ্রিম প্রদান করলে আমি এই সাময়িক সমস্যাটি কাটিয়ে উঠতে পারব।
+        এমতাবস্থায়, আগামী মাসের বেতন থেকে {{ $bnAmount }} টাকা অগ্রিম প্রদান করলে আমি এই সাময়িক সমস্যাটি কাটিয়ে উঠতে পারব।
         এই অগ্রিম নেওয়া টাকাটি পরবর্তী {{ $deductionMonth }}মাসের বেতন থেকে কেটে নেওয়ার জন্য অনুরোধ করছি।
     </p>
 
