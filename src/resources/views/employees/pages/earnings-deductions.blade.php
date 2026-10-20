@@ -10,6 +10,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Others Earnings & Deductions: {{ $employee->name }}</h4>
             <div class="d-flex align-items-center" style="gap: 8px;">
+                <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#CreateAdvanceApplicationModal"><i class="fa-solid fa-file-signature mr-1"></i> Advance Application</a>
                 <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#CreateEarningsDeductionModal">Add Entry</a>
                 <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm">Back</a>
             </div>
@@ -68,6 +69,42 @@
                             </tr>
                         @empty
                             <tr><td colspan="9" class="text-center">No data found.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Saved salary advance application letters: record + print only, they change no figure above. --}}
+            <h6 class="mt-4 mb-2">Advance Applications <small class="text-muted">(print only — not counted in any calculation)</small></h6>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>Application Date</th>
+                            <th>Amount</th>
+                            <th>Reason</th>
+                            <th>Deduct From</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($advanceApplications as $application)
+                            <tr>
+                                <td>{{ $application->application_date->format('d M Y') }}</td>
+                                <td>{{ number_format((float) $application->amount, 2) }}</td>
+                                <td>{{ $application->reason ?: '-' }}</td>
+                                <td>{{ $application->deduction_month?->format('F Y') ?? 'Next month' }}</td>
+                                <td>
+                                    <a href="{{ route('hr-center.employees.advance-applications.print', [$employee->id, $application->id]) }}" target="_blank" class="btn-custom" title="Print"><i class="fa-solid fa-print"></i></a>
+                                    <form method="post" action="{{ route('hr-center.employees.advance-applications.destroy', [$employee->id, $application->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this application?');">
+                                        @csrf
+                                        @method('delete')
+                                        <button type="submit" class="btn-custom danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center">No advance application yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -137,4 +174,38 @@
     </div>
 </div>
 @endforeach
+<div class="modal fade" id="CreateAdvanceApplicationModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form method="post" action="{{ route('hr-center.employees.advance-applications.store', $employee->id) }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Salary Advance Application (অগ্রিম বেতনের জন্য আবেদন)</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-2">Saves the application and opens it for printing. It does not add an advance to Earnings &amp; Deductions or change any salary figure.</p>
+                    <div class="row">
+                        <div class="col-md-3 mb-2"><label class="mb-1">Application Date <span class="text-danger">*</span></label><input type="date" name="application_date" value="{{ old('application_date', now()->toDateString()) }}" class="form-control form-control-sm" required></div>
+                        <div class="col-md-3 mb-2"><label class="mb-1">Amount (Tk) <span class="text-danger">*</span></label><input type="number" step="0.01" min="1" name="amount" value="{{ old('amount') }}" class="form-control form-control-sm" required></div>
+                        <div class="col-md-3 mb-2"><label class="mb-1">Reason</label><input type="text" name="reason" value="{{ old('reason', \ME\Hr\Models\HrAdvanceApplication::DEFAULT_REASON) }}" class="form-control form-control-sm" maxlength="255"></div>
+                        <div class="col-md-3 mb-2"><label class="mb-1">Deduct From (month)</label><input type="month" name="deduction_month" value="{{ old('deduction_month', now()->addMonthNoOverflow()->format('Y-m')) }}" class="form-control form-control-sm"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-print mr-1"></i> Save &amp; Print</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
+
+@push('js')
+<script>
+@if(session('printed_advance_application_id'))
+    window.open('{{ route("hr-center.employees.advance-applications.print", [$employee->id, session("printed_advance_application_id")]) }}', '_blank');
+@endif
+</script>
+@endpush

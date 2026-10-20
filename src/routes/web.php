@@ -64,6 +64,9 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::post('/employees/{employee}/earnings-deductions', [HrEmployeeController::class, 'earningsDeductionsStore'])->name('employees.earnings.store');
 		Route::put('/employees/{employee}/earnings-deductions', [HrEmployeeController::class, 'earningsDeductionsUpdate'])->name('employees.earnings.update');
 		Route::delete('/employees/{employee}/earnings-deductions', [HrEmployeeController::class, 'earningsDeductionsDelete'])->name('employees.earnings.delete');
+		Route::post('/employees/{employee}/advance-applications', [\ME\Hr\Http\Controllers\HrAdvanceApplicationController::class, 'store'])->name('employees.advance-applications.store');
+		Route::get('/employees/{employee}/advance-applications/{application}/print', [\ME\Hr\Http\Controllers\HrAdvanceApplicationController::class, 'print'])->name('employees.advance-applications.print');
+		Route::delete('/employees/{employee}/advance-applications/{application}', [\ME\Hr\Http\Controllers\HrAdvanceApplicationController::class, 'destroy'])->name('employees.advance-applications.destroy');
 		Route::get('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesPage'])->name('employees.leaves.page');
 		Route::get('/employees/{employee}/leaves/{leave}/print', [HrEmployeeController::class, 'leavesPrint'])->name('employees.leaves.print');
 		Route::post('/employees/{employee}/leaves', [HrEmployeeController::class, 'leavesStore'])->name('employees.leaves.store');

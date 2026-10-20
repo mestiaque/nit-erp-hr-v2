@@ -913,7 +913,10 @@ class HrEmployeeController extends Controller
             'designation' => optional(collect($options['designations'] ?? [])->firstWhere('id', $employee->designation_id))->name,
         ];
 
-        return view('hr::employees.pages.earnings-deductions', compact('employee', 'rows', 'employeeMeta'));
+        $advanceApplications = \ME\Hr\Models\HrAdvanceApplication::where('employee_id', $employee->id)
+            ->latest('application_date')->latest('id')->get();
+
+        return view('hr::employees.pages.earnings-deductions', compact('employee', 'rows', 'employeeMeta', 'advanceApplications'));
     }
 
     public function earningsDeductionsStore(Request $request, HrEmployee $employee): RedirectResponse
