@@ -42,4 +42,8 @@
     @case('probaitionary-exten')
         @include('hr::reports.partials.personal-file.probaitionary-exten')
         @break
+
+    @case('salary-certificate')
+        @include('hr::reports.partials.personal-file.salary-certificate')
+        @break
 @endswitch

@@ -94,7 +94,7 @@
                         <td>
                             <div class="adv-office-title">সুপারিশকারী/বিভাগীয় প্রধানের মন্তব্য (Department Head Recommendation):</div>
                             মন্তব্য: <span class="adv-blank" style="min-width:250px;"></span><br>
-                            সুপারিশ: &nbsp;[ &nbsp;] অনুমোদিত &nbsp;/&nbsp; [ &nbsp;] অননুমোদিত
+                            সুপারিশ: &nbsp;[ &nbsp;] অনুমোদিত &nbsp;/&nbsp; [ &nbsp;] বাতিল
                             <div class="adv-gap"></div>
                             স্বাক্ষর ও তারিখ: <span class="adv-blank"></span>
                         </td>
