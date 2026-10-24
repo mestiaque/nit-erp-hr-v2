@@ -43,6 +43,7 @@
       
       <!-- Letter Header -->
       <header class="letter-header text-center">
+        @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
         <h1 class="company-name" style="color: black">{{ $companyNameSfl }}</h1>
         <p class="company-address">{{ $companyAddressSfl }}</p>
         <div class="document-title-wrapper" style="margin-top: 8px; margin-bottom:8px;">

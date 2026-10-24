@@ -61,6 +61,7 @@
     <div class="payslip-half">
         <div class="copy-type">অফিস কপি</div>
         <div class="header">
+            @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:30px;max-width:160px;object-fit:contain;margin:0 auto 3px;">@endif
             <h2>{{ $employeeData['company_name'] ?? '' }}</h2>
             <p>{{ $employeeData['company_address'] ?? '' }}</p>
             <p>Month: {{ $monthLabel ?? '' }}</p>
@@ -177,6 +178,7 @@
     <div class="payslip-half">
         <div class="copy-type">শ্রমিক কপি</div>
         <div class="header">
+            @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:30px;max-width:160px;object-fit:contain;margin:0 auto 3px;">@endif
             <h2>{{ $employeeData['company_name'] ?? '' }}</h2>
             <p>{{ $employeeData['company_address'] ?? '' }}</p>
             <p>Month: {{ $monthLabel ?? '' }}</p>

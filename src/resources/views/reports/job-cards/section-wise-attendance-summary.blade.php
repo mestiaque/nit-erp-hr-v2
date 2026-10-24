@@ -27,6 +27,7 @@
             $classification = $employeeData['job_type'] ?? $t('প্রযোজ্য নয়', 'N/A');
         @endphp
         <div class="report-head">
+            @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:40px;max-width:160px;object-fit:contain;margin:0 auto 3px;">@endif
             <h3>{{ $companyName }}</h3>
             <p>{{ $companyAddress }}</p>
         </div>

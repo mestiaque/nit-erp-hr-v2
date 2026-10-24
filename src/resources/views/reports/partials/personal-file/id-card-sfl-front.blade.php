@@ -348,7 +348,7 @@
     {{-- Logo row --}}
     <div class="sfl-logo-area">
         <div class="sfl-logo-text">
-            <img src="{{ asset(general()->logo()) }}" alt="{{ $employeeName }}" class="sfl-logo-img">
+            <img src="{{ report_logo_url() }}" alt="{{ $employeeName }}" class="sfl-logo-img">
         </div>
     </div>
 

@@ -166,6 +166,7 @@
 
     <div class="nominee-sheet">
       <div class="nominee-head">
+        @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
         <div class="nominee-company">{{ $companyName }}</div>
         <div class="nominee-address">{{ $companyAddress }}</div>
         <div class="nominee-form-no">{{ $t('ফরম', 'Form') }}-{{ $isBangla ? en2bnNumber(41) : 41 }}</div>

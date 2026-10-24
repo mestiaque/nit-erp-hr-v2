@@ -82,6 +82,7 @@
 @else
 
 <div class="appraisal-header">
+    @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
     <h3 style="margin:0;">{{ $companyName }}</h3>
     <div>{{ $companyAddress }}</div>
     <div class="appraisal-title">{{ $t('পদোন্নতি ও বেতনবৃদ্ধি মূল্যায়ন ফরম', 'Promotion and Salary Increment Appraisal Form') }}</div>

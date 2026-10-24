@@ -50,6 +50,7 @@
 </style>
 
 <div class="job-resp-header">
+    @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
     <h3 style="margin:0;">{{ $companyName }}</h3>
     <div>{{ $companyAddress }}</div>
     <div class="job-resp-title" style="margin-top:8px;">

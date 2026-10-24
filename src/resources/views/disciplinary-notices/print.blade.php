@@ -30,6 +30,7 @@
 <div style="font-family: 'Nikosh', 'Arial', sans-serif; max-width: 800px; margin: auto; color: #000; line-height: 1.8; padding: 10px;">
 
     <div style="text-align:center; margin-bottom:10px;">
+        @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
         <h2 style="margin:0; color:#1a3a5c;">{{ $company }}</h2>
         <div style="font-size: 13px;">{{ $address }}</div>
     </div>

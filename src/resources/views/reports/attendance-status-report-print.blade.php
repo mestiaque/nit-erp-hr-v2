@@ -86,8 +86,8 @@
 <div class="report-wrap">
     <div class="head text-center">
         <div class="company">
-            @if(!blank(general()->logo()))
-                <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+            @if(!blank(report_logo_url()))
+                <img src="{{ report_logo_url() }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
             @endif
             <h2>{{ $company }}</h2>
             <p>{{ $address }}</p>

@@ -42,8 +42,8 @@
 
 @section('contents')
 <div class="report-head text-center">
-    @if(!blank(general()->logo()))
-        <img src="{{ asset(general()->logo()) }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
+    @if(!blank(report_logo_url()))
+        <img src="{{ report_logo_url() }}" alt="Logo" style="max-height:40px;margin-bottom:4px;">
     @endif
     <h3>{{ hr_factory('name') ?? 'Company Name' }}</h3>
     <div>{{ hr_factory('address') ?? '' }}</div>

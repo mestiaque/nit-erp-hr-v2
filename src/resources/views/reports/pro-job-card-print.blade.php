@@ -15,6 +15,7 @@
 
 <div class="container mt-4">
     <div class="text-center mb-4">
+        @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
         <h3>{{ $reportTitle }}</h3>
     </div>
 

@@ -33,8 +33,8 @@
 <div class="page">
 
   <div class="skill-head">
-    @if(!blank(optional(general())->logo()))
-        <img src="{{ asset(optional(general())->logo()) }}" alt="Logo" class="skill-logo">
+    @if(!blank(report_logo_url()))
+        <img src="{{ report_logo_url() }}" alt="Logo" class="skill-logo">
     @endif
     <div class="skill-company">{{ $employeeData['company_name'] }}</div>
     <div class="skill-address">{{ $employeeData['company_address'] }}</div>

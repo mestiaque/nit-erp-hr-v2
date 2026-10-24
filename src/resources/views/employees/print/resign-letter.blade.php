@@ -25,6 +25,7 @@
 @endphp
 
 <div class="resign-letter ">
+    @if(report_logo_url())<div style="text-align:center;margin-bottom:6px;"><img src="{{ report_logo_url() }}" alt="Logo" style="height:50px;max-width:160px;object-fit:contain;"></div>@endif
     <p class="rl-date">তারিখঃ {{ $resignDate ?: '----------------' }}</p>
 
     <p class="rl-block">

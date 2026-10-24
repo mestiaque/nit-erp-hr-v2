@@ -279,7 +279,7 @@ body {
     {{-- ===== HEADER ===== --}}
     <div class="header">
         <div class="brand-logo">
-            <img src="{{ asset(general()->logo()) }}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
+            <img src="{{ report_logo_url() }}" alt="logo" style="width:100%;height:100%;object-fit:contain;border-radius:50%;">
         </div>
         <div class="company-name">{{ $factory?->bn_name ?: $factory?->name }}</div>
         <div class="company-address">{{ $factory?->bn_address ?: $factory?->address }}</div>

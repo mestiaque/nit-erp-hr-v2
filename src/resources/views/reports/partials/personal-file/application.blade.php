@@ -140,6 +140,7 @@
 <div style="font-family: 'Nikosh', 'Arial', sans-serif; max-width: 800px; margin: auto; color: #000; line-height: 1.6;">
 
 <div class="page">
+    @if(report_logo_url())<div style="text-align:center;margin-bottom:6px;"><img src="{{ report_logo_url() }}" alt="Logo" style="height:50px;max-width:160px;object-fit:contain;"></div>@endif
     <h2 class="text-center">চাকুরীর জন্য আবেদন</h2>
     <div class="photo-area">
         <!-- এখানে প্রার্থীর ছবি বসবে -->

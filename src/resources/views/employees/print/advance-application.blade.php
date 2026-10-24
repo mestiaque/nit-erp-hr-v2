@@ -50,6 +50,7 @@
 @endphp
 
 <div class="adv-letter">
+    @if(report_logo_url())<div style="text-align:center;margin-bottom:6px;"><img src="{{ report_logo_url() }}" alt="Logo" style="height:50px;max-width:160px;object-fit:contain;"></div>@endif
     <p>তারিখ: {{ bn_date($application->application_date, 'd F, Y') }}</p>
 
     <p>

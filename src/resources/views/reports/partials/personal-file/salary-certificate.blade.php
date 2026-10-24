@@ -45,8 +45,8 @@
 
     <!-- Header -->
     <div style="text-align:center; margin-bottom:25px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-        @if(!blank(optional(general())->logo()))
-            <img src="{{ asset(optional(general())->logo()) }}" alt="Logo" style="max-height:60px; margin-bottom:6px;">
+        @if(!blank(report_logo_url()))
+            <img src="{{ report_logo_url() }}" alt="Logo" style="max-height:60px; margin-bottom:6px;">
         @endif
         <h2 style="margin:0; text-transform: uppercase;">{{ $companyName }}</h2>
         <div style="font-size: 14px;">{{ $companyAddress }}</div>

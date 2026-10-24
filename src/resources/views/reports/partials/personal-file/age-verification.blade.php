@@ -51,6 +51,7 @@
 
     <div class="containerX">
         <div class="header">
+            @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
             <h1>{{ $companyName }}</h1>
             <p>{{ $companyAddress }}</p>
         </div>

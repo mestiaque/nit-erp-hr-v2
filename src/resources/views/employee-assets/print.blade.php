@@ -41,6 +41,7 @@
 @endphp
 
 <div class="form-wrap">
+    @if(report_logo_url())<div style="text-align:center;margin-bottom:6px;"><img src="{{ report_logo_url() }}" alt="Logo" style="height:50px;max-width:160px;object-fit:contain;"></div>@endif
     <div class="form-title">{{ strtoupper($company) }}</div>
     <div class="form-title">COMPANY ASSET HANDOVER &amp; RESPONSIBILITY FORM</div>
     <div class="form-doc-no">Document No.: {{ $asset->asset_no }} &nbsp;|&nbsp; Status:

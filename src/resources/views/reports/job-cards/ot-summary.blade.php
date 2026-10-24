@@ -26,6 +26,15 @@
         $otDayColWidth  = round((100 - 3 - 16 - 11 - 7 - ($otShowExtraCol ? 7 : 0)) / max($dates->count(), 1), 3);
     @endphp
 
+    @php
+        $otHeadData = $employees->isNotEmpty() ? \ME\Hr\Services\HrOptionsService::getOptionsForEmployee()($employees->first()) : [];
+    @endphp
+    <div class="report-head">
+        @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:40px;max-width:160px;object-fit:contain;margin:0 auto 3px;">@endif
+        <h3>{{ $otHeadData['company_name'] ?? hr_factory('name') }}</h3>
+        <p>{{ $otHeadData['company_address'] ?? hr_factory('address') }}</p>
+    </div>
+
     @foreach($bySection as $sectionId => $sectionEmps)
 
         @php

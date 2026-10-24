@@ -27,6 +27,7 @@
             <td class="main-table-td">
                 <div class="copy-tag">অফিস কপি</div>
                 <div class="header">
+                    @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:30px;max-width:160px;object-fit:contain;margin:0 auto 3px;">@endif
                     <h2>{{ $employeeData['company_name'] ?? '' }}</h2>
                     <p>{{ $employeeData['company_address'] ?? '' }}</p>
                     <p style="margin: 0; font-size: 11px;">অতিরিক্ত ওটি স্লিপ ({{ $monthLabel ?? '' }})</p>
@@ -72,6 +73,7 @@
             <td class="main-table-td">
                 <div class="copy-tag">শ্রমিক কপি</div>
                 <div class="header">
+                    @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:30px;max-width:160px;object-fit:contain;margin:0 auto 3px;">@endif
                     <h2>{{ $employeeData['company_name'] ?? '' }}</h2>
                     <p>{{ $employeeData['company_address'] ?? '' }}</p>
                     <p style="margin: 0; font-size: 11px;">অতিরিক্ত ওটি স্লিপ ({{ $monthLabel ?? '' }})</p>

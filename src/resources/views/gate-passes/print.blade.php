@@ -109,8 +109,8 @@
             <div class="gp-copy-tag">{{ $copyLabel }}</div>
             <div class="gp-head-row">
                 <div class="gp-head-left">
-                    @if(!blank(optional(general())->logo()))
-                        <img src="{{ asset(optional(general())->logo()) }}" alt="Logo">
+                    @if(!blank(report_logo_url()))
+                        <img src="{{ report_logo_url() }}" alt="Logo">
                     @endif
                     <div>
                         <p class="gp-company-name">{{ $company }}</p>

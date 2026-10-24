@@ -45,6 +45,7 @@
 
     <!-- Header -->
     <div style="text-align:center; margin-bottom:30px;">
+        @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
         <h2 style="margin:0; text-transform: uppercase;">{{ $companyName }}</h2>
         <div style="font-size: 14px;">{{ $companyAddress }}</div>
         <div style="margin-top: 10px; font-weight: bold; text-decoration: underline;">

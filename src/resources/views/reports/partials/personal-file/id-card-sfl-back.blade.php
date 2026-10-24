@@ -15,7 +15,7 @@
     {{-- Logo row --}}
     <div class="sfl-logo-area" style="padding: 0.5mm 1.5mm;">
         <div class="sfl-logo-text">
-            <img src="{{ asset(general()->logo()) }}" alt="logo" class="sfl-logo-img">
+            <img src="{{ report_logo_url() }}" alt="logo" class="sfl-logo-img">
         </div>
     </div>
 

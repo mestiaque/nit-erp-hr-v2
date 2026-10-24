@@ -107,8 +107,8 @@
 <div class="id-card-sheet">
     <div class="id-card-side id-card-front">
         <div class="id-card-logo-wrap">
-            @if(!blank(general()->logo()))
-                <img src="{{ asset(general()->logo()) }}" alt="{{ $t('কোম্পানির লোগো', 'Company Logo') }}" class="id-card-logo">
+            @if(!blank(report_logo_url()))
+                <img src="{{ report_logo_url() }}" alt="{{ $t('কোম্পানির লোগো', 'Company Logo') }}" class="id-card-logo">
             @endif
         </div>
         <h4 class="id-card-company">{{ $companyName }}</h4>
@@ -146,8 +146,8 @@
 
     <div class="id-card-side id-card-back">
         <div class="id-card-logo-wrap">
-            @if(!blank(general()->logo()))
-                <img src="{{ asset(general()->logo()) }}" alt="{{ $t('কোম্পানির লোগো', 'Company Logo') }}" class="id-card-logo">
+            @if(!blank(report_logo_url()))
+                <img src="{{ report_logo_url() }}" alt="{{ $t('কোম্পানির লোগো', 'Company Logo') }}" class="id-card-logo">
             @endif
         </div>
 

@@ -168,8 +168,8 @@
 
 <div class="fs-page">
 <div class="fs-head">
-    @if(!blank(optional(general())->logo()))
-        <img src="{{ asset(optional(general())->logo()) }}" alt="Logo">
+    @if(!blank(report_logo_url()))
+        <img src="{{ report_logo_url() }}" alt="Logo">
     @endif
     <h2>{{ $companyName }}</h2>
     <p>{{ $companyAddress }}</p>
