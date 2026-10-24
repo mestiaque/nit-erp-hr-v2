@@ -52,7 +52,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Designation</th>
                 <th>Date</th>
                 <th>Day</th>
@@ -67,7 +67,7 @@
                     <td class="tc">{{ $row['employee']->employee_id ?? '-' }}</td>
                     <td>{{ $row['employee']->name ?? 'N/A' }}</td>
                     <td>{{ optional($row['employee']->department)->name ?? 'N/A' }}</td>
-                    <td>{{ optional($row['employee']->section)->name ?? 'N/A' }}</td>
+                    @unless(hr_hide_section_line())<td>{{ optional($row['employee']->section)->name ?? 'N/A' }}</td>@endunless
                     <td>{{ optional($row['employee']->designation)->name ?? 'N/A' }}</td>
                     <td class="tc">{{ $row['date'] }}</td>
                     <td class="tc">{{ $row['day'] }}</td>
@@ -76,7 +76,7 @@
                 </tr>
             @endforeach
             <tr class="summary-row">
-                <td colspan="9" class="tr">Total Daily Payable Amount:</td>
+                <td colspan="{{ hr_hide_section_line() ? 8 : 9 }}" class="tr">Total Daily Payable Amount:</td>
                 <td class="tr">{{ number_format($dailyTotal, 2) }}</td>
             </tr>
         </tbody>
@@ -92,7 +92,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Designation</th>
                 <th>Total Eligible Days</th>
                 <th>Allowance Rate</th>
@@ -106,7 +106,7 @@
                     <td class="tc">{{ $row['employee']->employee_id ?? '-' }}</td>
                     <td>{{ $row['employee']->name ?? 'N/A' }}</td>
                     <td>{{ optional($row['employee']->department)->name ?? 'N/A' }}</td>
-                    <td>{{ optional($row['employee']->section)->name ?? 'N/A' }}</td>
+                    @unless(hr_hide_section_line())<td>{{ optional($row['employee']->section)->name ?? 'N/A' }}</td>@endunless
                     <td>{{ optional($row['employee']->designation)->name ?? 'N/A' }}</td>
                     <td class="tc">{{ $row['eligible_days'] }}</td>
                     <td class="tr">{{ number_format($row['rate'], 2) }}</td>
@@ -114,7 +114,7 @@
                 </tr>
             @endforeach
             <tr class="summary-row">
-                <td colspan="8" class="tr">Total Monthly Payable Amount:</td>
+                <td colspan="{{ hr_hide_section_line() ? 7 : 8 }}" class="tr">Total Monthly Payable Amount:</td>
                 <td class="tr">{{ number_format($monthlyTotal, 2) }}</td>
             </tr>
         </tbody>

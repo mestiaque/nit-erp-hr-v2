@@ -234,18 +234,25 @@ return [
                     'permission' => 'hr_employee_gate_pass',
                 ],
                 [
-                    'title'      => 'Asset Handover',
-                    'icon'       => 'fa-solid fa-laptop',
-                    'route'      => '/admin/hr-center/employee-assets',
-                    'icon_color' => 'text-warning',
-                    'permission' => 'hr_employee_asset',
-                ],
-                [
                     'title'      => 'Asset Management',
                     'icon'       => 'fa-solid fa-boxes-stacked',
-                    'route'      => '/admin/hr-center/company-assets',
                     'icon_color' => 'text-warning',
-                    'permission' => 'hr_company_asset',
+                    'children'   => [
+                        [
+                            'title'      => 'Company Assets',
+                            'icon'       => 'fa-solid fa-boxes-stacked',
+                            'route'      => '/admin/hr-center/company-assets',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_company_asset',
+                        ],
+                        [
+                            'title'      => 'Asset Handover',
+                            'icon'       => 'fa-solid fa-laptop',
+                            'route'      => '/admin/hr-center/employee-assets',
+                            'icon_color' => 'text-warning',
+                            'permission' => 'hr_employee_asset',
+                        ],
+                    ],
                 ],
                 [
                     'title'      => 'Disciplinary Notice',
@@ -309,6 +316,13 @@ return [
                                     'route'      => '/admin/hr-center/reports/daily-manpower-report',
                                     'icon_color' => 'text-warning',
                                     'permission' => 'hr_daily_manpower_report',
+                                ],
+                                [
+                                    'title'      => 'Daily Manpower SFL',
+                                    'icon'       => 'fa-solid fa-arrow-right',
+                                    'route'      => '/admin/hr-center/reports/daily-manpower-sfl',
+                                    'icon_color' => 'text-warning',
+                                    'permission' => 'hr_daily_manpower_sfl_report',
                                 ],
                             ],
                         ],

@@ -68,8 +68,12 @@
         <td>{{ $employeeId }}</td>
     </tr>
     <tr>
+        @if(hr_hide_section_line())
+        <th></th><td></td>
+        @else
         <th>{{ $t('সেকশন', 'Section') }}</th>
         <td>{{ $section }}</td>
+        @endif
         <th colspan="2">{{ $t('যার অধীনে নিয়োজিত থাকবেন', 'Reporting Supervisor') }}</th>
         <td colspan="2">{{ $designationAttibute->report_to }}</td>
     </tr>

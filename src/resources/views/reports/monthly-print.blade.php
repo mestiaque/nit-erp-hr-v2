@@ -99,7 +99,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Join Date</th>
                 <th>Contact</th>
                 <th>Classification</th>
@@ -115,7 +115,7 @@
                     <td>{{ $row['employee_id'] }}</td>
                     <td>{{ $row['name'] }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
                     <td>{{ $row['join_date'] }}</td>
                     <td>{{ $row['contact'] }}</td>
                     <td>{{ $row['classification'] }}</td>
@@ -136,7 +136,7 @@
             <tr>
                 <th>SL</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Classification</th>
                 <th>Designation</th>
                 <th>Total Employees</th>
@@ -148,14 +148,14 @@
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
                     <td>{{ $row['classification'] }}</td>
                     <td>{{ $row['designation'] }}</td>
                     <td class="text-center">{{ $row['total_employees'] }}</td>
                     <td class="text-right">{{ $fmtMoney($row['total_gross_salary']) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="7" class="text-center">No data found.</td></tr>
+                <tr><td colspan="{{ hr_hide_section_line() ? 6 : 7 }}" class="text-center">No data found.</td></tr>
             @endforelse
         </tbody>
     </table>
@@ -172,7 +172,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Designation</th>
                 <th>Migration Type</th>
                 <th>Migration Date</th>
@@ -186,7 +186,7 @@
                     <td>{{ $row['employee_id'] }}</td>
                     <td>{{ $row['name'] }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
                     <td>{{ $row['designation'] }}</td>
                     <td>{{ $row['migration_type'] }}</td>
                     <td>{{ $row['migration_date'] }}</td>
@@ -213,7 +213,7 @@
                 <th>DOJ</th>
                 <th>Designation</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Absent Days</th>
                 <th>Absent Date</th>
                 <th>Remarks</th>
@@ -228,7 +228,7 @@
                     <td>{{ $row['doj'] }}</td>
                     <td>{{ $row['designation'] }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
                     <td class="text-center">{{ $row['absent_days'] }}</td>
                     <td>{{ $row['absent_date'] }}</td>
                     <td>{{ $row['remarks'] }}</td>
@@ -272,12 +272,12 @@
                 <th>Name</th>
                 <th>Service Length</th>
                 <th>Department</th>
-                <th>Section</th>
-                <th>Sub-Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
+                @unless(hr_hide_section_line())<th>Sub-Section</th>@endunless
                 <th>Designation</th>
                 <th>Grade</th>
                 <th>Classification</th>
-                <th>Line/ Block</th>
+                @unless(hr_hide_section_line())<th>Line/ Block</th>@endunless
                 <th>Join Date</th>
                 <th>Last Inc Date</th>
                 <th>Last Inc Value</th>
@@ -295,12 +295,12 @@
                     <td>{{ $row['name'] }}</td>
                     <td>{{ $row['service_length'] }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
-                    <td>{{ $row['sub_section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ $row['sub_section'] }}</td>@endunless
                     <td>{{ $row['designation'] }}</td>
                     <td>{{ $row['grade'] }}</td>
                     <td>{{ $row['classification'] }}</td>
-                    <td>{{ $row['line_block'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['line_block'] }}</td>@endunless
                     <td>{{ $row['join_date'] }}</td>
                     <td>{{ $row['last_inc_date'] }}</td>
                     <td class="text-right">{{ $fmtMoney($row['last_inc_value']) }}</td>
@@ -329,12 +329,12 @@
                 <th>Name</th>
                 <th>Service Length</th>
                 <th>Department</th>
-                <th>Section</th>
-                <th>Sub-Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
+                @unless(hr_hide_section_line())<th>Sub-Section</th>@endunless
                 <th>Designation</th>
                 <th>Grade</th>
                 <th>Classification</th>
-                <th>Line/ Block</th>
+                @unless(hr_hide_section_line())<th>Line/ Block</th>@endunless
                 <th>Join Date</th>
                 <th>Last Inc Date</th>
                 <th>Last Inc Value</th>
@@ -354,12 +354,12 @@
                     <td>{{ $row['name'] }}</td>
                     <td>{{ $row['service_length'] }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
-                    <td>{{ $row['sub_section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ $row['sub_section'] }}</td>@endunless
                     <td>{{ $row['designation'] }}</td>
                     <td>{{ $row['grade'] }}</td>
                     <td>{{ $row['classification'] }}</td>
-                    <td>{{ $row['line_block'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['line_block'] }}</td>@endunless
                     <td>{{ $row['join_date'] }}</td>
                     <td>{{ $row['last_inc_date'] }}</td>
                     <td class="text-right">{{ $fmtMoney($row['last_inc_value']) }}</td>
@@ -379,7 +379,7 @@
     <table class="table-report">
         <tbody>
             <tr class="summary-row">
-                <td colspan="15">Grand Total</td>
+                <td colspan="{{ hr_hide_section_line() ? 12 : 15 }}">Grand Total</td>
                 <td class="text-right">Employee: {{ $data['summary']['employee_count'] ?? 0 }}</td>
                 <td class="text-right">{{ $fmtMoney($data['summary']['total_increment_value'] ?? 0) }}</td>
                 <td class="text-right">{{ $fmtMoney($data['summary']['total_final_gross'] ?? 0) }}</td>

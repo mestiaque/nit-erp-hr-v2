@@ -54,8 +54,8 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
-                <th>Sub Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
+                @unless(hr_hide_section_line())<th>Sub Section</th>@endunless
                 <th>Designation</th>
                 <th>Join Date</th>
                 <th>Job Age</th>
@@ -73,7 +73,7 @@
             @php
                 $sl = 1;
                 $totalBonus = 0;
-                $totalColspan = ($withPicture ? 11 : 10) + ($hasPctPolicy ? 3 : 0);
+                $totalColspan = ($withPicture ? 11 : 10) + ($hasPctPolicy ? 3 : 0) - (hr_hide_section_line() ? 2 : 0);
             @endphp
             @foreach($deptEmps as $employee)
                 @php
@@ -103,8 +103,8 @@
                     <td>{{ $employee->employee_id }}</td>
                     <td>{{ $employeeData['employee_name'] }}</td>
                     <td>{{ $employeeData['department'] }}</td>
-                    <td>{{ $employeeData['section'] }}</td>
-                    <td>{{ $employeeData['sub_section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $employeeData['section'] }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ $employeeData['sub_section'] }}</td>@endunless
                     <td>{{ $employeeData['designation'] }}</td>
                     <td>{{ optional($employee->joining_date)->format('d-M-Y') ?? 'N/A' }}</td>
                     <td class="tc">{{ $jobAge }}</td>

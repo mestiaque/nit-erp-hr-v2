@@ -94,7 +94,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 		<tr class="hdr1">
 			<th rowspan="2">SL</th>
 			<th rowspan="2">Department</th>
-			<th rowspan="2">Section</th>
+			@unless(hr_hide_section_line())<th rowspan="2">Section</th>@endunless
 			<th rowspan="2">Emp.</th>
 			<th colspan="5">Salary Components (BDT)</th>
 			<th rowspan="2">Gross<br>Salary</th>
@@ -131,7 +131,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			@endphp
 			@if(($groupBy ?? 'department') !== 'none')
 			<tr class="dept-group-header">
-				<td colspan="18" class="tl">&nbsp;&nbsp;&#9658; {{ $rollupLabel($deptId) }}</td>
+				<td colspan="{{ hr_hide_section_line() ? 17 : 18 }}" class="tl">&nbsp;&nbsp;&#9658; {{ $rollupLabel($deptId) }}</td>
 			</tr>
 			@endif
 			@foreach($deptRows as $row)
@@ -143,7 +143,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<tr>
 					<td class="tc">{{ $sl++ }}</td>
 					<td class="tl">{{ $departmentMap->get($row['dept_id'], 'N/A') }}</td>
-					<td class="tl">{{ $sectionMap->get($row['sec_id'], 'N/A') }}</td>
+					@unless(hr_hide_section_line())<td class="tl">{{ $sectionMap->get($row['sec_id'], 'N/A') }}</td>@endunless
 					<td class="tc">{{ $row['emp'] }}</td>
 					<td class="tr">{{ $fmt($row['basic']) }}</td>
 					<td class="tr">{{ $fmt($row['house_rent']) }}</td>
@@ -162,7 +162,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				</tr>
 			@endforeach
 			<tr class="dept-subtotal">
-				<td colspan="3" class="tr">Sub-Total ({{ ($groupBy ?? 'department') !== 'none' ? $rollupLabel($deptId) : 'All' }}):</td>
+				<td colspan="{{ hr_hide_section_line() ? 2 : 3 }}" class="tr">Sub-Total ({{ ($groupBy ?? 'department') !== 'none' ? $rollupLabel($deptId) : 'All' }}):</td>
 				<td class="tc">{{ $deptTotals['emp'] }}</td>
 				<td class="tr">{{ $fmt($deptTotals['basic']) }}</td>
 				<td class="tr">{{ $fmt($deptTotals['house_rent']) }}</td>
@@ -180,12 +180,12 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<td class="tc">{{ $deptTotals['gl'] }}</td>
 			</tr>
 		@empty
-			<tr><td colspan="18" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
+			<tr><td colspan="{{ hr_hide_section_line() ? 17 : 18 }}" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
 		@endforelse
 	</tbody>
 	<tfoot>
 		<tr class="grand-total">
-			<td colspan="3" class="tr">GRAND TOTAL</td>
+			<td colspan="{{ hr_hide_section_line() ? 2 : 3 }}" class="tr">GRAND TOTAL</td>
 			<td class="tc">{{ $grandTotals['emp'] }}</td>
 			<td class="tr">{{ $fmt($grandTotals['basic']) }}</td>
 			<td class="tr">{{ $fmt($grandTotals['house_rent']) }}</td>

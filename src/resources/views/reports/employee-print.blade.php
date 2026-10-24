@@ -106,8 +106,8 @@
             <tr>
                 <th>{{ $t('ক্রমিক', 'SL') }}</th>
                 <th>{{ $t('বিভাগ', 'Department') }}</th>
-                <th>{{ $t('সেকশন', 'Section') }}</th>
-                <th>{{ $t('সাব-সেকশন', 'Sub Section') }}</th>
+                @unless(hr_hide_section_line())<th>{{ $t('সেকশন', 'Section') }}</th>@endunless
+                @unless(hr_hide_section_line())<th>{{ $t('সাব-সেকশন', 'Sub Section') }}</th>@endunless
                 <th>{{ $t('ডিজাইনেশন', 'Designation') }}</th>
                 <th>{{ $t('অনুমোদিত জনবল', 'Approve Manpower') }}</th>
                 <th>{{ $t('নিয়োগকৃত', 'Recruited') }}</th>
@@ -120,8 +120,8 @@
                 <tr class="{{ $row['row_type'] === 'grand_total' ? 'grandtotal-row' : ($row['row_type'] === 'total' ? 'subtotal-row' : '') }}">
                     <td class="text-center">{{ $row['sl'] }}</td>
                     <td>{{ $row['department'] }}</td>
-                    <td>{{ $row['section'] }}</td>
-                    <td>{{ $row['sub_section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ $row['sub_section'] }}</td>@endunless
                     <td>{{ $row['designation'] }}</td>
                     <td class="text-center">{{ $row['approve_manpower'] }}</td>
                     <td class="text-center">{{ $row['recruited'] }}</td>
@@ -130,7 +130,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="text-center">{{ $t('কোনো তথ্য পাওয়া যায়নি।', 'No data found.') }}</td>
+                    <td colspan="{{ hr_hide_section_line() ? 7 : 9 }}" class="text-center">{{ $t('কোনো তথ্য পাওয়া যায়নি।', 'No data found.') }}</td>
                 </tr>
             @endforelse
         </tbody>
@@ -141,7 +141,7 @@
             <tr>
                 <th colspan="5">Employee Profile</th>
                 <th colspan="7">Salary Info.</th>
-                <th colspan="11">Basic Info.</th>
+                <th colspan="{{ hr_hide_section_line() ? 8 : 11 }}">Basic Info.</th>
                 <th colspan="22">Reference</th>
                 <th colspan="4">Permanent Address</th>
                 <th colspan="4">Present Address</th>
@@ -162,9 +162,9 @@
                 <th class="nowrap">Tax</th>
                 <th class="nowrap">Classification</th>
                 <th class="nowrap">Department</th>
-                <th class="nowrap">Section</th>
-                <th class="nowrap">Sub Section</th>
-                <th class="nowrap">Line/ Block</th>
+                @unless(hr_hide_section_line())<th class="nowrap">Section</th>@endunless
+                @unless(hr_hide_section_line())<th class="nowrap">Sub Section</th>@endunless
+                @unless(hr_hide_section_line())<th class="nowrap">Line/ Block</th>@endunless
                 <th class="nowrap">Designation</th>
                 <th class="nowrap">Grade</th>
                 <th class="nowrap">Shift</th>
@@ -238,9 +238,9 @@
                     <td class="text-right">{{ $fmtMoney(data_get($salaryInfo, 'tax', 0)) }}</td>
                     <td>{{ $classificationMap->get($employee->employee_type, 'N/A') }}</td>
                     <td>{{ $departmentMap->get($employee->department_id, 'N/A') }}</td>
-                    <td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
-                    <td>{{ data_get($subSection, 'name', 'N/A') }}</td>
-                    <td>{{ $line }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ data_get($subSection, 'name', 'N/A') }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ $line }}</td>@endunless
                     <td>{{ $designationMap->get($employee->designation_id, 'N/A') }}</td>
                     <td>{{ $gradeMap->get($employee->grade_lavel, 'N/A') }}</td>
                     <td>{{ $shiftMap->get($employee->shift_id, 'N/A') }}</td>
@@ -288,7 +288,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="61" class="text-center">{{ $t('কোনো কর্মচারী পাওয়া যায়নি।', 'No employee found.') }}</td>
+                    <td colspan="{{ hr_hide_section_line() ? 58 : 61 }}" class="text-center">{{ $t('কোনো কর্মচারী পাওয়া যায়নি।', 'No employee found.') }}</td>
 
                 </tr>
             @endforelse

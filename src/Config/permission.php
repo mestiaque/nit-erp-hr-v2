@@ -176,6 +176,10 @@ return [
             'label' => 'Daily Manpower Report',
             'permissions' => ['view' => 'View', 'all' => 'All']
         ],
+        'hr_daily_manpower_sfl_report' => [
+            'label' => 'Daily Manpower SFL',
+            'permissions' => ['view' => 'View', 'all' => 'All']
+        ],
         'hr_job_card_report' => [
             'label' => 'Job Card',
             'permissions' => ['view' => 'View', 'all' => 'All']

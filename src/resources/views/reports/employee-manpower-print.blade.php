@@ -73,8 +73,8 @@
         <tr>
             <th>SL</th>
             <th>Department</th>
-            <th>Section</th>
-            <th>Sub Section</th>
+            @unless(hr_hide_section_line())<th>Section</th>@endunless
+            @unless(hr_hide_section_line())<th>Sub Section</th>@endunless
             <th>Designation</th>
             <th>Approve Manpower</th>
             <th>Recruited</th>
@@ -87,8 +87,8 @@
             <tr class="{{ $row['row_type'] === 'grand_total' ? 'grandtotal-row' : ($row['row_type'] === 'total' ? 'subtotal-row' : '') }}">
                 <td class="text-center">{{ $row['sl'] }}</td>
                 <td>{{ $row['department'] }}</td>
-                <td>{{ $row['section'] }}</td>
-                <td>{{ $row['sub_section'] }}</td>
+                @unless(hr_hide_section_line())<td>{{ $row['section'] }}</td>@endunless
+                @unless(hr_hide_section_line())<td>{{ $row['sub_section'] }}</td>@endunless
                 <td>{{ $row['designation'] }}</td>
                 <td class="text-center">{{ $row['approve_manpower'] }}</td>
                 <td class="text-center">{{ $row['recruited'] }}</td>
@@ -97,7 +97,7 @@
             </tr>
         @empty
             <tr>
-                <td colspan="9" class="text-center">No data found.</td>
+                <td colspan="{{ hr_hide_section_line() ? 7 : 9 }}" class="text-center">No data found.</td>
             </tr>
         @endforelse
     </tbody>

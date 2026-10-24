@@ -64,8 +64,8 @@
     <div style="margin-bottom: 20px;">
         {{ $t('নাম', 'Name') }}: <strong>{{ $employeeName }}</strong><br>
         {{ $t('আইডি নম্বর', 'ID No') }}: {{ $employeeId }}<br>
-        {{ $t('পদবী', 'Designation') }}: {{ $designation }}<br>
-        {{ $t('সেকশন/বিভাগ', 'Section/Dept') }}: {{ $section }}
+        {{ $t('পদবী', 'Designation') }}: {{ $designation }}@unless(hr_hide_section_line())<br>
+        {{ $t('সেকশন/বিভাগ', 'Section/Dept') }}: {{ $section }}@endunless
     </div>
 
     <div style="margin-bottom: 20px; text-align: justify;">

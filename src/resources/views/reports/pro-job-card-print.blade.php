@@ -31,14 +31,14 @@
                     <th>Name</th>
                     <th>Employee ID</th>
                     <th>Designation</th>
-                    <th>Section</th>
+                    @unless(hr_hide_section_line())<th>Section</th>@endunless
                     <th>Department</th>
-                    <th>Sub Section</th>
+                    @unless(hr_hide_section_line())<th>Sub Section</th>@endunless
                     <th>Working Place</th>
                     <th>Shift</th>
                     <th>Classification</th>
                     <th>Join Date</th>
-                    <th>Block/Line</th>
+                    @unless(hr_hide_section_line())<th>Block/Line</th>@endunless
                     <th>Salary Type</th>
                     <th>Employee Status</th>
                 </tr>
@@ -50,14 +50,14 @@
                         <td>{{ is_array($row) ? ($row['name'] ?? null) : data_get($row, 'name') }}</td>
                         <td>{{ is_array($row) ? ($row['employee_id'] ?? null) : data_get($row, 'employee_id') }}</td>
                         <td>{{ is_array($row) ? ($row['designation_name'] ?? null) : data_get($row, 'designation_name') }}</td>
-                        <td>{{ is_array($row) ? ($row['section_name'] ?? null) : data_get($row, 'section_name') }}</td>
+                        @unless(hr_hide_section_line())<td>{{ is_array($row) ? ($row['section_name'] ?? null) : data_get($row, 'section_name') }}</td>@endunless
                         <td>{{ is_array($row) ? ($row['department_name'] ?? null) : data_get($row, 'department_name') }}</td>
-                        <td>{{ is_array($row) ? ($row['sub_section_name'] ?? null) : data_get($row, 'sub_section_name') }}</td>
+                        @unless(hr_hide_section_line())<td>{{ is_array($row) ? ($row['sub_section_name'] ?? null) : data_get($row, 'sub_section_name') }}</td>@endunless
                         <td>{{ is_array($row) ? ($row['working_place_name'] ?? null) : data_get($row, 'working_place_name') }}</td>
                         <td>{{ is_array($row) ? ($row['shift_name'] ?? null) : data_get($row, 'shift_name') }}</td>
                         <td>{{ is_array($row) ? ($row['classification'] ?? null) : data_get($row, 'classification') }}</td>
                         <td>{{ is_array($row) ? ($row['join_date'] ?? null) : data_get($row, 'join_date') }}</td>
-                        <td>{{ is_array($row) ? ($row['block_line'] ?? null) : data_get($row, 'block_line') }}</td>
+                        @unless(hr_hide_section_line())<td>{{ is_array($row) ? ($row['block_line'] ?? null) : data_get($row, 'block_line') }}</td>@endunless
                         <td>{{ is_array($row) ? ($row['salary_type'] ?? null) : data_get($row, 'salary_type') }}</td>
                         <td>{{ is_array($row) ? ($row['employee_status'] ?? null) : data_get($row, 'employee_status') }}</td>
                     </tr>

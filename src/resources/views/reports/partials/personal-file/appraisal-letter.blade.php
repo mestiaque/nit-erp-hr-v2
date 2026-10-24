@@ -90,7 +90,7 @@
 <table style="width:100%; border:none; margin-bottom:2px;">
     <tr>
         <td style="border:none; font-weight:600;">{{ $t('নাম', 'Name') }}: {{ $employeeName }}</td>
-        <td style="border:none; font-weight:600;">{{ $t('সেকশন', 'Section') }}: {{ $section }}</td>
+        <td style="border:none; font-weight:600;">@unless(hr_hide_section_line()){{ $t('সেকশন', 'Section') }}: {{ $section }}@endunless</td>
         <td style="border:none; text-align:right; font-weight:600;">{{ $t('কার্ড নম্বর', 'Card No.') }}: {{ $cardNo }}</td>
         <td style="border:none; text-align:right; font-weight:600;">{{ $t('যোগদানের তারিখ', 'Joining Date') }}: {{ $joiningDate }}</td>
     </tr>

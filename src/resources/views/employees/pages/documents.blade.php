@@ -83,7 +83,7 @@
 @section('contents')
 @include(adminTheme().'alerts')
 
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
 
     {{-- Header --}}
     <div class="card mb-4">

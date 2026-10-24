@@ -5,7 +5,7 @@
 @endsection
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     <div class="card">
         <div class="card-header">
             <h4 class="mb-0">Period Locking</h4>

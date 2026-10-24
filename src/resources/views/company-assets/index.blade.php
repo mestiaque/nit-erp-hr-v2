@@ -14,7 +14,7 @@
 @endpush
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Asset Management</h4>

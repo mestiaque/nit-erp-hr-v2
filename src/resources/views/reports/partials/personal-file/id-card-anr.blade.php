@@ -125,7 +125,7 @@
             <tr><td>{{ $t('পদবি', 'Designation') }}</td><td>: {{ $designation }}</td></tr>
             <tr><td>{{ $t('আইডি নং', 'ID No.') }}</td><td>: {{ $idNumber }}</td></tr>
             <tr><td>{{ $t('বিভাগ', 'Dept.') }}</td><td>: {{ $department }}</td></tr>
-            <tr><td>{{ $t('সেকশন', 'Section') }}</td><td>: {{ $section }}</td></tr>
+            @unless(hr_hide_section_line())<tr><td>{{ $t('সেকশন', 'Section') }}</td><td>: {{ $section }}</td></tr>@endunless
             <tr><td>{{ $t('যোগদান', 'Join Date') }}</td><td>: {{ $joinDate }}</td></tr>
             <tr><td>{{ $t('শ্রেণি', 'Classification') }}</td><td>: {{ $classification }}</td></tr>
             <tr><td>{{ $t('ইস্যু তারিখ', 'Issue Date') }}</td><td>: {{ $joinDate }}</td></tr>

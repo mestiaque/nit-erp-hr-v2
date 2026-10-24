@@ -50,7 +50,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Designation</th>
                 <th>Category</th>
                 <th>Brand / Model</th>
@@ -71,7 +71,7 @@
                             <td class="tc">{{ $asset->employee->employee_id ?? '-' }}</td>
                             <td>{{ $asset->employee->name ?? 'N/A' }}</td>
                             <td>{{ $asset->employee->department->name ?? 'N/A' }}</td>
-                            <td>{{ $asset->employee->section->name ?? 'N/A' }}</td>
+                            @unless(hr_hide_section_line())<td>{{ $asset->employee->section->name ?? 'N/A' }}</td>@endunless
                             <td>{{ $asset->employee->designation->name ?? 'N/A' }}</td>
                             <td>{{ $asset->category->name ?? 'N/A' }}</td>
                             <td>{{ trim(($asset->brand ?? '') . ' ' . ($asset->model ?? '')) ?: '-' }}</td>
@@ -82,7 +82,7 @@
                         </tr>
                     @endforeach
                     <tr class="emp-total-row">
-                        <td colspan="12" class="tc" style="text-align:right;">Total Assets Held ({{ $rows->first()->employee->name ?? 'N/A' }}):</td>
+                        <td colspan="{{ hr_hide_section_line() ? 11 : 12 }}" class="tc" style="text-align:right;">Total Assets Held ({{ $rows->first()->employee->name ?? 'N/A' }}):</td>
                         <td class="tc">{{ $rows->count() }}</td>
                     </tr>
                 @endforeach
@@ -94,7 +94,7 @@
                         <td class="tc">{{ $asset->employee->employee_id ?? '-' }}</td>
                         <td>{{ $asset->employee->name ?? 'N/A' }}</td>
                         <td>{{ $asset->employee->department->name ?? 'N/A' }}</td>
-                        <td>{{ $asset->employee->section->name ?? 'N/A' }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $asset->employee->section->name ?? 'N/A' }}</td>@endunless
                         <td>{{ $asset->employee->designation->name ?? 'N/A' }}</td>
                         <td>{{ $asset->category->name ?? 'N/A' }}</td>
                         <td>{{ trim(($asset->brand ?? '') . ' ' . ($asset->model ?? '')) ?: '-' }}</td>

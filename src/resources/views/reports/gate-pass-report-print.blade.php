@@ -50,7 +50,7 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Designation</th>
                 <th>Out Time</th>
                 <th>In Time</th>
@@ -70,7 +70,7 @@
                             <td class="tc">{{ $gatePass->employee->employee_id ?? '-' }}</td>
                             <td>{{ $gatePass->employee->name ?? 'N/A' }}</td>
                             <td>{{ $gatePass->employee->department->name ?? 'N/A' }}</td>
-                            <td>{{ $gatePass->employee->section->name ?? 'N/A' }}</td>
+                            @unless(hr_hide_section_line())<td>{{ $gatePass->employee->section->name ?? 'N/A' }}</td>@endunless
                             <td>{{ $gatePass->employee->designation->name ?? 'N/A' }}</td>
                             <td class="tc">{{ optional($gatePass->out_time)->format('d-M-Y h:i A') }}</td>
                             <td class="tc">{{ optional($gatePass->in_time)->format('d-M-Y h:i A') }}</td>
@@ -80,7 +80,7 @@
                         </tr>
                     @endforeach
                     <tr class="emp-total-row">
-                        <td colspan="9" class="tc" style="text-align:right;">Total Duration ({{ $rows->first()->employee->name ?? 'N/A' }}):</td>
+                        <td colspan="{{ hr_hide_section_line() ? 8 : 9 }}" class="tc" style="text-align:right;">Total Duration ({{ $rows->first()->employee->name ?? 'N/A' }}):</td>
                         <td class="tc">{{ $rows->sum('duration_minutes') }} min</td>
                         <td colspan="2"></td>
                     </tr>
@@ -93,7 +93,7 @@
                         <td class="tc">{{ $gatePass->employee->employee_id ?? '-' }}</td>
                         <td>{{ $gatePass->employee->name ?? 'N/A' }}</td>
                         <td>{{ $gatePass->employee->department->name ?? 'N/A' }}</td>
-                        <td>{{ $gatePass->employee->section->name ?? 'N/A' }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $gatePass->employee->section->name ?? 'N/A' }}</td>@endunless
                         <td>{{ $gatePass->employee->designation->name ?? 'N/A' }}</td>
                         <td class="tc">{{ optional($gatePass->out_time)->format('d-M-Y h:i A') }}</td>
                         <td class="tc">{{ optional($gatePass->in_time)->format('d-M-Y h:i A') }}</td>

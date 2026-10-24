@@ -48,7 +48,7 @@
         'join_date'    => ['label' => 'Join Date',            'width' => 4.5, 'show' => false],
         'designation'  => ['label' => 'Designation',          'width' => 6,   'show' => true],
         'department'   => ['label' => 'Department',           'width' => 4.5, 'show' => true],
-        'section'      => ['label' => 'Section',              'width' => 4.5, 'show' => true],
+        'section'      => ['label' => 'Section',              'width' => 4.5, 'show' => ! hr_hide_section_line()],
         'grade'        => ['label' => 'Grade',                'width' => 2.5, 'show' => false],
         'basic'        => ['label' => 'Basic',                'width' => 3,   'show' => false],
         'house_rent'   => ['label' => 'H.R',                  'width' => 3,   'show' => false],

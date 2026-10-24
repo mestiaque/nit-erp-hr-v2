@@ -42,9 +42,13 @@
     <p style="font-size:12px; line-height:1.7; text-align:justify; margin-bottom:10px;">
         {{ $t('এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, আপনি আমাদের প্রতিষ্ঠানে', 'This is to certify that you are employed in our organization as') }}
         <strong>{{ $designation }}</strong>
+        @if(hr_hide_section_line())
+        {{ $t('পদে,', ',') }}
+        @else
         {{ $t('পদে,', 'in the') }}
         <strong>{{ $section }}</strong>
         {{ $t('সেকশনে,', 'section,') }}
+        @endif
         {{ $t('তারিখ', 'since') }} {{ $joiningDate }}
         {{ $t('থেকে কর্মরত আছেন।', '.') }}
     </p>

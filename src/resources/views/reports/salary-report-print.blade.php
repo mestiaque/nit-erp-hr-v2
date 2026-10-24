@@ -235,7 +235,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
             <tr class="hdr1">
                 <th rowspan="2">SL</th>
                 <th rowspan="2">Department</th>
-                <th rowspan="2">Section</th>
+                @unless(hr_hide_section_line())<th rowspan="2">Section</th>@endunless
                 <th rowspan="2">Emp.</th>
                 <th colspan="5">Salary Components (BDT)</th>
                 <th rowspan="2">Gross<br>Salary</th>
@@ -264,7 +264,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                 @endphp
                 {{-- Dept header span --}}
                 <tr class="dept-group-header">
-                    <td colspan="15" class="tl">&nbsp;&nbsp;&#9658; {{ $departmentMap->get($deptId, 'N/A') }}</td>
+                    <td colspan="{{ hr_hide_section_line() ? 14 : 15 }}" class="tl">&nbsp;&nbsp;&#9658; {{ $departmentMap->get($deptId, 'N/A') }}</td>
                 </tr>
                 @foreach($deptRows as $row)
                     @php
@@ -273,7 +273,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                     <tr>
                         <td class="tc">{{ $sl++ }}</td>
                         <td class="tl">{{ $departmentMap->get($row['dept_id'], 'N/A') }}</td>
-                        <td class="tl">{{ $sectionMap->get($row['sec_id'], 'N/A') }}</td>
+                        @unless(hr_hide_section_line())<td class="tl">{{ $sectionMap->get($row['sec_id'], 'N/A') }}</td>@endunless
                         <td class="tc">{{ $row['emp'] }}</td>
                         <td class="tr">{{ $fmt($row['basic']) }}</td>
                         <td class="tr">{{ $fmt($row['house_rent']) }}</td>
@@ -290,7 +290,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                 @endforeach
                 {{-- Department subtotal --}}
                 <tr class="dept-subtotal">
-                    <td colspan="3" class="tr">Sub-Total ({{ $departmentMap->get($deptId, '') }}):</td>
+                    <td colspan="{{ hr_hide_section_line() ? 2 : 3 }}" class="tr">Sub-Total ({{ $departmentMap->get($deptId, '') }}):</td>
                     <td class="tc">{{ $deptTotals['emp'] }}</td>
                     <td class="tr">{{ $fmt($deptTotals['basic']) }}</td>
                     <td class="tr">{{ $fmt($deptTotals['house_rent']) }}</td>
@@ -305,12 +305,12 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                     <td class="tc">{{ $deptTotals['absent'] }}</td>
                 </tr>
             @empty
-                <tr><td colspan="15" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
+                <tr><td colspan="{{ hr_hide_section_line() ? 14 : 15 }}" class="tc" style="padding:12px;color:#888;">No salary data found for the selected period.</td></tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr class="grand-total">
-                <td colspan="3" class="tr">GRAND TOTAL</td>
+                <td colspan="{{ hr_hide_section_line() ? 2 : 3 }}" class="tr">GRAND TOTAL</td>
                 <td class="tc">{{ $grandTotals['emp'] }}</td>
                 <td class="tr">{{ $fmt($grandTotals['basic']) }}</td>
                 <td class="tr">{{ $fmt($grandTotals['house_rent']) }}</td>
@@ -352,9 +352,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                     <th>Emp. ID</th>
                     <th>Name</th>
                     <th>Designation</th>
-                    <th>Section</th>
-                    <th>Sub-Section</th>
-                    <th>Block/Line</th>
+                    @unless(hr_hide_section_line())<th>Section</th>@endunless
+                    @unless(hr_hide_section_line())<th>Sub-Section</th>@endunless
+                    @unless(hr_hide_section_line())<th>Block/Line</th>@endunless
                     <th>Join Date</th>
                     <th>Gross</th>
                     <th>Basic</th>
@@ -388,9 +388,9 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                         <td>{{ $employee->employee_id }}</td>
                         <td>{{ $language === 'bn' && $employee->bn_name ? $employee->bn_name : $employee->name }}</td>
                         <td>{{ $designationMap->get($employee->designation_id, 'N/A') }}</td>
-                        <td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
-                        <td>{{ $subSectionMap->get($employee->otherInfo()['profile']['sub_section_id']) }}</td>
-                        <td>{{ $lineMap->get($employee->line_number, 'N/A') }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>@endunless
+                        @unless(hr_hide_section_line())<td>{{ $subSectionMap->get($employee->otherInfo()['profile']['sub_section_id']) }}</td>@endunless
+                        @unless(hr_hide_section_line())<td>{{ $lineMap->get($employee->line_number, 'N/A') }}</td>@endunless
                         <td class="tc">{{ optional($employee->joining_date)->format('d-M-y') ?? '-' }}</td>
                         <td class="tr">{{ $fmt($sd['gross']) }}</td>
                         <td class="tr">{{ $fmt($sd['basic']) }}</td>
@@ -405,7 +405,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
                     </tr>
                 @endforeach
                 <tr class="summary-row">
-                    <td colspan="{{ $withPicture ? 15 : 14 }}" class="tr">Total Net Pay:</td>
+                    <td colspan="{{ ($withPicture ? 15 : 14) - (hr_hide_section_line() ? 3 : 0) }}" class="tr">Total Net Pay:</td>
                     <td class="tr">{{ $fmt($totalNet) }}</td>
                     <td></td><td></td><td></td>
                 </tr>

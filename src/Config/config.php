@@ -561,6 +561,7 @@ return [
         'attendance-with-ot'      => 'Attendance Report With OT',
         'monthly-late-report'     => 'Monthly Late Report',
         'daily-manpower-report'   => 'Daily Manpower Report',
+        'daily-manpower-sfl'      => 'Daily Manpower SFL',
         'meal-report'             => 'Tiffin / Diner / Night Report',
         'bonus-sheet'             => 'Bonus Sheet',
         'salary-report'           => 'Salary Report',

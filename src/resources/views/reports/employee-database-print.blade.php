@@ -109,7 +109,7 @@
         <tr>
             <th colspan="5">Employee Profile</th>
             <th colspan="7">Salary Info.</th>
-            <th colspan="12">Basic Info.</th>
+            <th colspan="{{ hr_hide_section_line() ? 9 : 12 }}">Basic Info.</th>
             <th colspan="22">Reference</th>
             <th colspan="4">Permanent Address</th>
             <th colspan="4">Present Address</th>
@@ -130,9 +130,9 @@
             <th class="nowrap">Tax</th>
             <th class="nowrap">Classification</th>
             <th class="nowrap">Department</th>
-            <th class="nowrap">Section</th>
-            <th class="nowrap">Sub Section</th>
-            <th class="nowrap">Line/ Block</th>
+            @unless(hr_hide_section_line())<th class="nowrap">Section</th>@endunless
+            @unless(hr_hide_section_line())<th class="nowrap">Sub Section</th>@endunless
+            @unless(hr_hide_section_line())<th class="nowrap">Line/ Block</th>@endunless
             <th class="nowrap">Designation</th>
             <th class="nowrap">Grade</th>
             <th class="nowrap">Shift</th>
@@ -260,9 +260,9 @@
                 <td class="text-right">{{ $fmtMoney($employee->salaryInfo?->tax ?? 0) }}</td>
                 <td>{{ $classificationMap->get($employee->employee_type, 'N/A') }}</td>
                 <td>{{ $departmentMap->get($employee->department_id, 'N/A') }}</td>
-                <td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
-                <td>{{ data_get($subSection, 'name', 'N/A') }}</td>
-                <td>{{ $line }}</td>
+                @unless(hr_hide_section_line())<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>@endunless
+                @unless(hr_hide_section_line())<td>{{ data_get($subSection, 'name', 'N/A') }}</td>@endunless
+                @unless(hr_hide_section_line())<td>{{ $line }}</td>@endunless
                 <td>{{ $designationName }}</td>
                 <td>{{ $employee->grade ?? optional($employee->designation)->grade ?? 'N/A' }}</td>
                 <td>{{ $shiftMap->get($employee->shift_id, 'N/A') }}</td>

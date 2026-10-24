@@ -187,3 +187,14 @@ if (!function_exists('hr_employee_salary')) {
         ];
     }
 }
+
+if (! function_exists('hr_hide_section_line')) {
+    /**
+     * SFL does not use Section / Sub-Section / Line: report print views leave those
+     * columns and fields out there (filters and group-by are unchanged).
+     */
+    function hr_hide_section_line(): bool
+    {
+        return (string) optional(general())->company_s_code === 'SFL';
+    }
+}

@@ -70,13 +70,13 @@
             <th>Age</th>
             <th>Sex</th>
             <th>Department</th>
-            <th>Section</th>
-            <th>Sub Section</th>
+            @unless(hr_hide_section_line())<th>Section</th>@endunless
+            @unless(hr_hide_section_line())<th>Sub Section</th>@endunless
             <th>Designation</th>
             <th>Contact No.</th>
             <th>Grade</th>
             <th>Classification</th>
-            <th>Line/Block</th>
+            @unless(hr_hide_section_line())<th>Line/Block</th>@endunless
             <th>Shift</th>
             <th>WeekEnd</th>
             <th>Gross Salary</th>
@@ -95,13 +95,13 @@
                 <td>{{ $row['age'] ?? 'N/A' }}</td>
                 <td>{{ $row['sex'] ?? 'N/A' }}</td>
                 <td>{{ $row['department'] ?? 'N/A' }}</td>
-                <td>{{ $row['section'] ?? 'N/A' }}</td>
-                <td>{{ $row['sub_section'] ?? 'N/A' }}</td>
+                @unless(hr_hide_section_line())<td>{{ $row['section'] ?? 'N/A' }}</td>@endunless
+                @unless(hr_hide_section_line())<td>{{ $row['sub_section'] ?? 'N/A' }}</td>@endunless
                 <td>{{ $row['designation'] ?? 'N/A' }}</td>
                 <td>{{ $row['contact_no'] ?? 'N/A' }}</td>
                 <td>{{ $row['grade'] ?? 'N/A' }}</td>
                 <td>{{ $row['classification'] ?? 'N/A' }}</td>
-                <td>{{ $row['line_block'] ?? 'N/A' }}</td>
+                @unless(hr_hide_section_line())<td>{{ $row['line_block'] ?? 'N/A' }}</td>@endunless
                 <td>{{ $row['shift'] ?? 'N/A' }}</td>
                 <td>{{ $row['weekend'] ?? 'N/A' }}</td>
                 <td class="text-right">{{ number_format((float) ($row['gross_salary'] ?? 0), 2) }}</td>

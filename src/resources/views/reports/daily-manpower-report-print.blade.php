@@ -1,6 +1,6 @@
 @extends('printMaster2')
 
-@section('title', 'Daily Manpower Report')
+@section('title', $printTitle ?? 'Daily Manpower Report')
 
 @push('css')
 <style>
@@ -107,7 +107,7 @@
     <div>{{ hr_factory('address') ?? '' }}</div>
 </div>
 
-    <div class="title-bar">Daily Manpower Report</div>
+    <div class="title-bar">{{ $printTitle ?? 'Daily Manpower Report' }}</div>
     <div class="as-on">As on Date&nbsp;&nbsp;{{ $reportDateLabel }}</div>
 
     <div class="day-stat">
@@ -118,7 +118,7 @@
     <table class="t">
         <thead>
             <tr>
-                <th rowspan="2" class="tl" style="width: 28%;">Section</th>
+                <th rowspan="2" class="tl" style="width: 28%;">{{ $rowLabel ?? 'Section' }}</th>
                 <th colspan="2">Man power</th>
                 <th rowspan="2" style="width: 7%;">Total</th>
                 <th colspan="3">Present</th>
@@ -158,7 +158,7 @@
         @if(($rows->count() ?? 0) > 0)
             <tfoot>
                 <tr class="total-row">
-                    <td class="tc b">Total</td>
+                    <td class="{{ isset($totalLabel) ? 'tl' : 'tc' }} b">{{ $totalLabel ?? 'Total' }}</td>
                     <td class="tc">{{ $grand['female'] }}</td>
                     <td class="tc">{{ $grand['male'] }}</td>
                     <td class="tc b">{{ $grand['manpower_total'] }}</td>

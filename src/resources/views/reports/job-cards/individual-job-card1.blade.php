@@ -131,7 +131,7 @@
             </tr>
             <tr>
                 <td>{{ $t('নাম', 'Name') }}</td><td>{{ $employeeName }}</td>
-                <td>{{ $t('সেকশন', 'Section') }}</td><td>{{ $section }}</td>
+                @if(hr_hide_section_line())<td></td><td></td>@else<td>{{ $t('সেকশন', 'Section') }}</td><td>{{ $section }}</td>@endif
             </tr>
             <tr>
                 <td>{{ $t('শ্রেণীবিভাগ', 'Classification') }}</td><td>{{ $classification }}</td>

@@ -107,7 +107,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					<th>Emp. ID</th>
 					<th>Name</th>
 					<th>Designation</th>
-					<th>Section</th>
+					@unless(hr_hide_section_line())<th>Section</th>@endunless
 					<th>Join Date</th>
 					<th>Job Age</th>
 					@if($hasPctPolicy)
@@ -140,7 +140,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 						<td>{{ $employee->employee_id }}</td>
 						<td>{{ $language === 'bn' && $employee->bn_name ? $employee->bn_name : $employee->name }}</td>
 						<td>{{ $designationMap->get($employee->designation_id)['name'] ?? 'N/A' }}</td>
-						<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>
+						@unless(hr_hide_section_line())<td>{{ $sectionMap->get($employee->section_id, 'N/A') }}</td>@endunless
 						<td class="tc">{{ optional($employee->joining_date)->format('d-M-y') ?? '-' }}</td>
 						<td class="tc">{{ $bd['job_age'] }}</td>
 						@if($hasPctPolicy)
@@ -154,7 +154,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 					</tr>
 				@endforeach
 				@php
-					$totalCols    = ($withPicture ? 12 : 11) + ($hasPctPolicy ? 2 : 0);
+					$totalCols    = ($withPicture ? 12 : 11) + ($hasPctPolicy ? 2 : 0) - (hr_hide_section_line() ? 1 : 0);
 					$totalColspan = $totalCols - 3;
 				@endphp
 				<tr class="summary-row">
@@ -173,7 +173,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 	<table class="t" style="margin-top:0;">
 		<tfoot>
 			<tr class="grand-total">
-				<td colspan="{{ ($withPicture ? 12 : 11) + ($hasPctPolicy ? 2 : 0) - 1 }}" class="tr">
+				<td colspan="{{ ($withPicture ? 12 : 11) + ($hasPctPolicy ? 2 : 0) - 1 - (hr_hide_section_line() ? 1 : 0) }}" class="tr">
 					GRAND TOTAL &mdash; {{ $bonusGrandEmp }} Employees
 				</td>
 				<td class="tr">{{ $fmt($bonusGrandTotal) }}</td>

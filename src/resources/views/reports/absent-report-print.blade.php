@@ -105,7 +105,7 @@
                         <th style="width:22%;">Designation</th>
                         <th style="width:10%;" class="tc">Join Date</th>
                         <th style="width:14%;">Floor</th>
-                        <th style="width:15%;">Line</th>
+                        @unless(hr_hide_section_line())<th style="width:15%;">Line</th>@endunless
                         <th style="width:6%;" class="tc">In Time</th>
                         <th style="width:6%;" class="tc">Out Time</th>
                     </tr>
@@ -129,7 +129,7 @@
                             <td>{{ data_get($row, 'designation', 'N/A') }}</td>
                             <td class="tc">{{ optional(data_get($row, 'employee')?->joining_date)->format('d/m/Y') ?? '-' }}</td>
                             <td>{{ data_get($row, 'floor', 'N/A') }}</td>
-                            <td>{{ data_get($row, 'line', 'N/A') }}</td>
+                            @unless(hr_hide_section_line())<td>{{ data_get($row, 'line', 'N/A') }}</td>@endunless
                             <td class="tc">{{ $inTime ?: '0' }}</td>
                             <td class="tc">{{ $outTime ?: '0' }}</td>
                         </tr>
@@ -137,7 +137,7 @@
                 </tbody>
                 <tfoot>
                     <tr class="section-total-row">
-                        <td colspan="{{ $isSingleDay ? 8 : 9 }}">Section Total: {{ $sectionEmps->count() }}</td>
+                        <td colspan="{{ ($isSingleDay ? 8 : 9) - (hr_hide_section_line() ? 1 : 0) }}">Section Total: {{ $sectionEmps->count() }}</td>
                     </tr>
                 </tfoot>
             </table>

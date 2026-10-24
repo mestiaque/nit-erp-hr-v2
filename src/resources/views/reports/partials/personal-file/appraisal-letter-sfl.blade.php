@@ -48,7 +48,7 @@
   @php $skillAge = (int) ($employeeData['employee_age'] ?? 0); @endphp
   <div class="field"><span class="label">বয়স (Age)</span><span>:</span><span class="dots value">{{ $skillAge > 0 ? ($isBangla ? en2bnNumber((string) $skillAge) : $skillAge) : '' }}</span></div>
   <div class="field"><span class="label">পিতা/স্বামীর নাম (Father/Husband Name)</span><span>:</span><span class="dots value">{{ $skillFatherName }}</span></div>
-  <div class="field"><span class="label">ব্লক/লাইন (Block/Line)</span><span>:</span><span class="dots value">{{ $employeeData['line'] }}</span></div>
+  @unless(hr_hide_section_line())<div class="field"><span class="label">ব্লক/লাইন (Block/Line)</span><span>:</span><span class="dots value">{{ $employeeData['line'] }}</span></div>@endunless
   <div class="field"><span class="label">শিক্ষাগত যোগ্যতা (Educational Background)</span><span>:</span><span class="dots value">{{ $skillEducation }}</span></div>
   <div class="field"><span class="label">অভিজ্ঞতা (Experience)</span><span>: বছরঃ</span><span class="dots value">{{ $skillFmtExp($skillExpYears) }}</span><span>মাসঃ</span><span class="dots value">{{ $skillFmtExp($skillExpMonths) }}</span><span>দিনঃ</span><span class="dots value">{{ $skillFmtExp($skillExpDays) }}</span></div>
   <div class="field"><span class="label">বিশেষ দক্ষতা (Special Operational Skill)</span><span>:</span><span class="dots"></span></div>

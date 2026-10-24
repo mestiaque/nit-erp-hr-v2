@@ -82,7 +82,7 @@
                     <th>Emp. ID</th>
                     <th>Name</th>
                     <th>Designation</th>
-                    <th>Sub-Section</th>
+                    @unless(hr_hide_section_line())<th>Sub-Section</th>@endunless
                     <th>Shift</th>
                     <th>In Time</th>
                     <th>Work Min</th>
@@ -105,7 +105,7 @@
                         <td>{{ $employee->employee_id }}</td>
                         <td>{{ $employee->name }}</td>
                         <td>{{ $designationMap->get($employee->designation_id, 'N/A') }}</td>
-                        <td>{{ $subSectionMap->get($employee->hr_sub_section_id ?? $employee->sub_section_id ?? null, 'N/A') }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $subSectionMap->get($employee->hr_sub_section_id ?? $employee->sub_section_id ?? null, 'N/A') }}</td>@endunless
                         <td class="tc">{{ $shiftMap->get($employee->shift_id, '-') }}</td>
                         <td class="tc">{{ $att && $att->in_time ? \Carbon\Carbon::parse($att->in_time)->format('h:i A') : '-' }}</td>
                         <td class="tc">{{ $att ? (int)($att->in_minutes ?? 0) : '-' }}</td>
@@ -114,7 +114,7 @@
                     </tr>
                 @endforeach
                 <tr class="summary-row">
-                    <td colspan="7" class="tr">Total {{ $mealTypeLabel }} Count:</td>
+                    <td colspan="{{ hr_hide_section_line() ? 6 : 7 }}" class="tr">Total {{ $mealTypeLabel }} Count:</td>
                     <td class="tc">{{ $totalCount }}</td>
                     <td class="tc">{{ number_format($totalAmount, 2) }}</td>
                     <td></td>
@@ -131,7 +131,7 @@
             <tr>
                 <th>SI</th>
                 <th>{{ $groupByAxisLabel ?? 'Section' }}</th>
-                <th>Sub-Section</th>
+                @unless(hr_hide_section_line())<th>Sub-Section</th>@endunless
                 <th>Total Employees</th>
                 <th>Present</th>
                 <th>{{ $mealTypeLabel }} Count</th>
@@ -167,7 +167,7 @@
                     <tr>
                         <td class="tc">{{ $sl++ }}</td>
                         <td>{{ isset($groupLabel) ? $groupLabel((string) $sectionId) : $sectionMap->get($sectionId, 'N/A') }}</td>
-                        <td>{{ $subSectionMap->get($subId, 'N/A') }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $subSectionMap->get($subId, 'N/A') }}</td>@endunless
                         <td class="tc">{{ $subEmps->count() }}</td>
                         <td class="tc">{{ $subPresent }}</td>
                         <td class="tc">{{ $subMealCount }}</td>
@@ -175,7 +175,7 @@
                     </tr>
                 @endforeach
             @empty
-                <tr><td colspan="7" class="tc">No data.</td></tr>
+                <tr><td colspan="{{ hr_hide_section_line() ? 6 : 7 }}" class="tc">No data.</td></tr>
             @endforelse
         </tbody>
     </table>

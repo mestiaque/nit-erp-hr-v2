@@ -5,7 +5,7 @@
 @endsection
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     @include('hr::partials.excel-import-page', [
         'title' => 'Import Assets from Excel',
         'backUrl' => route('hr-center.company-assets.index'),

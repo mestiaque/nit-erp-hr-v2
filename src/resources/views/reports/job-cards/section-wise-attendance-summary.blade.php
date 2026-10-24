@@ -45,9 +45,9 @@
                     <th>{{ $t('নাম', 'Name') }}</th>
                     <th>{{ $t('পদবী', 'Designation') }}</th>
                     <th>{{ $t('বিভাগ', 'Department') }}</th>
-                    <th>{{ $t('সেকশন', 'Section') }}</th>
-                    <th>{{ $t('সাব-সেকশন', 'Sub-Section') }}</th>
-                    <th>{{ $t('ব্লক/লাইন', 'Block/Line') }}</th>
+                    @unless(hr_hide_section_line())<th>{{ $t('সেকশন', 'Section') }}</th>@endunless
+                    @unless(hr_hide_section_line())<th>{{ $t('সাব-সেকশন', 'Sub-Section') }}</th>@endunless
+                    @unless(hr_hide_section_line())<th>{{ $t('ব্লক/লাইন', 'Block/Line') }}</th>@endunless
                     <th>{{ $t('কর্মস্থল', 'Working Place') }}</th>
                     <th>{{ $t('শ্রেণীবিভাগ', 'Classification') }}</th>
                     <th>{{ $t('যোগদানের তারিখ', 'Join Date') }}</th>
@@ -102,9 +102,9 @@
                         <td>{{ $employeeData['employee_name'] ?? $employee->name }}</td>
                         <td>{{ $employeeData['designation'] ?? 'N/A' }}</td>
                         <td>{{ $employeeData['department'] ?? 'N/A' }}</td>
-                        <td>{{ $employeeData['section'] ?? 'N/A' }}</td>
-                        <td>{{ $employeeData['sub_section'] ?? 'N/A' }}</td>
-                        <td>{{ $employeeData['line'] }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $employeeData['section'] ?? 'N/A' }}</td>@endunless
+                        @unless(hr_hide_section_line())<td>{{ $employeeData['sub_section'] ?? 'N/A' }}</td>@endunless
+                        @unless(hr_hide_section_line())<td>{{ $employeeData['line'] }}</td>@endunless
                         <td>{{ $employeeData['working_place'] ?? 'N/A' }}</td>
                         <td>{{ $employeeData['job_type'] ?? 'N/A' }}</td>
 

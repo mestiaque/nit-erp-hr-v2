@@ -34,12 +34,12 @@
 
                 <div class="section-info">
                     <div>
-                        <strong>সেকশন: {{ $employeeData['section'] ?? '-' }}</strong><br>
+                        @unless(hr_hide_section_line())<strong>সেকশন: {{ $employeeData['section'] ?? '-' }}</strong><br>@endunless
                         <strong>কার্ড নং: {{ $employee->employee_id }}</strong><br>
                         <strong>নাম: {{ $employeeData['employee_name'] ?? $employee->name }}</strong>
                     </div>
                     <div style="text-align: right;">
-                        <strong>ব্লক নং - {{ $employeeData['line'] ?? '-' }}</strong><br>
+                        @unless(hr_hide_section_line())<strong>ব্লক নং - {{ $employeeData['line'] ?? '-' }}</strong><br>@endunless
                         হাজিরা বোনাস {{ $salary['attendance_bonus'] ?? 0 }}<br>
                         পদবী: {{ $employeeData['designation'] ?? '-' }}
                     </div>
@@ -79,12 +79,12 @@
 
                 <div class="section-info">
                     <div>
-                        <strong>সেকশন: {{ $employeeData['section'] ?? '-' }}</strong><br>
+                        @unless(hr_hide_section_line())<strong>সেকশন: {{ $employeeData['section'] ?? '-' }}</strong><br>@endunless
                         <strong>কার্ড নং: {{ $employee->employee_id }}</strong><br>
                         <strong>নাম: {{ $employeeData['employee_name'] ?? $employee->name }}</strong>
                     </div>
                     <div style="text-align: right;">
-                        <strong>ব্লক নং - {{ $employeeData['line'] ?? '-' }}</strong><br>
+                        @unless(hr_hide_section_line())<strong>ব্লক নং - {{ $employeeData['line'] ?? '-' }}</strong><br>@endunless
                         হাজিরা বোনাস {{ $salary['attendance_bonus'] ?? 0 }}<br>
                         পদবী: {{ $employeeData['designation'] ?? '-' }}
                     </div>

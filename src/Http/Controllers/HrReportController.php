@@ -194,7 +194,7 @@ class HrReportController extends Controller
             return $this->monthlyLateReportScreen($request, $report);
         }
 
-        if ($report === 'daily-manpower-report') {
+        if ($report === 'daily-manpower-report' || $report === 'daily-manpower-sfl') {
             return $this->dailyManpowerReportScreen($request, $report);
         }
 
@@ -2939,9 +2939,33 @@ class HrReportController extends Controller
     // DAILY MANPOWER REPORT (NAME WISE)
     // ──────────────────────────────────────────────────────────────────
 
+    /**
+     * Daily Manpower SFL rows: Suhana Fashions' fixed badge blocks (employee_id 1000-12999,
+     * see SalaryReportService::sflSummaryBucketCodeFor()), always all twelve, in this order.
+     */
+    private const SFL_MANPOWER_ROWS = [
+        1000  => 'Management Staff',
+        2000  => 'Staff',
+        3000  => 'Cutting',
+        4000  => 'Sewing Operator',
+        5000  => 'Embroidery',
+        6000  => 'Iron',
+        7000  => 'Quality',
+        8000  => 'Finishing',
+        9000  => 'Learner',
+        10000 => 'Sample',
+        11000 => 'Jacquard',
+        12000 => 'Admin',
+    ];
+
+    /**
+     * Daily Manpower Report (one row per Section) and Daily Manpower SFL (the twelve fixed
+     * employee_id blocks, report key 'daily-manpower-sfl') — same counts, same print layout.
+     */
     private function dailyManpowerReportScreen(Request $request, string $report)
     {
         $options = $this->employeeReportOptions();
+        $isSfl = $report === 'daily-manpower-sfl';
 
         if ($request->boolean('print')) {
             $reportDate = (string) ($request->input('date') ?: now()->toDateString());
@@ -2951,7 +2975,6 @@ class HrReportController extends Controller
                 ->orderBy('name')
                 ->get();
 
-            $sectionMap = collect($options['sections'] ?? [])->pluck('name', 'id');
             $rows = collect();
 
             $grand = [
@@ -2965,14 +2988,15 @@ class HrReportController extends Controller
                 'others_total' => 0,
             ];
 
-            $employees->groupBy('section_id')->each(function ($sectionEmployees, $sectionId) use (&$rows, &$grand, $sectionMap, $reportDate) {
+            // Female / male headcount and the day's leave / present / absent for one row's employees.
+            $addRow = function (string $label, $groupEmployees) use (&$rows, &$grand, $reportDate) {
                 $female = 0;
                 $male = 0;
                 $leave = 0;
                 $present = 0;
                 $absent = 0;
 
-                foreach ($sectionEmployees as $employee) {
+                foreach ($groupEmployees as $employee) {
                     $gender = strtolower(trim((string) ($employee->sex ?? '')));
                     if (in_array($gender, ['female', 'f'], true)) {
                         $female++;
@@ -3002,7 +3026,7 @@ class HrReportController extends Controller
                 $othersTotal = $absent;
 
                 $rows->push([
-                    'section' => $sectionMap->get($sectionId, 'N/A'),
+                    'section' => $label,
                     'female' => $female,
                     'male' => $male,
                     'manpower_total' => $manpowerTotal,
@@ -3021,14 +3045,27 @@ class HrReportController extends Controller
                 $grand['present_total'] += $presentTotal;
                 $grand['absent'] += $absent;
                 $grand['others_total'] += $othersTotal;
-            });
+            };
+
+            if ($isSfl) {
+                $byBlock = $employees->groupBy(fn ($employee) => SalaryReportService::sflSummaryBucketCodeFor($employee->employee_id));
+                foreach (self::SFL_MANPOWER_ROWS as $code => $label) {
+                    $addRow($label, $byBlock->get($code, collect()));
+                }
+            } else {
+                $sectionMap = collect($options['sections'] ?? [])->pluck('name', 'id');
+                $employees->groupBy('section_id')->each(fn ($sectionEmployees, $sectionId) => $addRow($sectionMap->get($sectionId, 'N/A'), $sectionEmployees));
+            }
 
             return $this->viewOrXlsx($request, 'hr::reports.daily-manpower-report-print', [
                 'request' => $request,
                 'rows' => $rows,
                 'reportDate' => $reportDate,
                 'grand' => $grand,
-            ], 'daily-manpower-report');
+                'printTitle' => $isSfl ? 'Daily Manpower SFL' : 'Daily Manpower Report',
+                'rowLabel' => $isSfl ? 'Department' : 'Section',
+                'totalLabel' => $isSfl ? 'Grand Total :' : null,
+            ], $report);
         }
 
         return view('hr::reports.daily-manpower-report', [

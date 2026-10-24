@@ -814,7 +814,7 @@ class SalaryReportService
         1000  => 'Management Staff',
         2000  => 'Staff',
         3000  => 'Cutting',
-        4000  => 'Sewing',
+        4000  => 'Sewing Operator',
         5000  => 'Embroidery',
         6000  => 'Iron',
         7000  => 'Quality',
@@ -831,7 +831,7 @@ class SalaryReportService
      * outside the company's defined 1000-12999 badge range folds into Admin
      * (12000) rather than being dropped or shown under a made-up label.
      */
-    private static function sflSummaryBucketCodeFor(?string $employeeId): int
+    public static function sflSummaryBucketCodeFor(?string $employeeId): int
     {
         $numeric = (int) preg_replace('/\D/', '', (string) $employeeId);
         $code = intdiv($numeric, 1000) * 1000;

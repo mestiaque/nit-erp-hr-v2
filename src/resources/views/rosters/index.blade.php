@@ -9,7 +9,7 @@
 @endphp
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
 
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show">

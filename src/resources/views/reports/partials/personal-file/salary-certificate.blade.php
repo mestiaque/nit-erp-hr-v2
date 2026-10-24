@@ -74,13 +74,13 @@
         @if($isBangla)
             এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>{{ $employeeName }}</strong> (আইডি নং: {{ $employeeId }})
             {{ $joinDate }} ইং তারিখ থেকে অত্র প্রতিষ্ঠানে <strong>{{ $designation }}</strong> পদে
-            {{ $department ? $department . ' বিভাগ, ' : '' }}{{ $section }} সেকশনে
+            @if(hr_hide_section_line()){{ $department ? $department . ' বিভাগে' : '' }}@else{{ $department ? $department . ' বিভাগ, ' : '' }}{{ $section }} সেকশনে@endif
             {{ $isSeparated ? 'কর্মরত ছিলেন।' : 'কর্মরত আছেন।' }}
             {{ $isSeparated ? 'তার সর্বশেষ মাসিক বেতনের বিবরণ নিম্নরূপ:' : 'তার বর্তমান মাসিক বেতনের বিবরণ নিম্নরূপ:' }}
         @else
             This is to certify that <strong>{{ $employeeName }}</strong> (ID No: {{ $employeeId }})
             {{ $isSeparated ? 'was employed' : 'has been employed' }} with this organization since {{ $joinDate }}
-            as <strong>{{ $designation }}</strong>{{ $department ? ' in the ' . $department . ' department' : '' }}, {{ $section }} section.
+            as <strong>{{ $designation }}</strong>{{ $department ? ' in the ' . $department . ' department' : '' }}@unless(hr_hide_section_line()), {{ $section }} section@endunless.
             {{ $isSeparated ? 'Details of the last drawn monthly salary are as follows:' : 'Details of the current monthly salary are as follows:' }}
         @endif
     </div>

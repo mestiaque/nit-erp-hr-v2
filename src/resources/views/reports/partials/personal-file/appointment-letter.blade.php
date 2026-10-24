@@ -98,7 +98,7 @@
                 <td class="k">মাতার নাম</td><td class="s">:</td><td class="v">{{ $motherName  }}</td>
             </tr>
             <tr>
-                <td class="k">সেকশন</td><td class="s">:</td><td class="v">{{ $section ?: 'N/A' }}</td>
+                @if(hr_hide_section_line())<td class="k"></td><td class="s"></td><td class="v"></td>@else<td class="k">সেকশন</td><td class="s">:</td><td class="v">{{ $section ?: 'N/A' }}</td>@endif
                 <td class="k">পদবীঃ</td><td class="s">:</td><td class="v">{{ $designation ?: 'N/A' }}</td>
             </tr>
             <tr>

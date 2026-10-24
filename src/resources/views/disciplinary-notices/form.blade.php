@@ -12,7 +12,7 @@
 @endpush
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">{{ $notice->id ? 'Edit' : 'Create' }} Disciplinary Notice</h4>
         <a href="{{ route('hr-center.disciplinary-notices.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>

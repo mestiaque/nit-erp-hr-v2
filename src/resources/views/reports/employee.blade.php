@@ -6,7 +6,7 @@
 
 @section('contents')
 @include('hr::partials.report-loader')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     @php
         $selectedReportType = $request->report_type ?: 'database';
     @endphp

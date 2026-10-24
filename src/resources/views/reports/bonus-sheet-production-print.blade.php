@@ -54,11 +54,11 @@
                 <th>Emp. ID</th>
                 <th>Name</th>
                 <th>Department</th>
-                <th>Section</th>
-                <th>Sub Section</th>
+                @unless(hr_hide_section_line())<th>Section</th>@endunless
+                @unless(hr_hide_section_line())<th>Sub Section</th>@endunless
                 <th>Designation</th>
                 <th>Join Date</th>
-                <th>Block/Line</th>
+                @unless(hr_hide_section_line())<th>Block/Line</th>@endunless
                 <th>Present Days</th>
                 <th>Bonus Amount</th>
                 <th>Signature</th>
@@ -68,7 +68,7 @@
             @php
                 $sl = 1;
                 $totalBonus = 0;
-                $totalColspan = $withPicture ? 11 : 10;
+                $totalColspan = ($withPicture ? 11 : 10) - (hr_hide_section_line() ? 3 : 0);
             @endphp
             @foreach($deptEmps as $employee)
                 @php
@@ -94,11 +94,11 @@
                     <td>{{ $employee->employee_id }}</td>
                     <td>{{ $employeeData['employee_name'] }}</td>
                     <td>{{ $employeeData['department'] }}</td>
-                    <td>{{ $employeeData['section'] }}</td>
-                    <td>{{ $employeeData['sub_section'] }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $employeeData['section'] }}</td>@endunless
+                    @unless(hr_hide_section_line())<td>{{ $employeeData['sub_section'] }}</td>@endunless
                     <td>{{ $employeeData['designation'] }}</td>
                     <td>{{ optional($employee->joining_date)->format('d-M-Y') ?? 'N/A' }}</td>
-                    <td>{{ $lineMap->get($employee->line_number, 'N/A') }}</td>
+                    @unless(hr_hide_section_line())<td>{{ $lineMap->get($employee->line_number, 'N/A') }}</td>@endunless
                     <td class="tc">{{ $present }}</td>
                     <td class="tr">{{ $fmt($bonus) }}</td>
                     <td></td>

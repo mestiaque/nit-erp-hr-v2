@@ -43,9 +43,9 @@
                     <th>{{ $t('নাম', 'Name') }}</th>
                     <th>{{ $t('পদবী', 'Designation') }}</th>
                     <th>{{ $t('যোগদানের তারিখ', 'DOJ') }}</th>
-                    <th>{{ $t('সেকশন', 'Section') }}</th>
-                    <th>{{ $t('সাব-সেকশন', 'Sub-Section') }}</th>
-                    <th>{{ $t('ব্লক/লাইন', 'Block/Line') }}</th>
+                    @unless(hr_hide_section_line())<th>{{ $t('সেকশন', 'Section') }}</th>@endunless
+                    @unless(hr_hide_section_line())<th>{{ $t('সাব-সেকশন', 'Sub-Section') }}</th>@endunless
+                    @unless(hr_hide_section_line())<th>{{ $t('ব্লক/লাইন', 'Block/Line') }}</th>@endunless
                     @foreach($dates as $d)
                         <th class="tc" style="min-width:28px;">{{ $isBangla ? en2bnNumber($d->format('d')) : $d->format('d') }}</th>
                     @endforeach
@@ -85,9 +85,9 @@
                                 {{ $employee->joining_date ? (is_string($employee->joining_date) ? \Carbon\Carbon::parse($employee->joining_date)->format('d-M-y') : (method_exists($employee->joining_date, 'format') ? $employee->joining_date->format('d-M-y') : '-') ) : '-' }}
                             @endif
                         </td>
-                        <td>{{ $employeeData['section'] ?? ($sectionMap->get($employee->section_id, $t('প্রযোজ্য নয়', 'N/A'))) }}</td>
-                        <td>{{ $employeeData['sub_section'] ?? ($subSectionMap->get($employee->hr_sub_section_id ?? $employee->sub_section_id ?? null, $t('প্রযোজ্য নয়', 'N/A'))) }}</td>
-                        <td>{{ $employeeData['line'] ?? ($lineMap->get($employee->line_number, $t('প্রযোজ্য নয়', 'N/A'))) }}</td>
+                        @unless(hr_hide_section_line())<td>{{ $employeeData['section'] ?? ($sectionMap->get($employee->section_id, $t('প্রযোজ্য নয়', 'N/A'))) }}</td>@endunless
+                        @unless(hr_hide_section_line())<td>{{ $employeeData['sub_section'] ?? ($subSectionMap->get($employee->hr_sub_section_id ?? $employee->sub_section_id ?? null, $t('প্রযোজ্য নয়', 'N/A'))) }}</td>@endunless
+                        @unless(hr_hide_section_line())<td>{{ $employeeData['line'] ?? ($lineMap->get($employee->line_number, $t('প্রযোজ্য নয়', 'N/A'))) }}</td>@endunless
 
                         @foreach($dates as $d)
                             @php
