@@ -147,7 +147,7 @@
                     <td class="tc b">{{ $row['present_total'] }}</td>
                     <td class="tc">{{ $row['absent'] }}</td>
                     <td class="tc b">{{ $row['others_total'] }}</td>
-                    <td></td>
+                    <td class="tl" style="font-size:10px;">{{ $row['remarks'] ?? '' }}</td>
                 </tr>
             @empty
                 <tr>
@@ -167,7 +167,7 @@
                     <td class="tc b">{{ $grand['present_total'] }}</td>
                     <td class="tc">{{ $grand['absent'] }}</td>
                     <td class="tc b">{{ $grand['others_total'] }}</td>
-                    <td></td>
+                    <td class="tl" style="font-size:10px;">{{ collect(['Off day' => $grand['off_day'] ?? 0, 'Gender not set' => $grand['gender_unset'] ?? 0])->filter()->map(fn ($n, $k) => $k . ': ' . $n)->implode(', ') }}</td>
                 </tr>
             </tfoot>
         @endif

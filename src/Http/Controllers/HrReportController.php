@@ -2970,87 +2970,102 @@ class HrReportController extends Controller
         if ($request->boolean('print')) {
             $reportDate = (string) ($request->input('date') ?: now()->toDateString());
 
-            $employees = $this->employeeReportQuery($request)
+            // The shared query drops employees who exited before 'from' (default: the start
+            // of the current month) — for a single-day report that has to be the report date,
+            // or a past date loses people who left after it.
+            $employees = $this->employeeReportQuery((clone $request)->merge(['from' => $reportDate]))
+                ->with('basicInfo:id,employee_id,sex_id')
                 ->orderBy('section_id')
                 ->orderBy('name')
                 ->get();
+
+            // Gender lives on the basic info (sex_id → hr_sexes), not on the employee row.
+            $sexNames = HrSex::query()->pluck('name', 'id')->map(fn ($name) => strtolower(trim((string) $name)));
 
             $rows = collect();
 
             $grand = [
                 'female' => 0,
                 'male' => 0,
+                'gender_unset' => 0,
                 'manpower_total' => 0,
                 'leave' => 0,
                 'present' => 0,
                 'present_total' => 0,
                 'absent' => 0,
+                'off_day' => 0,
                 'others_total' => 0,
             ];
 
-            // Female / male headcount and the day's leave / present / absent for one row's employees.
-            $addRow = function (string $label, $groupEmployees) use (&$rows, &$grand, $reportDate) {
-                $female = 0;
-                $male = 0;
-                $leave = 0;
-                $present = 0;
-                $absent = 0;
+            // Headcount (by gender) and the day's leave / present / absent for one row's employees.
+            // The day's status comes from the attendance engine, so it matches the Daily
+            // Attendance report: employees not employed on the date (joined later / already
+            // exited) are left out, and anyone who punched in on an off day counts as present.
+            $presentKeys = ['present', 'late', 'early_exit', 'eo', 'punch_missing', 'pm', 'late_and_early_exit', 'leo', 'late_and_punch_missing', 'lpm'];
+            $addRow = function (string $label, $groupEmployees, bool $keepEmpty = false) use (&$rows, &$grand, $reportDate, $sexNames, $presentKeys) {
+                $row = ['female' => 0, 'male' => 0, 'gender_unset' => 0, 'leave' => 0, 'present' => 0, 'absent' => 0, 'off_day' => 0];
 
                 foreach ($groupEmployees as $employee) {
-                    $gender = strtolower(trim((string) ($employee->sex ?? '')));
-                    if (in_array($gender, ['female', 'f'], true)) {
-                        $female++;
-                    } else {
-                        $male++;
-                    }
-
                     $pack = \ME\Hr\Services\EmployeeAttendanceService::getEmployeeAttendanceByDate(
                         $employee->id,
                         $reportDate,
                         $reportDate
                     );
-                    $summary = $pack['summary'] ?? [];
+                    $day = $pack['attendance'][0] ?? null;
+                    $status = $day['status_key'] ?? 'not_employed';
+                    if ($status === 'not_employed') {
+                        continue;
+                    }
 
-                    $present += (int) (($summary['totalPresent'] ?? 0)
-                        + ($summary['totalLate'] ?? 0)
-                        + ($summary['totalEO'] ?? 0)
-                        + ($summary['totalPM'] ?? 0)
-                        + ($summary['totalLEO'] ?? 0)
-                        + ($summary['totalLPM'] ?? 0));
-                    $leave += (int) ($summary['totalLeave'] ?? 0);
-                    $absent += (int) ($summary['totalAbsent'] ?? 0);
+                    $gender = $sexNames->get($employee->basicInfo?->sex_id);
+                    if ($gender === 'female') {
+                        $row['female']++;
+                    } elseif ($gender === 'male') {
+                        $row['male']++;
+                    } else {
+                        $row['gender_unset']++;
+                    }
+
+                    $punchedIn = !empty($day['in_time']) && $day['in_time'] !== '-';
+                    if ($status === 'leave') {
+                        $row['leave']++;
+                    } elseif (in_array($status, $presentKeys, true) || $punchedIn) {
+                        $row['present']++;
+                    } elseif ($status === 'absent') {
+                        $row['absent']++;
+                    } else {
+                        // weekend / holiday without a punch
+                        $row['off_day']++;
+                    }
                 }
 
-                $manpowerTotal = $female + $male;
-                $presentTotal = $leave + $present;
-                $othersTotal = $absent;
+                $row['manpower_total'] = $row['female'] + $row['male'] + $row['gender_unset'];
+                $row['present_total'] = $row['leave'] + $row['present'];
+                $row['others_total'] = $row['absent'] + $row['off_day'];
+                if (!$keepEmpty && $row['manpower_total'] === 0) {
+                    return;
+                }
 
-                $rows->push([
-                    'section' => $label,
-                    'female' => $female,
-                    'male' => $male,
-                    'manpower_total' => $manpowerTotal,
-                    'leave' => $leave,
-                    'present' => $present,
-                    'present_total' => $presentTotal,
-                    'absent' => $absent,
-                    'others_total' => $othersTotal,
-                ]);
+                $remarks = [];
+                if ($row['off_day']) {
+                    $remarks[] = 'Off day: ' . $row['off_day'];
+                }
+                if ($row['gender_unset']) {
+                    $remarks[] = 'Gender not set: ' . $row['gender_unset'];
+                }
+                $row['remarks'] = implode(', ', $remarks);
 
-                $grand['female'] += $female;
-                $grand['male'] += $male;
-                $grand['manpower_total'] += $manpowerTotal;
-                $grand['leave'] += $leave;
-                $grand['present'] += $present;
-                $grand['present_total'] += $presentTotal;
-                $grand['absent'] += $absent;
-                $grand['others_total'] += $othersTotal;
+                $rows->push(['section' => $label] + $row);
+
+                foreach (array_keys($grand) as $key) {
+                    $grand[$key] += $row[$key];
+                }
             };
 
             if ($isSfl) {
                 $byBlock = $employees->groupBy(fn ($employee) => SalaryReportService::sflSummaryBucketCodeFor($employee->employee_id));
                 foreach (self::SFL_MANPOWER_ROWS as $code => $label) {
-                    $addRow($label, $byBlock->get($code, collect()));
+                    $addRow($label, $byBlock->get($code, collect()), true);
                 }
             } else {
                 $sectionMap = collect($options['sections'] ?? [])->pluck('name', 'id');
