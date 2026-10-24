@@ -9,9 +9,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Production Rate</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#CreateProductionRateModal">
-                + Add
-            </a>
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateProductionRateModal" title="Add"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
             @if(session('success'))
@@ -54,11 +52,11 @@
                             <td>{{ $rate->pro_process }}</td>
                             <td>
                                 <button type="button" class="btn btn-custom info btn-sm btn-assign-progress" data-id="{{ $rate->id }}" data-toggle="modal" data-target="#AssignProgressModal">Assign Progress</button>
-                                <a href="{{ route('hr-center.production-rate.edit', $rate->id) }}" class="btn btn-custom warning btn-sm">Edit</a>
+                                <a href="{{ route('hr-center.production-rate.edit', $rate->id) }}" class="btn btn-custom warning btn-sm btn-warning btn-icon" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form action="{{ route('hr-center.production-rate.destroy', $rate->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-custom danger btn-sm">Delete</button>
+                                    <button type="submit" class="btn btn-custom danger btn-sm btn-icon" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

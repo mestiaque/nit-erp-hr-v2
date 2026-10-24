@@ -93,7 +93,7 @@
                 <button type="button" class="btn btn-primary btn-sm" id="toggleUploadForm">
                     <i class="fa-solid fa-upload me-1"></i> Upload Documents
                 </button>
-                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm">Back</a>
+                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
             </div>
         </div>
         <div class="card-body py-2 px-3">
@@ -166,7 +166,7 @@
                                 <div class="d-flex justify-content-between align-items-center mt-1" style="gap:4px">
                                     <span class="badge badge-light text-muted" style="font-size:10px">{{ $doc->file_size_human }}</span>
                                     <div class="d-flex" style="gap:4px">
-                                        <a href="{{ $doc->url }}" target="_blank" class="btn-custom" title="View/Download" style="font-size:12px"><i class="fa-solid fa-eye"></i></a>
+                                        <a href="{{ $doc->url }}" target="_blank" class="btn-custom success" title="View/Download" style="font-size:12px"><i class="fa-solid fa-eye"></i></a>
                                         <form method="POST" action="{{ route('hr-center.employees.documents.delete', $employee->id) }}"
                                               onsubmit="return confirm('এই document টি delete করবেন?')" style="display:inline">
                                             @csrf @method('DELETE')

@@ -217,7 +217,7 @@
                         <div class="d-flex align-items-center">
                             <span class="badge badge-success mr-2" style="font-size:.85rem;">POST</span>
                             <code id="admsEndpoint" class="flex-grow-1 p-2 bg-light rounded" style="word-break:break-all;font-size:.92rem;">{{ $admsUrl }}</code>
-                            <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn" data-copy="admsEndpoint" title="Copy">
+                            <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn btn-icon" data-copy="admsEndpoint" title="Copy">
                                 <i class="fa fa-copy"></i>
                             </button>
                         </div>
@@ -230,7 +230,7 @@
                             <span class="badge badge-warning mr-2 text-dark" style="font-size:.85rem;">Bearer</span>
                             @if($machineToken)
                                 <code id="admsToken" class="flex-grow-1 p-2 bg-light rounded" style="font-size:.92rem;filter:blur(4px);transition:.2s;" onmouseenter="this.style.filter='none'" onmouseleave="this.style.filter='blur(4px)'">{{ $machineToken }}</code>
-                                <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn" data-copy="admsToken" title="Copy Token">
+                                <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn btn-icon" data-copy="admsToken" title="Copy Token">
                                     <i class="fa fa-copy"></i>
                                 </button>
                             @else
@@ -295,7 +295,7 @@ Authorization: Bearer &lt;token&gt;</pre>
 
         <!-- ZKTimeSync Tutorial Modal Trigger Button -->
         {{-- <div class="text-center my-4">
-            <button type="button" class="btn btn-import btn-sm shado text-dark" data-bs-toggle="modal" data-bs-target="#zkTutorialModal" style="background: #bfc1d03b; border: 1px dashed #56d2ff;">
+            <button type="button" class="btn btn-import btn-sm shado text-dark" data-toggle="modal" data-target="#zkTutorialModal" style="background: #bfc1d03b; border: 1px dashed #56d2ff;">
                 <i class="fa fa-book mr-2"></i> ZKTimeSync App
             </button>
         </div> --}}
@@ -306,7 +306,7 @@ Authorization: Bearer &lt;token&gt;</pre>
                 <div class="modal-content">
                     <div class="modal-header text-white" style="background:#56d2ff">
                         <h4 class="modal-title text-white" id="zkTutorialModalLabel"><i class="fa fa-book mr-2"></i> ZKTimeSync Tutorial</h4>
-                        <button type="button" class="btn-close btn btn-sm btn-custom danger" data-bs-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i></button>
+                        <button type="button" class="btn-close btn btn-sm btn-custom danger" data-dismiss="modal" aria-label="Close"><i class="fa fa-times"></i></button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-4">

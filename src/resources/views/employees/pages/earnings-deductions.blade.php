@@ -95,7 +95,7 @@
                                 <td>{{ $application->reason ?: '-' }}</td>
                                 <td>{{ $application->deduction_month?->format('F Y') ?? 'Next month' }}</td>
                                 <td>
-                                    <a href="{{ route('hr-center.employees.advance-applications.print', [$employee->id, $application->id]) }}" target="_blank" class="btn-custom" title="Print"><i class="fa-solid fa-print"></i></a>
+                                    <a href="{{ route('hr-center.employees.advance-applications.print', [$employee->id, $application->id]) }}" target="_blank" class="btn-custom primary" title="Print"><i class="fa-solid fa-print"></i></a>
                                     <form method="post" action="{{ route('hr-center.employees.advance-applications.destroy', [$employee->id, $application->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this application?');">
                                         @csrf
                                         @method('delete')

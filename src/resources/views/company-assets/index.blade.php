@@ -23,13 +23,9 @@
                     <i class="fa-solid fa-print"></i> Asset Register Report
                 </a>
                 @can('hr_company_asset.import')
-                <a href="{{ route('hr-center.company-assets.import') }}" class="btn btn-light btn-sm rounded-pill px-3">
-                    <i class="fa-solid fa-file-import"></i> Import Excel
-                </a>
+                <a href="{{ route('hr-center.company-assets.import') }}" class="btn btn-light btn-sm rounded-pill px-3 btn-icon" title="Import Excel"><i class="fa-solid fa-file-import"></i></a>
                 @endcan
-                <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
-                    <i class="fa-solid fa-plus"></i> Add Asset
-                </a>
+                <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" title="Add Asset"><i class="fa-solid fa-plus"></i></a>
             </div>
         </div>
         <div class="card-body">
@@ -86,11 +82,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-1">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-1">
-                    <a href="{{ route('hr-center.company-assets.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('hr-center.company-assets.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
@@ -141,7 +135,7 @@
                                 <form method="POST" action="{{ route('hr-center.company-assets.destroy', $asset->id) }}" style="display:inline" onsubmit="return confirm('Delete this asset?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-custom red" title="Delete">
+                                    <button type="submit" class="btn-custom red danger" title="Delete">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>

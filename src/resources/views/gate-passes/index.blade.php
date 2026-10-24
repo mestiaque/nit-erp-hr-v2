@@ -20,10 +20,8 @@
     <div class="card gp-card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Employee Gate Pass</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm rounded-pill px-3"
-               data-toggle="modal" data-target="#CreateGatePassModal">
-                <i class="fa-solid fa-plus"></i> Create Gate Pass
-            </a>
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon"
+               data-toggle="modal" data-target="#CreateGatePassModal" title="Create Gate Pass"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
 
@@ -42,10 +40,8 @@
                            class="form-control form-control-sm" placeholder="Pass No, Employee ID or Name...">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2">
-                    <a href="{{ route('hr-center.gate-passes.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('hr-center.gate-passes.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
@@ -85,7 +81,7 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom" title="View"
+                                <button type="button" class="btn-custom success" title="View"
                                         data-toggle="modal" data-target="#ViewGatePassModal"
                                         data-pass-no="{{ $gatePass->pass_no }}"
                                         data-employee="{{ ($gatePass->employee->employee_id ?? '-') . ' — ' . ($gatePass->employee->name ?? 'N/A') }}"
@@ -98,7 +94,7 @@
                                         data-status="{{ $gatePass->status }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                <a href="{{ route('hr-center.gate-passes.print', $gatePass->id) }}" class="btn-custom" title="Print" target="_blank">
+                                <a href="{{ route('hr-center.gate-passes.print', $gatePass->id) }}" class="btn-custom primary" title="Print" target="_blank">
                                     <i class="fa-solid fa-print"></i>
                                 </a>
                                 <button type="button" class="btn-custom yellow" title="Edit"

@@ -9,7 +9,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ $reportTitle }}</h4>
-            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm">Back</a>
+            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
         </div>
 
         <div class="card-body">
@@ -121,8 +121,8 @@
                                 </div>
 
                                 <div class="d-flex align-items-center mb-2 col-md-3 gap-2">
-                                    <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
-                                    <button type="button" id="personalFilePrintBtn" class="btn btn-primary btn-sm w-50 no-loader"><i class="fa-solid fa-print"></i> Print</button>
+                                    <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                                    <button type="button" id="personalFilePrintBtn" class="btn btn-primary btn-sm no-loader btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
                                 </div>
                             </div>
 

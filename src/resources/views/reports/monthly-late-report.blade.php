@@ -10,7 +10,7 @@
 	<div class="card">
 		<div class="card-header d-flex justify-content-between align-items-center">
 			<h4 class="mb-0">{{ $reportTitle }}</h4>
-			<a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm">Back</a>
+			<a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
 		</div>
 		<div class="card-body">
 			<form method="get" action="{{ route('hr-center.reports.monthly-late-report') }}">
@@ -95,8 +95,8 @@
 
 					<div class="col-md-3 mb-3 d-flex align-items-end">
 						<div class="w-100 d-flex gap-2">
-							<a href="{{ route('hr-center.reports.monthly-late-report') }}" class="btn btn-light btn-sm w-50 mr-2"><i class="fa-solid fa-rotate-left"></i> Reset</a>
-							<button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-primary btn-sm w-50"><i class="fa-solid fa-print"></i> Print</button>
+							<a href="{{ route('hr-center.reports.monthly-late-report') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+							<button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-primary btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
 						</div>
 					</div>
 				</div>

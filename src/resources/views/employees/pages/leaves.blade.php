@@ -11,7 +11,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Leave Table: {{ $employee->name }}</h4>
             <div class="d-flex align-items-center" style="gap: 8px;">
-                <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#CreateLeaveModal">Add Leave</a>
+                <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateLeaveModal" title="Add Leave"><i class="fa-solid fa-plus"></i></a>
                 <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm">Back</a>
             </div>
         </div>
@@ -100,12 +100,12 @@
                             </td>
                             <td>
                                 @if(data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
-                                <a href="{{ route('hr-center.employees.leaves.print', [$employee->id, data_get($row, 'identifier')]) }}" target="_blank" class="btn-custom" style="background:#17a2b8;color:#fff;" title="Print Leave Application"><i class="fa-solid fa-print"></i></a>
+                                <a href="{{ route('hr-center.employees.leaves.print', [$employee->id, data_get($row, 'identifier')]) }}" target="_blank" class="btn-custom primary" style="background:#17a2b8;color:#fff;" title="Print Leave Application"><i class="fa-solid fa-print"></i></a>
                                 @endif
                                 @if($leaveStatus === 'pending' && data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
                                 <form method="post" action="{{ route('hr-center.employees.leaves.approve', [$employee->id, data_get($row, 'identifier')]) }}" style="display:inline-block" onsubmit="return confirm('Approve this leave?');">
                                     @csrf
-                                    <button type="submit" class="btn-custom" style="background:#28a745;color:#fff;" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                    <button type="submit" class="btn-custom primary" style="background:#28a745;color:#fff;" title="Approve"><i class="fa-solid fa-check"></i></button>
                                 </form>
                                 <form method="post" action="{{ route('hr-center.employees.leaves.reject', [$employee->id, data_get($row, 'identifier')]) }}" style="display:inline-block" onsubmit="return confirm('Reject this leave?');">
                                     @csrf

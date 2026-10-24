@@ -9,7 +9,7 @@
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Assign Shift Roster — Bulk</h4>
-            <a href="{{ route('hr-center.rosters.index') }}" class="btn btn-secondary btn-sm">Back to List</a>
+            <a href="{{ route('hr-center.rosters.index') }}" class="btn btn-secondary btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
         </div>
         <div class="card-body">
             {{-- Filter (GET, reloads this page with the filtered employee list) --}}
@@ -43,7 +43,7 @@
                         </select>
                     </div>
                     <div class="form-group col-md-3">
-                        <button type="submit" class="btn btn-secondary w-100"><i class="fa fa-filter mr-1"></i> Filter</button>
+                        <button type="submit" class="btn btn-secondary btn-icon" title="Filter"><i class="fa fa-filter"></i></button>
                     </div>
                 </div>
             </form>

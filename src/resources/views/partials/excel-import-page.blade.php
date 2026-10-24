@@ -24,9 +24,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-file-import mr-2"></i>{{ $title }}</h4>
-            <a href="{{ $backUrl }}" class="btn btn-light btn-sm">
-                <i class="fa-solid fa-arrow-left mr-1"></i> Back to List
-            </a>
+            <a href="{{ $backUrl }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
         </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">

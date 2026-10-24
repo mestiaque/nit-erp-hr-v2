@@ -81,7 +81,7 @@
                 </div>
                 <div class="d-flex align-items-center" style="gap: 8px;">
                     <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back</a>
-                    {{-- <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn btn-outline-secondary btn-sm" title="Edit Salary History"><i class="fa-solid fa-pen-to-square"></i></a> --}}
+                    {{-- <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn btn-outline-secondary btn-sm btn-icon" title="Edit Salary History"><i class="fa-solid fa-pen-to-square"></i></a> --}}
                 </div>
             </div>
         </div>
@@ -545,8 +545,8 @@
                     <form method="get" action="{{ route('hr-center.employees.show', $employee->id) }}" class="d-flex align-items-center" style="gap:6px">
                         <input type="hidden" name="_anchor" value="tab-attendance">
                         <input type="month" name="att_month" value="{{ request('att_month', now()->format('Y-m')) }}" class="form-control form-control-sm" style="width:160px">
-                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
-                        <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn btn-sm btn-light">Reset</a>
+                        <button type="submit" class="btn btn-sm btn-primary btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                        <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn btn-sm btn-light btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                     </form>
                 </div>
 

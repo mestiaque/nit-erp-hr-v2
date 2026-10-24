@@ -9,7 +9,7 @@
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Employees</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#CreateEmployeeModal" title="Create Employee"><i class="fa-solid fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateEmployeeModal" title="Create Employee"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
             @if(session('success'))
@@ -148,13 +148,9 @@
                         <option value="inactive" @selected($request->is_active === 'inactive')>Inactive</option>
                     </select>
                 </div>
-                <div class="col-md-1">
-                    <label class="form-label mb-1 d-block">&nbsp;</label>
-                    <button class="btn btn-secondary btn-sm w-100"><i class="fa-solid fa-filter"></i></button>
-                </div>
-                <div class="col-md-1">
-                    <label class="form-label mb-1 d-block">&nbsp;</label>
-                    <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm w-100"><i class="fa-solid fa-rotate-left"></i></a>
+                <div class="col-md-2">
+                    <button title="Filter" class="btn btn-secondary btn-sm btn-icon"><i class="fa-solid fa-filter"></i></button>
+                    <a title="Reset" href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm btn-icon"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
@@ -216,19 +212,19 @@
                                 <td>{{ ucfirst($employmentStatus) }}</td>
                                 <td>{{ $isActive ? 'Active' : 'Inactive' }}</td>
                                 <td >
-                                    <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn-custom" title="View Full Profile"><i class="fa-solid fa-eye"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit Profile"><i class="fa-solid fa-pen"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}" title="Basic Info"><i class="fa-solid fa-circle-info"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}" title="Salary Info"><i class="fa-solid fa-money-bill-wave"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}" title="Address"><i class="fa-solid fa-location-dot"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}" title="Nominee Information"><i class="fa-solid fa-people-arrows"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}" title="Age Verification"><i class="fa-solid fa-id-card"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#ResignModal_{{ $employee->id }}" title="Lefty / Resign"><i class="fa-solid fa-right-from-bracket"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom" data-toggle="modal" data-target="#FinalSettlementModal_{{ $employee->id }}" title="Final Settlement Info"><i class="fa-solid fa-file-invoice"></i></a>
-                                    <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn-custom" title="Salary Increment Info"><i class="fa-solid fa-arrow-trend-up"></i></a>
-                                    <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn-custom" title="Earnings &amp; Deductions"><i class="fa-solid fa-scale-balanced"></i></a>
-                                    <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn-custom" title="Leave Table"><i class="fa-solid fa-calendar-days"></i></a>
-                                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn-custom" title="Documents"><i class="fa-solid fa-folder-open"></i></a>
+                                    <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn-custom success" title="View Full Profile"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit Profile"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}" title="Basic Info"><i class="fa-solid fa-circle-info"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}" title="Salary Info"><i class="fa-solid fa-money-bill-wave"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}" title="Address"><i class="fa-solid fa-location-dot"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}" title="Nominee Information"><i class="fa-solid fa-people-arrows"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}" title="Age Verification"><i class="fa-solid fa-id-card"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#ResignModal_{{ $employee->id }}" title="Lefty / Resign"><i class="fa-solid fa-right-from-bracket"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#FinalSettlementModal_{{ $employee->id }}" title="Final Settlement Info"><i class="fa-solid fa-file-invoice"></i></a>
+                                    <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn-custom primary" title="Salary Increment Info"><i class="fa-solid fa-arrow-trend-up"></i></a>
+                                    <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn-custom primary" title="Earnings &amp; Deductions"><i class="fa-solid fa-scale-balanced"></i></a>
+                                    <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn-custom primary" title="Leave Table"><i class="fa-solid fa-calendar-days"></i></a>
+                                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn-custom primary" title="Documents"><i class="fa-solid fa-folder-open"></i></a>
                                     <form method="post" action="{{ route('hr-center.employees.destroy', $employee->id) }}" style="display:inline" class="no-loader">@csrf @method('delete')<button type="button" class="btn-custom danger" title="Delete Employee" style="" onclick="if(confirm('Are you sure you want to delete this employee?')){if(typeof XLoader!=='undefined')XLoader.show();this.closest('form').submit();}"><i class="fa-solid fa-trash"></i></button></form>
                                 </td>
                             </tr>
@@ -346,10 +342,3 @@
 </div>
 @endforeach
 @endsection
-@push('css')
-<style>
-    .btn-custom{
-        padding: 3px 5px !important;
-    }
-</style>
-@endpush

@@ -9,10 +9,8 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Factory Holidays</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm"
-               data-toggle="modal" data-target="#CreateHolidayModal">
-                + Add
-            </a>
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon"
+               data-toggle="modal" data-target="#CreateHolidayModal" title="Add"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
 
@@ -39,10 +37,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2">
-                    <a href="{{ route('hr-center.holidays.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('hr-center.holidays.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 

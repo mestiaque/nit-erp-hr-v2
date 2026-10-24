@@ -40,7 +40,7 @@
                 <h4 class="mb-0">Shift Assignments</h4>
                 <small class="text-muted">Put one employee on a specific shift for a single date — a one-time override, does not repeat.</small>
             </div>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createRosterModal">+ Assign Shift</a>
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createRosterModal" title="Assign Shift"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -98,7 +98,7 @@
                 <h4 class="mb-0"><i class="fas fa-calendar-alt text-primary mr-2"></i>Auto Roster Rules</h4>
                 <small class="text-muted">A standing, repeating rule per employee: a regular shift every day, except on one chosen weekday which rotates through a sequence of alternative shifts (in the order you add them), then back to the regular shift, then repeats.</small>
             </div>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#createRuleModal"><i class="fas fa-plus mr-1"></i>Add Auto Roster Rule</a>
+            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createRuleModal" title="Add Auto Roster Rule"><i class="fas fa-plus"></i></a>
         </div>
         <div class="card-body">
             <div class="table-responsive">

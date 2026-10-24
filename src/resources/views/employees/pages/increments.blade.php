@@ -10,7 +10,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Salary Increment Info: {{ $employee->name }}</h4>
             <div class="d-flex align-items-center" style="gap: 8px;">
-                <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#CreateIncrementModal">Add Increment</a>
+                <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateIncrementModal" title="Add Increment"><i class="fa-solid fa-plus"></i></a>
                 <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm">Back</a>
             </div>
         </div>
@@ -65,12 +65,12 @@
                                     @if($rowIsLocked)
                                         <form method="post" action="{{ route('hr-center.employees.increments.unlock', [$employee->id, data_get($row, 'identifier')]) }}" onsubmit="return confirm('Unlock this increment? It will stop affecting reports until re-locked.')">
                                             @csrf
-                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Unlock</button>
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm btn-icon" title="Unlock"><i class="fa-solid fa-lock-open"></i></button>
                                         </form>
                                     @else
                                         <form method="post" action="{{ route('hr-center.employees.increments.lock', [$employee->id, data_get($row, 'identifier')]) }}" onsubmit="return confirm('Lock this increment? It becomes effective in reports immediately.')">
                                             @csrf
-                                            <button type="submit" class="btn btn-success btn-sm">Lock</button>
+                                            <button type="submit" class="btn btn-success btn-sm btn-icon" title="Lock"><i class="fa-solid fa-lock"></i></button>
                                         </form>
                                     @endif
                                 @endif

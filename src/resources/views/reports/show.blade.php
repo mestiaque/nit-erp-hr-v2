@@ -10,8 +10,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ $reportTitle }}</h4>
             <div>
-                <button type="button" onclick="window.print()" class="btn btn-outline-secondary">Print</button>
-                <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light">Back</a>
+                <button type="button" onclick="window.print()" class="btn btn-outline-secondary btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
+                <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
             </div>
         </div>
         <div class="card-body">

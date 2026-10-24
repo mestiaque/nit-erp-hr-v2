@@ -6,13 +6,11 @@
 
 @push('css')
 <style>
-    .badge-finger  { background:#17a2b8; color:#fff; }
-    .badge-face    { background:#6f42c1; color:#fff; }
-    .badge-manual  { background:#6c757d; color:#fff; }
-    .badge-matched { background:#28a745; color:#fff; }
-    .badge-unmatched { background:#dc3545; color:#fff; }
-    .log-table td, .log-table th { vertical-align: middle; font-size:.9rem; padding:6px 10px; }
-    .filter-bar .form-control, .filter-bar .btn { height:36px; font-size:.88rem; }
+    .badge-finger  { background:#e0f4f8; color:#155e75; }
+    .badge-face    { background:#efe9fb; color:#5b21b6; }
+    .badge-manual  { background:#eef1f5; color:#334155; }
+    .badge-matched { background:#e3f6ea; color:#166534; }
+    .badge-unmatched { background:#fde8e8; color:#b91c1c; }
 </style>
 @endpush
 
@@ -62,12 +60,8 @@
                         </select>
                     </div>
                     <div class="col-md-1 d-flex gap-1">
-                        <button type="submit" class="btn btn-primary flex-grow-1">
-                            <i class="fa fa-filter"></i>
-                        </button>
-                        <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-outline-secondary flex-grow-1">
-                            <i class="fa fa-times"></i>
-                        </a>
+                        <button type="submit" class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                        <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                     </div>
                 </div>
             </form>

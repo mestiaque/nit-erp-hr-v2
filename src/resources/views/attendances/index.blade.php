@@ -110,11 +110,9 @@
                         <label class="mb-1">Date To</label>
                         <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to', $dateTo ?? '') }}">
                     </div>
-                    <div class="col-auto d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                    </div>
-                    <div class="col-auto d-flex align-items-end">
-                        <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-secondary btn-sm">Reset</a>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                        <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-secondary btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                     </div>
                 </div>
             </form>

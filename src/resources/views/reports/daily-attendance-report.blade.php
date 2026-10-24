@@ -10,7 +10,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Daily Attendance Report</h4>
-            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm">Back</a>
+            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
         </div>
         <div class="card-body">
             <form method="get" action="{{ route('hr-center.reports.daily-attendance-report-print') }}" target="_blank">
@@ -98,9 +98,9 @@
                     <input type="hidden" name="xlsx" id="xlsxFlag" value="0">
                     <div class="col-md-3 mb-3 d-flex align-items-end">
                         <div class="w-100 d-flex gap-2">
-                            <a href="{{ route('hr-center.reports.daily-attendance-report') }}" class="btn btn-light btn-sm flex-fill"><i class="fa-solid fa-rotate-left"></i> Reset</a>
-                            <button type="submit" id="reportPrintBtn" class="btn btn-primary btn-sm flex-fill"><i class="fa-solid fa-print"></i> Print</button>
-                            <button type="submit" id="reportExcelBtn" class="btn btn-success btn-sm flex-fill"><i class="fa-solid fa-file-excel"></i> Excel</button>
+                            <a href="{{ route('hr-center.reports.daily-attendance-report') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                            <button type="submit" id="reportPrintBtn" class="btn btn-primary btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
+                            <button type="submit" id="reportExcelBtn" class="btn btn-success btn-sm btn-icon" title="Excel"><i class="fa-solid fa-file-excel"></i></button>
                         </div>
                     </div>
 
