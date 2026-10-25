@@ -1022,7 +1022,8 @@ class HrReportController extends Controller
         // Bonus Sheet, Job Card, ...). Skipped when employee_status was explicitly
         // filtered — an intentional "show resigned employees" request (e.g. an audit)
         // is still honored, matching the employee_status filter further down.
-        if (!$request->filled('employee_status')) {
+        // all_employees (Employee List "Show all employees" box) keeps resigned / left / transferred too.
+        if (!$request->filled('employee_status') && !$request->boolean('all_employees')) {
             $periodStart = $request->input('from') ?: now()->startOfMonth()->toDateString();
             $query->where(function ($q) use ($periodStart) {
                 $q->whereNull('exited_at')->orWhere('exited_at', '>=', $periodStart);

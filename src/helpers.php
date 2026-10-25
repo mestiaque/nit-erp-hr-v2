@@ -198,3 +198,32 @@ if (! function_exists('hr_hide_section_line')) {
         return (string) optional(general())->company_s_code === 'SFL';
     }
 }
+
+if (! function_exists('hr_employee_status_note')) {
+    /**
+     * Short status for an employee who is no longer working (resigned, left, transferred,
+     * terminated or inactive) with the exit date, e.g. "Resign 12-09-2026"; '' for a working one.
+     */
+    function hr_employee_status_note($employee): string
+    {
+        $status = strtolower(trim((string) ($employee->employment_status ?? '')));
+        $labels = [
+            'resign' => 'Resign', 'resigned' => 'Resign',
+            'lefty' => 'Lefty', 'left' => 'Lefty',
+            'transfer' => 'Transfer',
+            'terminate' => 'Terminated', 'terminated' => 'Terminated',
+        ];
+
+        if (isset($labels[$status])) {
+            $exitedAt = $employee->exited_at ?? null;
+
+            return trim($labels[$status] . ' ' . ($exitedAt ? \Carbon\Carbon::parse($exitedAt)->format('d-m-Y') : ''));
+        }
+
+        if (isset($employee->status) && (int) $employee->status !== 1) {
+            return 'Inactive';
+        }
+
+        return '';
+    }
+}

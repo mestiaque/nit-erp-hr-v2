@@ -248,7 +248,7 @@
             <tr class="{{ $loop->odd ? 'database-row-odd' : 'database-row-even' }}">
                 <td class="text-center">{{ $loop->iteration }}</td>
                 <td>{{ $workingPlace }}</td>
-                <td>{{ $employee->name ?? 'N/A' }}</td>
+                <td>{{ $employee->name ?? 'N/A' }}@if($request->boolean('all_employees') && ($statusNote = hr_employee_status_note($employee))) <small class="text-danger font-weight-bold">({{ $statusNote }})</small>@endif</td>
                 <td>{{ $employee->employee_id ?? 'N/A' }}</td>
                 <td>{{ $fmtDate($employee->joining_date) }}</td>
                 <td class="text-right">{{ $fmtMoney($employee->gross_salary) }}</td>

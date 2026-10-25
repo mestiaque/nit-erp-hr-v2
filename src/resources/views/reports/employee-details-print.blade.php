@@ -88,7 +88,7 @@
                 <td>{{ $row['sl'] }}</td>
                 <td>{{ $row['working_place'] ?? 'N/A' }}</td>
                 <td>{{ $row['employee_id'] ?? 'N/A' }}</td>
-                <td>{{ $row['name'] ?? 'N/A' }}</td>
+                <td>{{ $row['name'] ?? 'N/A' }}@if($request->boolean('all_employees') && ($statusNote = hr_employee_status_note($row['employee']))) <small class="text-danger font-weight-bold">({{ $statusNote }})</small>@endif</td>
                 <td>{{ $row['join_date'] ?? 'N/A' }}</td>
                 <td>{{ $row['job_age'] ?? 'N/A' }}</td>
                 <td>{{ $row['dob'] ?? 'N/A' }}</td>

@@ -123,6 +123,13 @@
                         </select>
                     </div>
 
+                    <div class="col-md-3 mb-3 d-flex align-items-end">
+                        <div class="custom-control custom-checkbox mb-1">
+                            <input type="checkbox" class="custom-control-input" id="allEmployees" name="all_employees" value="1" @checked($request->boolean('all_employees'))>
+                            <label class="custom-control-label" for="allEmployees">Show all employees <small class="text-muted">(incl. inactive, resigned, lefty, transferred)</small></label>
+                        </div>
+                    </div>
+
                     <div class="col-md-3 mb-3">
                         <label class="mb-1">Language</label>
                         <select name="language" class="form-control form-control-sm select2">
