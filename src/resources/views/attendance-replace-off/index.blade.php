@@ -12,18 +12,6 @@
             <button class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createModal" title="Add New Swap"><i class="fa-solid fa-plus"></i></button>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
 
             <p class="text-muted small">
                 Use this when the office stays open on a normally weekend/holiday date (<strong>Worked Date</strong>)

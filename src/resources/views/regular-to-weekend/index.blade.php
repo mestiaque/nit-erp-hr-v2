@@ -12,18 +12,6 @@
             <button class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createModal" title="Add New"><i class="fa-solid fa-plus"></i></button>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if($errors->any())
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
             <form method="get" class="row mb-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label mb-1">Section</label>

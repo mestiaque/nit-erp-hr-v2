@@ -106,9 +106,6 @@
     </div>
 
     {{-- Alerts --}}
-    @if(session('success'))<div class="alert alert-success alert-dismissible fade show"><button type="button" class="close" data-dismiss="alert">&times;</button>{{ session('success') }}</div>@endif
-    @if(session('error'))<div class="alert alert-danger alert-dismissible fade show"><button type="button" class="close" data-dismiss="alert">&times;</button>{{ session('error') }}</div>@endif
-    @if($errors->any())<div class="alert alert-danger"><ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>@endif
 
     {{-- Upload Form --}}
     <div class="card mb-4" id="uploadFormCard" style="display:none">

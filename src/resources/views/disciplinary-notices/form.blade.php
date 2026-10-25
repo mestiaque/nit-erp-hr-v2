@@ -18,9 +18,6 @@
         <a href="{{ route('hr-center.disciplinary-notices.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
     </div>
 
-    @if($errors->any())
-        <div class="alert alert-danger">{{ $errors->first() }}</div>
-    @endif
 
     <form method="POST" action="{{ $notice->id ? route('hr-center.disciplinary-notices.update', $notice->id) : route('hr-center.disciplinary-notices.store') }}">
         @csrf

@@ -18,9 +18,6 @@
                 @endif
             </div>
             <div class="card-body">
-                @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
-                @endif
 
                 <form method="get" class="row mb-3 align-items-end">
                     <div class="col-md-4">

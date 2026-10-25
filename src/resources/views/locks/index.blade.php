@@ -11,18 +11,6 @@
             <h4 class="mb-0">Period Locking</h4>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show">
-                    {{ session('success') }}
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show">
-                    {{ session('error') }}
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                </div>
-            @endif
 
             <ul class="nav nav-tabs mb-3">
                 @foreach(['increment' => 'Increment', 'attendance' => 'Attendance', 'salary' => 'Salary'] as $m => $label)

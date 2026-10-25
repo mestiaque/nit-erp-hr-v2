@@ -12,12 +12,6 @@
             <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateProductionRateModal" title="Add"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show">
-                    {{ session('success') }}
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                </div>
-            @endif
             <div class="table-responsive">
                 <table class="table table-bordered table-sm">
                     <thead class="thead-light">

@@ -12,12 +12,6 @@
             <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateEmployeeModal" title="Create Employee"><i class="fa-solid fa-plus"></i></a>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
 
             @php
                 $classificationMap = collect($options['classifications'] ?? [])->pluck('name', 'id');
