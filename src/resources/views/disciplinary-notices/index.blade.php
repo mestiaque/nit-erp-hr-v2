@@ -9,7 +9,10 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Disciplinary Notices</h4>
-            <a href="{{ route('hr-center.disciplinary-notices.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" title="Create Notice"><i class="fa-solid fa-plus"></i></a>
+            <div class="d-flex" style="gap:6px;">
+                <a href="{{ route('hr-center.disciplinary-notices.create', ['type' => 'fine']) }}" class="btn btn-danger btn-sm"><i class="fa-solid fa-plus"></i> Fine &amp; Penalty</a>
+                <a href="{{ route('hr-center.disciplinary-notices.create', ['type' => 'show_cause']) }}" class="btn btn-warning btn-sm"><i class="fa-solid fa-plus"></i> Show Cause</a>
+            </div>
         </div>
         <div class="card-body">
 
@@ -36,6 +39,15 @@
                     </select>
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label mb-1">Type</label>
+                    <select name="notice_type" class="form-control form-control-sm">
+                        <option value="">All</option>
+                        @foreach($types as $typeValue => $typeLabel)
+                            <option value="{{ $typeValue }}" @selected($request->notice_type === $typeValue)>{{ $typeLabel }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
                     <a href="{{ route('hr-center.disciplinary-notices.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
@@ -46,6 +58,7 @@
                     <thead class="thead-light">
                         <tr>
                             <th width="50">SL</th>
+                            <th>Type</th>
                             <th>Employee</th>
                             {{-- Notice No (1st/2nd/3rd) — parked for now, see form.blade.php --}}
                             <th>Notice Date</th>
@@ -59,10 +72,11 @@
                         @forelse($notices as $index => $notice)
                         <tr>
                             <td>{{ $notices->firstItem() + $index }}</td>
+                            <td><span class="badge {{ $notice->isShowCause() ? 'badge-warning' : 'badge-danger' }}">{{ $notice->type_label }}</span></td>
                             <td>{{ $notice->employee->employee_id ?? '-' }} &mdash; {{ $notice->employee->name ?? 'N/A' }}</td>
                             <td>{{ optional($notice->notice_date)->format('d M Y') }}</td>
                             <td>{{ optional($notice->incident_date)->format('d M Y') ?: '-' }}</td>
-                            <td class="text-center">{{ $notice->deduction_days }}</td>
+                            <td class="text-center">{{ $notice->deduction_days ?? '-' }}</td>
                             <td>{{ $notice->memo_no ?: '-' }}</td>
                             <td class="text-center">
                                 <a href="{{ route('hr-center.disciplinary-notices.print', $notice->id) }}" class="btn-custom primary" title="Print" target="_blank">
@@ -82,7 +96,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted">No notices found.</td>
+                            <td colspan="8" class="text-center text-muted">No notices found.</td>
                         </tr>
                         @endforelse
                     </tbody>

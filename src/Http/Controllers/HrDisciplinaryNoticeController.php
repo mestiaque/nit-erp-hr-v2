@@ -26,19 +26,26 @@ class HrDisciplinaryNoticeController extends Controller
             $query->where('employee_id', $request->employee_id);
         }
 
+        if ($request->filled('notice_type')) {
+            $query->where('notice_type', $request->notice_type);
+        }
+
         $notices = $query->paginate(20)->appends($request->query());
 
         return view('hr::disciplinary-notices.index', [
             'notices'   => $notices,
             'request'   => $request,
             'employees' => HrEmployee::naturalOrderById()->get(['id', 'employee_id', 'name']),
+            'types'     => HrDisciplinaryNotice::TYPES,
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $type = array_key_exists($request->type, HrDisciplinaryNotice::TYPES) ? $request->type : HrDisciplinaryNotice::TYPE_FINE;
+
         return view('hr::disciplinary-notices.form', [
-            'notice'    => new HrDisciplinaryNotice(),
+            'notice'    => new HrDisciplinaryNotice(['notice_type' => $type]),
             'employees' => HrEmployee::naturalOrderById()->get(['id', 'employee_id', 'name']),
             'noticeLabels' => HrDisciplinaryNotice::NOTICE_LABELS,
         ]);
@@ -97,14 +104,27 @@ class HrDisciplinaryNoticeController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $validated = $request->validate([
+            'notice_type'           => 'required|in:' . implode(',', array_keys(HrDisciplinaryNotice::TYPES)),
             'employee_id'           => 'required|exists:hr_employees,id',
             'notice_no'             => 'required|integer|min:1|max:3',
             'notice_date'           => 'required|date',
             'incident_date'         => 'nullable|date',
             'incident_description'  => 'nullable|string|max:2000',
-            'deduction_days'        => 'required|integer|min:1',
+            'deduction_days'        => 'required_if:notice_type,' . HrDisciplinaryNotice::TYPE_FINE . '|nullable|integer|min:1',
+            'subject'               => 'required_if:notice_type,' . HrDisciplinaryNotice::TYPE_SHOW_CAUSE . '|nullable|string|max:255',
+            'consequence'           => 'nullable|string|max:1000',
         ]);
+
+        // Each type keeps only its own fields.
+        if ($validated['notice_type'] === HrDisciplinaryNotice::TYPE_SHOW_CAUSE) {
+            $validated['deduction_days'] = null;
+        } else {
+            $validated['subject'] = null;
+            $validated['consequence'] = null;
+        }
+
+        return $validated;
     }
 
     /**

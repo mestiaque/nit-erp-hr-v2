@@ -2,7 +2,7 @@
 
 @php $hideGeneratedNote = true; @endphp
 
-@section('title', 'Fine Notice - ' . ($notice->employee->employee_id ?? ''))
+@section('title', ($notice->isShowCause() ? 'Show Cause Notice - ' : 'Fine Notice - ') . ($notice->employee->employee_id ?? ''))
 
 @push('css')
 <style>
@@ -23,7 +23,7 @@
     $designationName = optional($employee->designation)->bn_name ?? optional($employee->designation)->name ?? $na;
     $departmentName = optional($employee->department)->bn_name ?? optional($employee->department)->name ?? $na;
     $bd = fn ($date) => $date ? bn_date($date, 'd-m-Y') : '';
-    $bnDays = en2bnNumber($notice->deduction_days);
+    $bnDays = en2bnNumber((string) ($notice->deduction_days ?? 0));
     $bnDaysWords = \ME\Hr\Services\SalaryReportService::numberToWordsBn((int) $notice->deduction_days);
 @endphp
 
@@ -35,6 +35,9 @@
         <div style="font-size: 13px;">{{ $address }}</div>
     </div>
 
+    @if($notice->isShowCause())
+        @include('hr::disciplinary-notices.partials.show-cause-body')
+    @else
     <div style="text-align:center; font-weight:700; font-size:17px; text-decoration: underline; margin: 18px 0 22px;">
         জরিমানা নোটিশ ও ফরম
     </div>
@@ -100,6 +103,7 @@
             জেনারেল ম্যানেজার
         </div>
     </div>
+    @endif
 
 </div>
 @endsection
