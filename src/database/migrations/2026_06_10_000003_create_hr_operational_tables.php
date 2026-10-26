@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('hr_attendances', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->unsignedInteger('employee_id');
             $table->date('date');
             $table->time('in_time')->nullable();
@@ -25,17 +25,17 @@ return new class extends Migration
             $table->string('verify_type', 20)->nullable();
             $table->string('device_sn')->nullable();
             $table->text('remarks')->nullable();
+            $table->boolean('is_locked')->default(false);
+            $table->timestamp('locked_at')->nullable();
+            $table->unsignedBigInteger('locked_by')->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-
-            $table->unique(['employee_id', 'date'], 'uq_hr_emp_date');
             $table->index('date', 'idx_hr_att_date');
             $table->index('employee_id', 'idx_hr_att_emp');
-        });
+            $table->unique(['employee_id', 'date'], 'uq_hr_emp_date');
 
-        Schema::table('hr_attendances', function (Blueprint $table) {
             $table->foreign('employee_id')->references('id')->on('hr_employees')->cascadeOnDelete();
         });
 
@@ -57,15 +57,12 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-
-            $table->unique(['module', 'lock_year', 'lock_month', 'factory_id', 'department_id'], 'uq_hr_lock_period');
             $table->index('module', 'idx_hr_lock_module');
             $table->index('is_locked', 'idx_hr_lock_status');
-        });
+            $table->unique(['module', 'lock_year', 'lock_month', 'factory_id', 'department_id'], 'uq_hr_lock_period');
 
-        Schema::table('hr_locks', function (Blueprint $table) {
-            $table->foreign('factory_id')->references('id')->on('hr_factories')->nullOnDelete();
             $table->foreign('department_id')->references('id')->on('hr_departments')->nullOnDelete();
+            $table->foreign('factory_id')->references('id')->on('hr_factories')->nullOnDelete();
         });
 
         Schema::create('hr_holidays', function (Blueprint $table) {
@@ -95,11 +92,8 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-
             $table->unique(['section_id', 'date'], 'uq_hr_section_weekend_date');
-        });
 
-        Schema::table('hr_regular_to_weekends', function (Blueprint $table) {
             $table->foreign('section_id')->references('id')->on('hr_sections')->cascadeOnDelete();
         });
 
@@ -118,15 +112,12 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-
             $table->index(['sub_section_id', 'from_date', 'to_date'], 'idx_hr_roster_period');
-        });
 
-        Schema::table('hr_shift_rosters', function (Blueprint $table) {
             $table->foreign('department_id')->references('id')->on('hr_departments')->nullOnDelete();
             $table->foreign('section_id')->references('id')->on('hr_sections')->nullOnDelete();
-            $table->foreign('sub_section_id')->references('id')->on('hr_sub_sections')->nullOnDelete();
             $table->foreign('shift_id')->references('id')->on('hr_shifts')->cascadeOnDelete();
+            $table->foreign('sub_section_id')->references('id')->on('hr_sub_sections')->nullOnDelete();
         });
 
         Schema::create('hr_shift_roster_employees', function (Blueprint $table) {
@@ -140,11 +131,8 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-
             $table->unique(['employee_id', 'roster_date'], 'uq_hr_emp_roster_date');
-        });
 
-        Schema::table('hr_shift_roster_employees', function (Blueprint $table) {
             $table->foreign('employee_id')->references('id')->on('hr_employees')->cascadeOnDelete();
             $table->foreign('shift_id')->references('id')->on('hr_shifts')->cascadeOnDelete();
         });

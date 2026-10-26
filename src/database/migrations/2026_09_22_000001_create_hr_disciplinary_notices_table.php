@@ -17,17 +17,15 @@ return new class extends Migration
         Schema::create('hr_disciplinary_notices', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('employee_id');
-            // Which occurrence this is for the employee (1st/2nd/3rd...) — tracking
-            // only, the printed letter's wording is identical regardless of this value.
+            $table->string('notice_type', 20)->default('fine');
             $table->unsignedTinyInteger('notice_no')->default(1);
             $table->date('notice_date');
             $table->date('incident_date')->nullable();
             $table->text('incident_description')->nullable();
-            $table->unsignedInteger('deduction_days');
-            // স্মারক নং — left blank by default, filled in manually per notice.
+            $table->string('subject')->nullable();
+            $table->text('consequence')->nullable();
+            $table->unsignedInteger('deduction_days')->nullable();
             $table->string('memo_no', 100)->nullable();
-            $table->string('prepared_by_name', 150)->nullable();
-            $table->string('prepared_by_designation', 150)->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();

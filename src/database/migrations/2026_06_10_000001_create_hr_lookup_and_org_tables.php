@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,15 +15,13 @@ return new class extends Migration
             $table->string('bn_name', 150)->nullable();
             $table->unsignedInteger('parent_id')->nullable();
             $table->string('type', 50);
-            $table->integer('type_no', 5)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->integer('type_no')->nullable();
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-        });
 
-        Schema::table('hr_geo_locations', function (Blueprint $table) {
             $table->foreign('parent_id')->references('id')->on('hr_geo_locations')->nullOnDelete();
         });
 
@@ -31,7 +30,7 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('bn_name', 100)->nullable();
             $table->string('code', 20)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -43,7 +42,7 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('bn_name', 100)->nullable();
             $table->string('code', 20)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -55,7 +54,7 @@ return new class extends Migration
             $table->string('name', 50);
             $table->string('bn_name', 50)->nullable();
             $table->string('code', 10)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -67,7 +66,7 @@ return new class extends Migration
             $table->string('name', 100);
             $table->string('bn_name', 100)->nullable();
             $table->string('code', 20)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -79,7 +78,9 @@ return new class extends Migration
             $table->string('name', 150);
             $table->string('bn_name', 150)->nullable();
             $table->string('code', 30)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->text('address')->nullable();
+            $table->text('description')->nullable();
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -91,7 +92,8 @@ return new class extends Migration
             $table->string('name', 150);
             $table->string('bn_name', 150)->nullable();
             $table->text('description')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->integer('probation_period')->nullable();
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -99,24 +101,36 @@ return new class extends Migration
         });
 
         Schema::create('hr_leave_infos', function (Blueprint $table) {
-            $table->unsignedBigInteger('id', true);
+            $table->id();
             $table->string('name', 150);
+            $table->string('code', 50)->nullable();
             $table->string('bn_name', 150)->nullable();
             $table->integer('days');
             $table->text('description')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
         });
 
+        DB::table('hr_leave_infos')->insert([
+            ['name' => 'General Leave', 'bn_name' => 'সাধারণ ছুটি', 'code' => 'GL', 'days' => 0, 'status' => 'active', 'created_at' => now()],
+            ['name' => 'Festival Leave', 'bn_name' => 'উৎসব ছুটি', 'code' => 'FL', 'days' => 2, 'status' => 'active', 'created_at' => now()],
+        ]);
+
         Schema::create('hr_salary_keys', function (Blueprint $table) {
             $table->increments('id');
             $table->decimal('medical', 10, 2)->nullable();
             $table->decimal('lunch', 10, 2)->nullable();
             $table->decimal('transport', 10, 2)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('salary_approved_person_1', 191)->nullable();
+            $table->string('salary_approved_person_2', 191)->nullable();
+            $table->string('salary_approved_person_3', 191)->nullable();
+            $table->string('salary_approved_person_4', 191)->nullable();
+            $table->string('salary_approved_person_5', 191)->nullable();
+            $table->date('payment_date')->nullable();
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -125,15 +139,34 @@ return new class extends Migration
 
         Schema::create('hr_factories', function (Blueprint $table) {
             $table->increments('id');
+            $table->string('factory_no', 50)->nullable();
+            $table->boolean('is_running')->default(false);
             $table->string('name', 200);
             $table->string('bn_name', 200)->nullable();
             $table->text('address')->nullable();
             $table->text('bn_address')->nullable();
             $table->string('contact_number', 30)->nullable();
-            $table->string('authority_sign', 255)->nullable();
+            $table->string('email', 191)->nullable();
+            $table->string('website', 191)->nullable();
+            $table->string('weekend', 50)->nullable();
+            $table->string('roster_day', 50)->nullable();
+            $table->string('authority_sign')->nullable();
+            $table->string('hr_seal')->nullable();
+            $table->string('hr_signature')->nullable();
             $table->decimal('allow_ot_hour', 5, 2)->nullable();
+            $table->unsignedSmallInteger('ot_grace_minutes')->nullable();
+            $table->unsignedSmallInteger('minimum_ot_minutes')->nullable();
+            $table->decimal('ot_rate', 8, 4)->nullable();
+            $table->integer('attendance_bonus_late_days_more_than')->nullable();
+            $table->string('absent_deduct_from', 191)->nullable();
+            $table->string('absent_deduct_special', 191)->nullable();
+            $table->decimal('production_subsidy', 10, 2)->nullable();
+            $table->string('attendance_id_type', 191)->nullable();
+            $table->string('attendance_type', 191)->nullable();
+            $table->date('last_earn_leave_count_date')->nullable();
+            $table->boolean('apply_special_office_time_in_main')->default(false);
             $table->decimal('stamp_amount', 10, 2)->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -149,7 +182,7 @@ return new class extends Migration
             $table->time('start_allow_time')->nullable();
             $table->time('late_allow_time')->nullable();
             $table->time('out_time_start')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -162,7 +195,7 @@ return new class extends Migration
             $table->string('bn_name', 150)->nullable();
             $table->text('description')->nullable();
             $table->unsignedInteger('head_of_department')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -175,14 +208,12 @@ return new class extends Migration
             $table->string('bn_name', 150)->nullable();
             $table->unsignedInteger('department_id');
             $table->text('description')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-        });
 
-        Schema::table('hr_sections', function (Blueprint $table) {
             $table->foreign('department_id')->references('id')->on('hr_departments')->cascadeOnDelete();
         });
 
@@ -196,17 +227,15 @@ return new class extends Migration
             $table->integer('approve_man_power')->nullable();
             $table->unsignedInteger('roster_shift_id')->nullable();
             $table->tinyInteger('is_individual_roster')->default(0);
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-        });
 
-        Schema::table('hr_sub_sections', function (Blueprint $table) {
             $table->foreign('department_id')->references('id')->on('hr_departments')->cascadeOnDelete();
-            $table->foreign('section_id')->references('id')->on('hr_sections')->cascadeOnDelete();
             $table->foreign('roster_shift_id')->references('id')->on('hr_shifts')->nullOnDelete();
+            $table->foreign('section_id')->references('id')->on('hr_sections')->cascadeOnDelete();
         });
 
         Schema::create('hr_floor_lines', function (Blueprint $table) {
@@ -216,7 +245,7 @@ return new class extends Migration
             $table->string('line_name', 150);
             $table->string('bn_line_name', 150)->nullable();
             $table->integer('line_capacity')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -228,6 +257,7 @@ return new class extends Migration
             $table->string('name', 150);
             $table->string('bn_name', 150)->nullable();
             $table->string('grade', 20)->nullable();
+            $table->string('grade_bn', 50)->nullable();
             $table->integer('approved_manpower')->nullable();
             $table->unsignedInteger('department_id')->nullable();
             $table->unsignedInteger('section_id')->nullable();
@@ -240,28 +270,34 @@ return new class extends Migration
             $table->decimal('dinner_allowance', 10, 2)->nullable();
             $table->decimal('min_dinner_hour', 5, 2)->nullable();
             $table->string('payment_way', 50)->nullable();
-            $table->integer('weekend_allowance_count')->nullable();
+            $table->string('weekend_allowance_count', 50)->nullable();
+            $table->string('weekend_allowance_count_comp', 50)->nullable();
             $table->decimal('holiday_allowance', 10, 2)->nullable();
+            $table->decimal('holiday_allowance_comp', 10, 2)->nullable();
             $table->decimal('gross_salary', 12, 2)->nullable();
             $table->decimal('car_fuel_allowance', 10, 2)->nullable();
             $table->decimal('phone_internet_allowance', 10, 2)->nullable();
             $table->text('extra_facility')->nullable();
             $table->decimal('ot_one_rate', 6, 4)->nullable();
             $table->decimal('ot_two_rate', 6, 4)->nullable();
+            $table->unsignedSmallInteger('ot_grace_minutes')->nullable();
+            $table->boolean('is_ot_basis_wphp')->default(false);
+            $table->boolean('is_ot_basis_main')->default(false);
+            $table->boolean('is_ot_basis_others_1')->default(false);
+            $table->boolean('is_ot_basis_others_2')->default(false);
+            $table->boolean('is_fixed_punch')->default(false);
             $table->unsignedInteger('report_to')->nullable();
             $table->text('responsibilities')->nullable();
             $table->text('follow_up_team')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-        });
 
-        Schema::table('hr_designations', function (Blueprint $table) {
             $table->foreign('department_id')->references('id')->on('hr_departments')->nullOnDelete();
-            $table->foreign('section_id')->references('id')->on('hr_sections')->nullOnDelete();
             $table->foreign('report_to')->references('id')->on('hr_designations')->nullOnDelete();
+            $table->foreign('section_id')->references('id')->on('hr_sections')->nullOnDelete();
         });
 
         Schema::create('hr_bonus_titles', function (Blueprint $table) {
@@ -270,7 +306,7 @@ return new class extends Migration
             $table->string('bn_title', 150)->nullable();
             $table->string('code', 30)->nullable();
             $table->text('description')->nullable();
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
@@ -285,21 +321,21 @@ return new class extends Migration
             $table->unsignedInteger('department_id')->nullable();
             $table->unsignedInteger('section_id')->nullable();
             $table->unsignedInteger('sub_section_id')->nullable();
+            $table->unsignedInteger('designation_id')->nullable();
             $table->integer('month_range_from')->nullable();
             $table->integer('month_range_to')->nullable();
             $table->string('apply_on', 50)->nullable();
             $table->string('type', 20);
             $table->decimal('amount', 12, 2);
-            $table->tinyInteger('status')->default(1);
+            $table->string('status', 20)->default('active');
             $table->timestamp('created_at')->useCurrent();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-        });
 
-        Schema::table('hr_bonus_policies', function (Blueprint $table) {
             $table->foreign('bonus_title_id')->references('id')->on('hr_bonus_titles')->cascadeOnDelete();
             $table->foreign('department_id')->references('id')->on('hr_departments')->nullOnDelete();
+            $table->foreign('designation_id')->references('id')->on('hr_designations')->nullOnDelete();
             $table->foreign('section_id')->references('id')->on('hr_sections')->nullOnDelete();
             $table->foreign('sub_section_id')->references('id')->on('hr_sub_sections')->nullOnDelete();
         });

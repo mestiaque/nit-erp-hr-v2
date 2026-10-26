@@ -9,21 +9,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('hr_attendance_machine_logs', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->string('device_sn', 100)->nullable();
-            $table->unsignedInteger('employee_id');
+            $table->string('employee_id', 50);
             $table->dateTime('log_time');
             $table->string('type_code', 20)->nullable();
             $table->string('type_name', 50)->nullable();
+            $table->string('source', 50)->nullable();
+            $table->string('external_id', 100)->nullable();
+            $table->string('work_code', 20)->nullable();
+            $table->timestamp('received_at')->nullable();
             $table->timestamps();
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-
-            $table->index(['employee_id', 'log_time']);
-        });
-
-        Schema::table('hr_attendance_machine_logs', function (Blueprint $table) {
-            $table->foreign('employee_id')->references('id')->on('hr_employees')->cascadeOnDelete();
+            $table->unique(['employee_id', 'log_time'], 'hr_machine_logs_emp_time_unique');
         });
     }
 

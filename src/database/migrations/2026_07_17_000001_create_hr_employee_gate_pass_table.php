@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('hr_employee_gate_pass', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('pass_no', 30)->unique();
+            $table->string('pass_no', 30);
             $table->unsignedInteger('employee_id');
             $table->dateTime('out_time');
-            $table->dateTime('in_time');
+            $table->dateTime('in_time')->nullable();
             $table->unsignedInteger('duration_minutes')->default(0);
             $table->string('reason', 100);
             $table->text('remarks')->nullable();
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamp('updated_at')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
+            $table->unique('pass_no');
 
             $table->foreign('employee_id')->references('id')->on('hr_employees')->cascadeOnDelete();
         });
