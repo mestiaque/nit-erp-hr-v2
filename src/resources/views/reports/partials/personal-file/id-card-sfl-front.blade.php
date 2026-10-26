@@ -348,7 +348,7 @@
     {{-- Logo row --}}
     <div class="sfl-logo-area">
         <div class="sfl-logo-text">
-            <img src="{{ report_logo_url() }}" alt="{{ $employeeName }}" class="sfl-logo-img">
+            <img src="{{ general()->logoUrl() }}" alt="logo" class="sfl-logo-img">
         </div>
     </div>
 
@@ -405,7 +405,7 @@
     {{-- Signature --}}
     <div class="sfl-sign-row">
         <div>
-            <img src="{{asset(general()->signature())}}" alt="{{ $t('Authority Signature', 'Authority Signature') }}" style="width: 20mm; height: auto; object-fit: contain; margin-bottom: -0.8mm;">
+            <img src="{{ general()->signatureUrl() }}" alt="{{ $t('Authority Signature', 'Authority Signature') }}" style="width: 20mm; height: auto; object-fit: contain; margin-bottom: -0.8mm;">
             <div class="sfl-sign-line"></div>
             <div class="sfl-sign-label">{{ $t('কর্তৃপক্ষের স্বাক্ষর', 'Authority Signature') }}</div>
         </div>

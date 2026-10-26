@@ -329,7 +329,7 @@
         <div class="sfl-logo-area">
 
             <div class="sfl-logo-text">
-                <img src="{{ report_logo_url() }}" alt="{{ $sflCompanyName }}" class="sfl-logo-img">
+                <img src="{{ general()->logoUrl() }}" alt="{{ $sflCompanyName }}" class="sfl-logo-img">
             </div>
         </div>
 
@@ -412,7 +412,7 @@
         <div class="sfl-logo-area" style="padding: 0.5mm 1.5mm;">
 
             <div class="sfl-logo-text">
-                <img src="{{ report_logo_url() }}" alt="{{ $sflCompanyName }}" class="sfl-logo-img">
+                <img src="{{ general()->logoUrl() }}" alt="{{ $sflCompanyName }}" class="sfl-logo-img">
             </div>
         </div>
 
