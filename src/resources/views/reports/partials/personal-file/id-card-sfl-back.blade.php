@@ -26,7 +26,7 @@
 
         <ul class="sfl-terms">
             <li>১. {{ $t('এই কার্ড হস্তান্তর যোগ্য নহে।', 'This card is non-transferable.') }}</li>
-            <li>২. {{ $t('এই কার্ড হারানো বা নষ্ট হলে কর্তৃপক্ষকে অবহিত করতে হবে এবং ৩০০ টাকা জরিমানা দিয়ে পুনরায় সংগ্রহ করতে হবে।', 'If lost or damaged, inform authority and pay BDT 300 for replacement.') }}</li>
+            <li>২. {{ $t('এই কার্ড হারানো বা নষ্ট হলে কর্তৃপক্ষকে অবহিত করতে হবে এবং ৫০ টাকা জরিমানা দিয়ে পুনরায় সংগ্রহ করতে হবে।', 'If lost or damaged, inform authority and pay BDT 50 for replacement.') }}</li>
             <li>৩. {{ $t('চাকরি ত্যাগের পূর্বে অবশ্যই কার্ডটি ফেরত দিতে হবে।', 'Return the card before leaving service.') }}</li>
         </ul>
 
