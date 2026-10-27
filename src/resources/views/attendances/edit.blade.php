@@ -25,6 +25,6 @@
         <label for="remarks" class="form-label">Remarks</label>
         <textarea class="form-control" id="remarks" name="remarks">{{ $attendance->remarks ?? '' }}</textarea>
     </div>
-    <button type="submit" class="btn btn-success">Update Attendance</button>
+    <button type="submit" class="btn ui-act ui-act-save" title="Update Attendance"><i class="fa-solid fa-floppy-disk"></i> Update Attendance</button>
 </form>
 @endsection

@@ -24,7 +24,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-file-import mr-2"></i>{{ $title }}</h4>
-            <a href="{{ $backUrl }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ $backUrl }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
         </div>
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-end flex-wrap mb-3">
@@ -33,9 +33,7 @@
                     <input type="file" class="excel-import-file form-control form-control-sm" accept=".xlsx,.xls">
                 </div>
                 @if(!empty($templateUrl))
-                <a href="{{ $templateUrl }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-download mr-1"></i> Download Template
-                </a>
+                <a href="{{ $templateUrl }}" class="btn btn-sm ui-act ui-act-download" title="Download Template"><i class="fa-solid fa-download"></i> Download Template</a>
                 @endif
             </div>
 
@@ -64,8 +62,8 @@
             </div>
         </div>
         <div class="card-footer text-right">
-            <a href="{{ $backUrl }}" class="btn btn-light btn-sm">Cancel</a>
-            <button type="button" class="excel-import-save-btn btn btn-primary btn-sm d-none" disabled>Save Valid Rows</button>
+            <a href="{{ $backUrl }}" class="btn btn-sm ui-act ui-act-cancel" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</a>
+            <button type="button" class="excel-import-save-btn btn btn-sm d-none ui-act ui-act-save" disabled title="Save Valid Rows"><i class="fa-solid fa-floppy-disk"></i> Save Valid Rows</button>
         </div>
     </div>
 </div>

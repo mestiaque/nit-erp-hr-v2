@@ -15,7 +15,7 @@
 <div class="flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">{{ $asset->id ? 'Edit' : 'Create' }} Company Asset</h4>
-        <a href="{{ route('hr-center.company-assets.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+        <a href="{{ route('hr-center.company-assets.index') }}" class="btn btn-sm btn-icon ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
     </div>
 
     <form method="POST" action="{{ $asset->id ? route('hr-center.company-assets.update', $asset->id) : route('hr-center.company-assets.store') }}">
@@ -115,7 +115,7 @@
         </div>
 
         <div class="text-end">
-            <button type="submit" class="btn btn-primary btn-sm px-4">Save</button>
+            <button type="submit" class="btn btn-sm px-4 ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
         </div>
     </form>
 </div>

@@ -9,8 +9,8 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Factory Holidays</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon"
-               data-toggle="modal" data-target="#CreateHolidayModal" title="Add"><i class="fa-solid fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create"
+               data-toggle="modal" data-target="#CreateHolidayModal" title="Add"><i class="fa-solid fa-plus"></i> Add</a>
         </div>
         <div class="card-body">
 
@@ -31,8 +31,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.holidays.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.holidays.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -68,7 +68,7 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-custom yellow btn-sm mr-1 btn-edit"
+                                <button type="button" class="btn btn-custom btn-sm btn-edit btn-icon ui-act ui-act-edit"
                                     data-id="{{ $holiday->id }}"
                                     data-title="{{ $holiday->title }}"
                                     data-type="{{ $holiday->type }}"
@@ -77,17 +77,13 @@
                                     data-days="{{ $holiday->days }}"
                                     data-remarks="{{ $holiday->remarks }}"
                                     data-status="{{ $holiday->status }}"
-                                    data-toggle="modal" data-target="#EditHolidayModal">
-                                    <i class="fa fa-edit"></i>
-                                </button>
+                                    data-toggle="modal" data-target="#EditHolidayModal"><i class="fa-solid fa-pen-to-square"></i></button>
                                 <form action="{{ route('hr-center.holidays.destroy', $holiday->id) }}"
                                       method="POST" class="d-inline"
                                       onsubmit="return confirm('Delete this holiday?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-custom danger btn-xs">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
+                                    <button type="submit" class="btn btn-custom btn-xs btn-icon ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -164,8 +160,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </div>
         </form>
@@ -230,8 +226,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </div>
         </form>

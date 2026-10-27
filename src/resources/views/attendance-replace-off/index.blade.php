@@ -9,7 +9,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Day Swap (Replace Off)</h4>
-            <button class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createModal" title="Add New Swap"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#createModal" title="Add New Swap"><i class="fa-solid fa-plus"></i> Add New Swap</button>
         </div>
         <div class="card-body">
 
@@ -35,8 +35,8 @@
                     <input type="date" name="worked_date" class="form-control form-control-sm" value="{{ $request->worked_date }}">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.attendance-replace-off.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.attendance-replace-off.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -70,7 +70,7 @@
                                               onsubmit="return confirm('Cancel this swap? This only un-blocks Worked Date for future attendance — it will NOT move already-relocated attendance back.');">
                                             @csrf
                                             @method('PUT')
-                                            <button type="submit" class="btn btn-custom red btn-sm"><i class="fa fa-ban"></i> Cancel</button>
+                                            <button type="submit" class="btn btn-custom btn-sm btn-icon ui-act ui-act-cancel" title="Cancel"><i class="fa-solid fa-ban"></i></button>
                                         </form>
                                     @endif
                                 </td>
@@ -130,8 +130,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary btn-sm">Apply Swap</button>
+              <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+              <button type="submit" class="btn btn-sm ui-act ui-act-assign" title="Apply Swap"><i class="fa-solid fa-user-check"></i> Apply Swap</button>
             </div>
           </form>
         </div>

@@ -20,8 +20,8 @@
     <div class="card gp-card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Employee Gate Pass</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon"
-               data-toggle="modal" data-target="#CreateGatePassModal" title="Create Gate Pass"><i class="fa-solid fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create"
+               data-toggle="modal" data-target="#CreateGatePassModal" title="Create Gate Pass"><i class="fa-solid fa-plus"></i> Create Gate Pass</a>
         </div>
         <div class="card-body">
 
@@ -34,8 +34,8 @@
                            class="form-control form-control-sm" placeholder="Pass No, Employee ID or Name...">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.gate-passes.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.gate-passes.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -75,7 +75,7 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom success" title="View"
+                                <button type="button" class="btn-custom ui-act ui-act-view" title="View"
                                         data-toggle="modal" data-target="#ViewGatePassModal"
                                         data-pass-no="{{ $gatePass->pass_no }}"
                                         data-employee="{{ ($gatePass->employee->employee_id ?? '-') . ' — ' . ($gatePass->employee->name ?? 'N/A') }}"
@@ -85,13 +85,9 @@
                                         data-duration="{{ $gatePass->duration_minutes }}"
                                         data-reason="{{ $gatePass->reason }}"
                                         data-remarks="{{ $gatePass->remarks }}"
-                                        data-status="{{ $gatePass->status }}">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <a href="{{ route('hr-center.gate-passes.print', $gatePass->id) }}" class="btn-custom primary" title="Print" target="_blank">
-                                    <i class="fa-solid fa-print"></i>
-                                </a>
-                                <button type="button" class="btn-custom yellow" title="Edit"
+                                        data-status="{{ $gatePass->status }}"><i class="fa-solid fa-eye"></i></button>
+                                <a href="{{ route('hr-center.gate-passes.print', $gatePass->id) }}" class="btn-custom ui-act ui-act-print" title="Print" target="_blank"><i class="fa-solid fa-print"></i></a>
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit"
                                         data-toggle="modal" data-target="#EditGatePassModal"
                                         data-id="{{ $gatePass->id }}"
                                         data-out="{{ optional($gatePass->out_time)->format('Y-m-d\TH:i') }}"
@@ -99,9 +95,7 @@
                                         data-duration="{{ $gatePass->duration_minutes }}"
                                         data-reason="{{ $gatePass->reason }}"
                                         data-remarks="{{ $gatePass->remarks }}"
-                                        data-status="{{ $gatePass->status }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                        data-status="{{ $gatePass->status }}"><i class="fa-solid fa-pen-to-square"></i></button>
                             </td>
                         </tr>
                         @empty
@@ -176,8 +170,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save &amp; Print</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-print" title="Save & Print"><i class="fa-solid fa-print"></i> Save &amp; Print</button>
                 </div>
             </div>
         </form>
@@ -235,8 +229,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </div>
         </form>
@@ -265,7 +259,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
             </div>
         </div>
     </div>

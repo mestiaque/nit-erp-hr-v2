@@ -11,8 +11,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Leave Table: {{ $employee->name }}</h4>
             <div class="d-flex align-items-center" style="gap: 8px;">
-                <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateLeaveModal" title="Add Leave"><i class="fa-solid fa-plus"></i></a>
-                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm">Back</a>
+                <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#CreateLeaveModal" title="Add Leave"><i class="fa-solid fa-plus"></i> Add Leave</a>
+                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
             </div>
         </div>
         <div class="card-body">
@@ -98,25 +98,25 @@
                             </td>
                             <td>
                                 @if(data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
-                                <a href="{{ route('hr-center.employees.leaves.print', [$employee->id, data_get($row, 'identifier')]) }}" target="_blank" class="btn-custom primary" style="background:#17a2b8;color:#fff;" title="Print Leave Application"><i class="fa-solid fa-print"></i></a>
+                                <a href="{{ route('hr-center.employees.leaves.print', [$employee->id, data_get($row, 'identifier')]) }}" target="_blank" class="btn-custom ui-act ui-act-print" style="background:#17a2b8;color:#fff;" title="Print Leave Application"><i class="fa-solid fa-print"></i></a>
                                 @endif
                                 @if($leaveStatus === 'pending' && data_get($row, 'source') === 'db' && data_get($row, 'identifier'))
                                 <form method="post" action="{{ route('hr-center.employees.leaves.approve', [$employee->id, data_get($row, 'identifier')]) }}" style="display:inline-block" onsubmit="return confirm('Approve this leave?');">
                                     @csrf
-                                    <button type="submit" class="btn-custom primary" style="background:#28a745;color:#fff;" title="Approve"><i class="fa-solid fa-check"></i></button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-approve" style="background:#28a745;color:#fff;" title="Approve"><i class="fa-solid fa-check"></i></button>
                                 </form>
                                 <form method="post" action="{{ route('hr-center.employees.leaves.reject', [$employee->id, data_get($row, 'identifier')]) }}" style="display:inline-block" onsubmit="return confirm('Reject this leave?');">
                                     @csrf
-                                    <button type="submit" class="btn-custom danger" title="Reject"><i class="fa-solid fa-xmark"></i></button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-reject" title="Reject"><i class="fa-solid fa-xmark"></i></button>
                                 </form>
                                 @endif
-                                <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditLeaveModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                <a href="javascript:void(0)" class="btn-custom ui-act ui-act-edit" data-toggle="modal" data-target="#EditLeaveModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form method="post" action="{{ route('hr-center.employees.leaves.delete', $employee->id) }}" style="display:inline-block" onsubmit="return confirm('Delete this leave?');">
                                     @csrf
                                     @method('delete')
                                     <input type="hidden" name="source" value="{{ data_get($row, 'source') }}">
                                     <input type="hidden" name="identifier" value="{{ data_get($row, 'identifier') }}">
-                                    <button type="submit" class="btn-custom danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -159,8 +159,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -200,8 +200,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>

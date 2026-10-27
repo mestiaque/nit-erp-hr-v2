@@ -14,7 +14,7 @@
             <div class="row">
                 @foreach($reports as $key => $label)
                     <div class="col-md-4 mb-3">
-                        <a href="{{ route('hr-center.reports.show', $key) }}" class="btn btn-outline-primary w-100 text-left">{{ $label }}</a>
+                        <a href="{{ route('hr-center.reports.show', $key) }}" class="btn w-100 ui-act ui-act-view" title="View"><i class="fa-solid fa-eye"></i> {{ $label }}</a>
                     </div>
                 @endforeach
             </div>

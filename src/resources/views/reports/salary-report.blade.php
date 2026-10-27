@@ -16,7 +16,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ $salaryReportPageTitle }}</h4>
-            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
         </div>
         <div class="card-body">
 @php
@@ -242,11 +242,11 @@
                     <input type="hidden" name="xlsx" id="xlsxFlag" value="0">
                     <div class="col-md-3 mb-3 d-flex align-items-end">
                         <div class="w-100 d-flex gap-2">
-                            <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                            <a href="{{ $salaryScreenRoutes[$salaryReportType] }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                             <button type="submit" id="printSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
-                                    formtarget="_blank" class="btn btn-primary btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
+                                    formtarget="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</button>
                             <button type="submit" id="excelSubmitBtn" formaction="{{ $salaryReportRoutes[$salaryReportType] }}"
-                                    formtarget="_blank" class="btn btn-success btn-sm btn-icon" title="Excel"><i class="fa-solid fa-file-excel"></i></button>
+                                    formtarget="_blank" class="btn btn-sm ui-act ui-act-excel" title="Excel"><i class="fa-solid fa-file-excel"></i> Excel</button>
                         </div>
                     </div>
 

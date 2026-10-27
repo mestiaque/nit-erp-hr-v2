@@ -9,7 +9,7 @@
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Assign Shift Roster — Bulk</h4>
-            <a href="{{ route('hr-center.rosters.index') }}" class="btn btn-secondary btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ route('hr-center.rosters.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
         </div>
         <div class="card-body">
             {{-- Filter (GET, reloads this page with the filtered employee list) --}}
@@ -43,7 +43,7 @@
                         </select>
                     </div>
                     <div class="form-group col-md-3">
-                        <button type="submit" class="btn btn-secondary btn-icon" title="Filter"><i class="fa fa-filter"></i></button>
+                        <button type="submit" class="btn ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
                     </div>
                 </div>
             </form>
@@ -113,7 +113,7 @@
                     </table>
                 </div>
 
-                <button type="submit" class="btn btn-primary" @disabled($employees->isEmpty())>Assign to Selected</button>
+                <button type="submit" class="btn ui-act ui-act-assign" @disabled($employees->isEmpty()) title="Assign to Selected"><i class="fa-solid fa-user-check"></i> Assign to Selected</button>
             </form>
         </div>
     </div>

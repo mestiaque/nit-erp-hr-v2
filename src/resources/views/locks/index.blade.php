@@ -35,7 +35,7 @@
                     </select>
                 </div>
                 <div class="form-group col-md-2">
-                    <button type="submit" class="btn btn-secondary btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <button type="submit" class="btn ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
                 </div>
             </form>
 
@@ -72,7 +72,7 @@
                                     <input type="hidden" name="year" value="{{ $year }}">
                                     <input type="hidden" name="month" value="{{ $month }}">
                                     <input type="hidden" name="action" value="{{ $wholeLocked ? 'unlock' : 'lock' }}">
-                                    <button type="submit" class="btn btn-sm {{ $wholeLocked ? 'btn-outline-secondary' : 'btn-success' }}">{{ $wholeLocked ? 'Unlock' : 'Lock' }}</button>
+                                    <button type="submit" class="btn btn-sm btn-icon ui-act ui-act-{{ $wholeLocked ? 'unlock' : 'lock' }}" title="{{ $wholeLocked ? 'Unlock' : 'Lock' }}"><i class="fa-solid {{ $wholeLocked ? 'fa-lock-open' : 'fa-lock' }}"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -95,7 +95,7 @@
                                         <input type="hidden" name="month" value="{{ $month }}">
                                         <input type="hidden" name="department_id" value="{{ $row['department']->id }}">
                                         <input type="hidden" name="action" value="{{ $row['is_locked'] ? 'unlock' : 'lock' }}">
-                                        <button type="submit" class="btn btn-sm {{ $row['is_locked'] ? 'btn-outline-secondary' : 'btn-success' }}">{{ $row['is_locked'] ? 'Unlock' : 'Lock' }}</button>
+                                        <button type="submit" class="btn btn-sm btn-icon ui-act ui-act-{{ $row['is_locked'] ? 'unlock' : 'lock' }}" title="{{ $row['is_locked'] ? 'Unlock' : 'Lock' }}"><i class="fa-solid {{ $row['is_locked'] ? 'fa-lock-open' : 'fa-lock' }}"></i></button>
                                     </form>
                                 </td>
                             </tr>

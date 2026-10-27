@@ -78,8 +78,8 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center" style="gap: 8px;">
-                    <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back</a>
-                    {{-- <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn btn-outline-secondary btn-sm btn-icon" title="Edit Salary History"><i class="fa-solid fa-pen-to-square"></i></a> --}}
+                    <a href="{{ route('hr-center.employees.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                    {{-- <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn btn-sm btn-icon ui-act ui-act-edit" title="Edit Salary History"><i class="fa-solid fa-pen-to-square"></i></a> --}}
                 </div>
             </div>
         </div>
@@ -110,7 +110,7 @@
             <div class="tab-pane active tab-section" id="tab-profile">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Employee Profile</div>
-                    {{-- <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}"><i class="fa-solid fa-pen me-1"></i> Edit</a> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
                 </div>
                 <div class="row">
                     <div class="col-md-6">
@@ -153,7 +153,7 @@
             <div class="tab-pane tab-section" id="tab-basic-info">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Personal Information</div>
-                    {{-- <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}"><i class="fa-solid fa-pen me-1"></i> Edit</a> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
                 </div>
                 @php
                     $bi = $employee->basicInfo;
@@ -198,7 +198,7 @@
             <div class="tab-pane tab-section" id="tab-address">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Address Information</div>
-                    {{-- <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}"><i class="fa-solid fa-pen me-1"></i> Edit</a> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
                 </div>
                 @php
                     $perm = $employee->permanentAddress;
@@ -234,7 +234,7 @@
             <div class="tab-pane tab-section" id="tab-nominee">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Nominee Information</div>
-                    {{-- <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}"><i class="fa-solid fa-pen me-1"></i> Edit</a> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
                 </div>
                 @php
                     $nom = $employee->nomineeRecord;
@@ -280,7 +280,7 @@
             <div class="tab-pane tab-section" id="tab-age">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Age Verification</div>
-                    {{-- <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}"><i class="fa-solid fa-pen me-1"></i> Edit</a> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
                 </div>
                 @php
                     $av = $employee->ageVerification;
@@ -302,7 +302,7 @@
             <div class="tab-pane tab-section" id="tab-salary">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Salary Information</div>
-                    {{-- <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}"><i class="fa-solid fa-pen me-1"></i> Edit</a> --}}
+                    {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
                 </div>
                 @php
                     $si = $employee->salaryInfo;
@@ -342,7 +342,7 @@
             <div class="tab-pane tab-section" id="tab-leaves">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Leave Records</div>
-                    <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-pen me-1"></i> Manage</a>
+                    <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn btn-sm ui-act ui-act-edit" title="Manage"><i class="fa-solid fa-pen-to-square"></i> Manage</a>
                 </div>
 
                 {{-- Leave Summary --}}
@@ -402,7 +402,7 @@
             <div class="tab-pane tab-section" id="tab-increments">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Salary Increment History</div>
-                    <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-pen me-1"></i> Manage</a>
+                    <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn btn-sm ui-act ui-act-edit" title="Manage"><i class="fa-solid fa-pen-to-square"></i> Manage</a>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-bordered table-sm">
@@ -439,7 +439,7 @@
             <div class="tab-pane tab-section" id="tab-transactions">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Advance Salary & Transactions</div>
-                    <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-pen me-1"></i> Manage</a>
+                    <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn btn-sm ui-act ui-act-edit" title="Manage"><i class="fa-solid fa-pen-to-square"></i> Manage</a>
                 </div>
 
                 {{-- Summary Cards --}}
@@ -500,7 +500,7 @@
             <div class="tab-pane tab-section" id="tab-documents">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Documents</div>
-                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-upload me-1"></i> Upload / Manage</a>
+                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn btn-sm ui-act ui-act-import" title="Upload / Manage"><i class="fa-solid fa-file-import"></i> Upload / Manage</a>
                 </div>
                 @if($documents->isEmpty())
                     <div class="text-center text-muted py-4"><i class="fa-solid fa-folder-open fa-2x mb-2 d-block"></i>No documents uploaded.</div>
@@ -525,7 +525,7 @@
                                     </div>
                                     <div class="p-2">
                                         <div class="small text-truncate" title="{{ $doc->file_name }}">{{ $doc->file_name }}</div>
-                                        <a href="{{ $doc->url ?? asset('storage/'.$doc->file_path) }}" target="_blank" class="btn btn-outline-secondary btn-sm mt-1 w-100" style="font-size:11px"><i class="fa-solid fa-eye"></i> View</a>
+                                        <a href="{{ $doc->url ?? asset('storage/'.$doc->file_path) }}" target="_blank" class="btn btn-sm mt-1 w-100 ui-act ui-act-view" style="font-size:11px" title="View"><i class="fa-solid fa-eye"></i> View</a>
                                     </div>
                                 </div>
                             </div>
@@ -543,8 +543,8 @@
                     <form method="get" action="{{ route('hr-center.employees.show', $employee->id) }}" class="d-flex align-items-center" style="gap:6px">
                         <input type="hidden" name="_anchor" value="tab-attendance">
                         <input type="month" name="att_month" value="{{ request('att_month', now()->format('Y-m')) }}" class="form-control form-control-sm" style="width:160px">
-                        <button type="submit" class="btn btn-sm btn-primary btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                        <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn btn-sm btn-light btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                        <button type="submit" class="btn btn-sm btn-icon ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                        <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn btn-sm btn-icon ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                     </form>
                 </div>
 

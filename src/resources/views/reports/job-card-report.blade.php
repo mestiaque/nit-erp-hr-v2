@@ -10,7 +10,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ $reportTitle }}</h4>
-            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
         </div>
         <div class="card-body">
             <form method="get" action="{{ route('hr-center.reports.show', $reportKey) }}">
@@ -162,12 +162,10 @@
 
                     <div class="col-md-3 mb-3 d-flex align-items-end">
                         <div class="w-100 d-flex gap-2 flex-wrap">
-                            <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
-                            <button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-primary btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
+                            <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</button>
                             {{-- Lock Apply button (posts to lock endpoint) --}}
-                            <button type="button" id="lockApplyBtn" class="btn btn-warning btn-sm" style="display:none;">
-                                Apply Lock
-                            </button>
+                            <button type="button" id="lockApplyBtn" class="btn btn-sm ui-act ui-act-lock" style="display:none;" title="Apply Lock"><i class="fa-solid fa-lock"></i> Apply Lock</button>
                         </div>
                     </div>
 

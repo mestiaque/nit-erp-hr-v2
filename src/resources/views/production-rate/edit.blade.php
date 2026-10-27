@@ -56,8 +56,8 @@
                         <input type="text" name="pro_process" class="form-control" value="{{ $rate->pro_process }}">
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Update</button>
-                <a href="{{ route('hr-center.production-rate.index') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
+                <a href="{{ route('hr-center.production-rate.index') }}" class="btn ui-act ui-act-cancel" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</a>
             </form>
         </div>
     </div>

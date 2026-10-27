@@ -9,7 +9,7 @@
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Employees</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateEmployeeModal" title="Create Employee"><i class="fa-solid fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#CreateEmployeeModal" title="Create Employee"><i class="fa-solid fa-plus"></i> Create Employee</a>
         </div>
         <div class="card-body">
 
@@ -143,8 +143,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button title="Filter" class="btn btn-secondary btn-sm btn-icon"><i class="fa-solid fa-filter"></i></button>
-                    <a title="Reset" href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm btn-icon"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button title="Filter" class="btn btn-sm ui-act ui-act-filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a title="Reset" href="{{ route('hr-center.employees.index') }}" class="btn btn-sm ui-act ui-act-reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -206,20 +206,20 @@
                                 <td>{{ ucfirst($employmentStatus) }}</td>
                                 <td>{{ $isActive ? 'Active' : 'Inactive' }}</td>
                                 <td >
-                                    <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn-custom success" title="View Full Profile"><i class="fa-solid fa-eye"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit Profile"><i class="fa-solid fa-pen"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}" title="Basic Info"><i class="fa-solid fa-circle-info"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}" title="Salary Info"><i class="fa-solid fa-money-bill-wave"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}" title="Address"><i class="fa-solid fa-location-dot"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}" title="Nominee Information"><i class="fa-solid fa-people-arrows"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}" title="Age Verification"><i class="fa-solid fa-id-card"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#ResignModal_{{ $employee->id }}" title="Lefty / Resign"><i class="fa-solid fa-right-from-bracket"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom primary" data-toggle="modal" data-target="#FinalSettlementModal_{{ $employee->id }}" title="Final Settlement Info"><i class="fa-solid fa-file-invoice"></i></a>
-                                    <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn-custom primary" title="Salary Increment Info"><i class="fa-solid fa-arrow-trend-up"></i></a>
-                                    <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn-custom primary" title="Earnings &amp; Deductions"><i class="fa-solid fa-scale-balanced"></i></a>
-                                    <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn-custom primary" title="Leave Table"><i class="fa-solid fa-calendar-days"></i></a>
-                                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn-custom primary" title="Documents"><i class="fa-solid fa-folder-open"></i></a>
-                                    <form method="post" action="{{ route('hr-center.employees.destroy', $employee->id) }}" style="display:inline" class="no-loader">@csrf @method('delete')<button type="button" class="btn-custom danger" title="Delete Employee" style="" onclick="if(confirm('Are you sure you want to delete this employee?')){if(typeof XLoader!=='undefined')XLoader.show();this.closest('form').submit();}"><i class="fa-solid fa-trash"></i></button></form>
+                                    <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn-custom ui-act ui-act-view" title="View Full Profile"><i class="fa-solid fa-eye"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-edit" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit Profile"><i class="fa-solid fa-pen-to-square"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-basic" data-toggle="modal" data-target="#BasicInfoModal_{{ $employee->id }}" title="Basic Info"><i class="fa-solid fa-circle-info"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-salary" data-toggle="modal" data-target="#SalaryModal_{{ $employee->id }}" title="Salary Info"><i class="fa-solid fa-money-bill-wave"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-address" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}" title="Address"><i class="fa-solid fa-location-dot"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-nominee" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}" title="Nominee Information"><i class="fa-solid fa-people-arrows"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-age" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}" title="Age Verification"><i class="fa-solid fa-id-card"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-separation" data-toggle="modal" data-target="#ResignModal_{{ $employee->id }}" title="Lefty / Resign"><i class="fa-solid fa-person-walking-arrow-right"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-settlement" data-toggle="modal" data-target="#FinalSettlementModal_{{ $employee->id }}" title="Final Settlement Info"><i class="fa-solid fa-file-invoice-dollar"></i></a>
+                                    <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn-custom ui-act ui-act-emp-increment" title="Salary Increment Info"><i class="fa-solid fa-arrow-trend-up"></i></a>
+                                    <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn-custom ui-act ui-act-emp-earning" title="Earnings &amp; Deductions"><i class="fa-solid fa-scale-balanced"></i></a>
+                                    <a href="{{ route('hr-center.employees.leaves.page', $employee->id) }}" class="btn-custom ui-act ui-act-emp-leave" title="Leave Table"><i class="fa-solid fa-calendar-days"></i></a>
+                                    <a href="{{ route('hr-center.employees.documents.page', $employee->id) }}" class="btn-custom ui-act ui-act-emp-document" title="Documents"><i class="fa-solid fa-folder-open"></i></a>
+                                    <form method="post" action="{{ route('hr-center.employees.destroy', $employee->id) }}" style="display:inline" class="no-loader">@csrf @method('delete')<button type="button" class="btn-custom ui-act ui-act-delete" title="Delete Employee" style="" onclick="if(confirm('Are you sure you want to delete this employee?')){if(typeof XLoader!=='undefined')XLoader.show();this.closest('form').submit();}"><i class="fa-solid fa-trash"></i></button></form>
                                 </td>
                             </tr>
                         @empty
@@ -247,8 +247,8 @@
                     @include('hr::employees.partials.profile-fields', ['employee' => $newEmployee, 'options' => $options])
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -267,7 +267,7 @@
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">@include('hr::employees.partials.profile-fields', ['employee' => $employee, 'options' => $options])</div>
-                <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Update</button></div>
+                <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button></div>
             </form>
         </div>
     </div>
@@ -277,7 +277,7 @@
     <div class="modal-dialog modal-md" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.salary.update', $employee->id) }}">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Salary Info</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.salary-fields', ['employee' => $employee])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
     </form></div></div>
 </div>
 
@@ -285,7 +285,7 @@
     <div class="modal-dialog modal-md" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.address.update', $employee->id) }}">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Address</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.address-fields', ['employee' => $employee, 'options' => $options])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
     </form></div></div>
 </div>
 
@@ -293,7 +293,7 @@
     <div class="modal-dialog modal-md" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.nominee.update', $employee->id) }}" enctype="multipart/form-data">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Nominee Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.nominee-fields', ['employee' => $employee, 'options' => $options])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
     </form></div></div>
 </div>
 
@@ -301,7 +301,7 @@
     <div class="modal-dialog" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.age.update', $employee->id) }}">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Age Verification Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.age-fields', ['employee' => $employee])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
     </form></div></div>
 </div>
 
@@ -311,10 +311,10 @@
         <div class="modal-body">@include('hr::employees.partials.resign-fields', ['employee' => $employee])</div>
         <div class="modal-footer">
             @if($employee->employment_status === 'resign')
-                <a href="{{ route('hr-center.employees.resign.print.show', $employee->id) }}" target="_blank" class="btn btn-outline-primary btn-sm mr-auto"><i class="fa-solid fa-print"></i> Print Resign</a>
+                <a href="{{ route('hr-center.employees.resign.print.show', $employee->id) }}" target="_blank" class="btn btn-sm mr-auto ui-act ui-act-print" title="Print Resign"><i class="fa-solid fa-print"></i> Print Resign</a>
             @endif
-            <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+            <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+            <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
         </div>
     </form></div></div>
 </div>
@@ -323,7 +323,7 @@
     <div class="modal-dialog" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.final-settlement.update', $employee->id) }}">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Final Settlement Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.final-settlement-fields', ['employee' => $employee])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
     </form></div></div>
 </div>
 
@@ -331,7 +331,7 @@
     <div class="modal-dialog modal-md" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.basic-info.update', $employee->id) }}">@csrf @method('put')
         <div class="modal-header"><h5 class="modal-title">Basic Info — {{ $employee->name }}</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
         <div class="modal-body">@include('hr::employees.partials.basic-info-fields', ['employee' => $employee, 'basicInfoOptions' => $basicInfoOptions ?? [], 'options' => $options ?? []])</div>
-        <div class="modal-footer"><button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button><button type="submit" class="btn btn-primary btn-sm">Save</button></div>
+        <div class="modal-footer"><button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button><button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button></div>
     </form></div></div>
 </div>
 @endforeach

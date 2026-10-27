@@ -13,7 +13,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ $reportTitle }}</h4>
-            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
         </div>
 
         <div class="card-body">
@@ -157,9 +157,9 @@
                     <input type="hidden" name="xlsx" id="xlsxFlag" value="0">
                     <div class="col-md-3 align-self-end mb-3">
                         <div class="w-100 d-flex gap-2">
-                            <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
-                            <button type="submit" name="print" value="1" class="btn btn-primary btn-sm btn-icon" formtarget="_blank" id="reportPrintBtn" title="Print"><i class="fa-solid fa-print"></i></button>
-                            <button type="submit" name="print" value="1" class="btn btn-success btn-sm btn-icon" formtarget="_blank" id="reportExcelBtn" title="Excel"><i class="fa-solid fa-file-excel"></i></button>
+                            <a href="{{ route('hr-center.reports.show', $reportKey) }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" name="print" value="1" class="btn btn-sm ui-act ui-act-print" formtarget="_blank" id="reportPrintBtn" title="Print"><i class="fa-solid fa-print"></i> Print</button>
+                            <button type="submit" name="print" value="1" class="btn btn-sm ui-act ui-act-excel" formtarget="_blank" id="reportExcelBtn" title="Excel"><i class="fa-solid fa-file-excel"></i> Excel</button>
                         </div>
                     </div>
                 </div>

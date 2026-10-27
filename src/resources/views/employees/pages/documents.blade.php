@@ -90,10 +90,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Documents: {{ $employee->name }}</h4>
             <div class="d-flex align-items-center" style="gap:8px">
-                <button type="button" class="btn btn-primary btn-sm" id="toggleUploadForm">
-                    <i class="fa-solid fa-upload me-1"></i> Upload Documents
-                </button>
-                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+                <button type="button" class="btn btn-sm ui-act ui-act-import" id="toggleUploadForm" title="Upload Documents"><i class="fa-solid fa-file-import"></i> Upload Documents</button>
+                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
             </div>
         </div>
         <div class="card-body py-2 px-3">
@@ -120,13 +118,9 @@
                 </div>
 
                 <div class="d-flex align-items-center mt-2" style="gap:10px">
-                    <button type="button" class="btn btn-outline-primary btn-sm" id="addDocRow">
-                        <i class="fa-solid fa-plus"></i> Add Row
-                    </button>
-                    <button type="submit" class="btn btn-success btn-sm">
-                        <i class="fa-solid fa-cloud-upload-alt"></i> Submit All
-                    </button>
-                    <button type="button" class="btn btn-light btn-sm" id="cancelUpload">Cancel</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-create" id="addDocRow" title="Add Row"><i class="fa-solid fa-plus"></i> Add Row</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Submit All"><i class="fa-solid fa-floppy-disk"></i> Submit All</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" id="cancelUpload" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>
                 </div>
             </form>
         </div>
@@ -163,12 +157,12 @@
                                 <div class="d-flex justify-content-between align-items-center mt-1" style="gap:4px">
                                     <span class="badge badge-light text-muted" style="font-size:10px">{{ $doc->file_size_human }}</span>
                                     <div class="d-flex" style="gap:4px">
-                                        <a href="{{ $doc->url }}" target="_blank" class="btn-custom success" title="View/Download" style="font-size:12px"><i class="fa-solid fa-eye"></i></a>
+                                        <a href="{{ $doc->url }}" target="_blank" class="btn-custom ui-act ui-act-view" title="View/Download" style="font-size:12px"><i class="fa-solid fa-eye"></i> View/Download</a>
                                         <form method="POST" action="{{ route('hr-center.employees.documents.delete', $employee->id) }}"
                                               onsubmit="return confirm('এই document টি delete করবেন?')" style="display:inline">
                                             @csrf @method('DELETE')
                                             <input type="hidden" name="document_id" value="{{ $doc->id }}">
-                                            <button type="submit" class="btn-custom danger" title="Delete" style="font-size:12px"><i class="fa-solid fa-trash"></i></button>
+                                            <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete" style="font-size:12px"><i class="fa-solid fa-trash"></i> Delete</button>
                                         </form>
                                     </div>
                                 </div>

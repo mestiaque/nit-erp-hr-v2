@@ -21,8 +21,8 @@
     <div class="card shadow-sm border-0">
         <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5 class="mb-0"><i class="fa fa-list-alt mr-2 text-info"></i> Machine Attendance Log</h5>
-            <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-sm btn-outline-primary">
-                <i class="fa fa-calendar-check mr-1"></i> Attendance
+            <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-sm ui-act ui-act-nav" title="Attendance">
+                <i class="fa fa-calendar-check"></i> Attendance
             </a>
         </div>
 
@@ -60,8 +60,8 @@
                         </select>
                     </div>
                     <div class="col-md-1 d-flex gap-1">
-                        <button type="submit" class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                        <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                        <button type="submit" class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                        <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                     </div>
                 </div>
             </form>

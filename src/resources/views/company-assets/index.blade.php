@@ -19,13 +19,11 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Asset Management</h4>
             <div class="d-flex gap-2">
-                <a href="{{ route('hr-center.reports.company-asset-report') }}" class="btn btn-light btn-sm rounded-pill px-3">
-                    <i class="fa-solid fa-print"></i> Asset Register Report
-                </a>
+                <a href="{{ route('hr-center.reports.company-asset-report') }}" class="btn btn-sm rounded-pill px-3 ui-act ui-act-print" title="Asset Register Report"><i class="fa-solid fa-print"></i> Asset Register Report</a>
                 @can('hr_company_asset.import')
-                <a href="{{ route('hr-center.company-assets.import') }}" class="btn btn-light btn-sm rounded-pill px-3 btn-icon" title="Import Excel"><i class="fa-solid fa-file-import"></i></a>
+                <a href="{{ route('hr-center.company-assets.import') }}" class="btn btn-sm rounded-pill px-3 ui-act ui-act-excel" title="Import Excel"><i class="fa-solid fa-file-excel"></i> Import Excel</a>
                 @endcan
-                <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" title="Add Asset"><i class="fa-solid fa-plus"></i></a>
+                <a href="{{ route('hr-center.company-assets.create') }}" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" title="Add Asset"><i class="fa-solid fa-plus"></i> Add Asset</a>
             </div>
         </div>
         <div class="card-body">
@@ -65,8 +63,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.company-assets.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.company-assets.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -111,15 +109,11 @@
                                 <span class="badge-soft-{{ \Illuminate\Support\Str::slug($asset->status) }}">{{ $asset->status }}</span>
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('hr-center.company-assets.edit', $asset->id) }}" class="btn-custom yellow" title="Edit">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
+                                <a href="{{ route('hr-center.company-assets.edit', $asset->id) }}" class="btn-custom ui-act ui-act-edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form method="POST" action="{{ route('hr-center.company-assets.destroy', $asset->id) }}" style="display:inline" onsubmit="return confirm('Delete this asset?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-custom red danger" title="Delete">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

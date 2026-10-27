@@ -15,7 +15,7 @@
 <div class="flex-grow-1">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4 class="mb-0">{{ $asset->id ? 'Edit' : 'Create' }} Asset Handover</h4>
-        <a href="{{ route('hr-center.employee-assets.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+        <a href="{{ route('hr-center.employee-assets.index') }}" class="btn btn-sm btn-icon ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
     </div>
 
     <form method="POST" action="{{ $asset->id ? route('hr-center.employee-assets.update', $asset->id) : route('hr-center.employee-assets.store') }}">
@@ -176,10 +176,8 @@
         </div>
 
         <div class="mb-4">
-            <button type="submit" class="btn btn-primary btn-sm px-4">
-                {{ $asset->id ? 'Update' : 'Save & Print' }}
-            </button>
-            <a href="{{ route('hr-center.employee-assets.index') }}" class="btn btn-light btn-sm">Cancel</a>
+            <button type="submit" class="btn btn-sm px-4 ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> {{ $asset->id ? 'Update' : 'Save & Print' }}</button>
+            <a href="{{ route('hr-center.employee-assets.index') }}" class="btn btn-sm ui-act ui-act-cancel" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</a>
         </div>
     </form>
 </div>

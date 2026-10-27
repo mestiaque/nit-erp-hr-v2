@@ -12,9 +12,9 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">{{ $entity['title'] }}</h4>
                 @if($useModalForm)
-                    <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateMasterModal" title="Create"><i class="fa-solid fa-plus"></i></a>
+                    <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#CreateMasterModal" title="Create"><i class="fa-solid fa-plus"></i> Create</a>
                 @else
-                    <a href="{{ route('hr-center.masters.create', $entityKey) }}" class="btn btn-primary btn-sm btn-icon @if($hideCreate) d-none @endif" title="Create"><i class="fa-solid fa-plus"></i></a>
+                    <a href="{{ route('hr-center.masters.create', $entityKey) }}" class="btn btn-sm @if($hideCreate) d-none @endif ui-act ui-act-create" title="Create"><i class="fa-solid fa-plus"></i> Create</a>
                 @endif
             </div>
             <div class="card-body">
@@ -37,8 +37,8 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                        <a href="{{ route('hr-center.masters.index', $entityKey) }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                        <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                        <a href="{{ route('hr-center.masters.index', $entityKey) }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                     </div>
                 </form>
 
@@ -93,15 +93,15 @@
                                     @endif
                                     <td>
                                         @if($useModalForm)
-                                            <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditMasterModal_{{ $item->id }}"><i class="fas fa-edit"></i></a>
+                                            <a href="javascript:void(0)" class="btn-custom ui-act ui-act-edit" data-toggle="modal" data-target="#EditMasterModal_{{ $item->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                         @else
-                                            <a href="{{ route('hr-center.masters.edit', [$entityKey, $item->id]) }}" class="btn-custom yellow"><i class="fas fa-edit"></i></a>
+                                            <a href="{{ route('hr-center.masters.edit', [$entityKey, $item->id]) }}" class="btn-custom ui-act ui-act-edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                         @endif
                                         @if(!$hideCreate)
                                             <form method="post" action="{{ route('hr-center.masters.destroy', [$entityKey, $item->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this item?');">
                                                 @csrf
                                                 @method('delete')
-                                                <button type="submit" class="btn-custom danger"><i class="fas fa-trash"></i></button>
+                                                <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                             </form>
                                         @endif
                                     </td>
@@ -140,8 +140,8 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                            <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                            <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                         </div>
                     </form>
                 </div>
@@ -169,8 +169,8 @@
                             </div>
                         </div>
                         <div class="modal-footer text-right">
-                            <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                            <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                            <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                         </div>
                     </form>
                 </div>

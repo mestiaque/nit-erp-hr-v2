@@ -23,11 +23,11 @@
                 </div>
 
                 <div class="text-right">
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                     @if($entityKey === 'bonus-titles')
-                        <button type="submit" name="add_policy" value="1" class="btn btn-info btn-sm">Save & Add Policy</button>
+                        <button type="submit" name="add_policy" value="1" class="btn btn-sm ui-act ui-act-save" title="Save & Add Policy"><i class="fa-solid fa-floppy-disk"></i> Save & Add Policy</button>
                     @endif
-                    <a href="{{ route('hr-center.masters.index', $entityKey) }}" class="btn btn-light btn-sm">Back</a>
+                    <a href="{{ route('hr-center.masters.index', $entityKey) }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
                 </div>
             </form>
         </div>

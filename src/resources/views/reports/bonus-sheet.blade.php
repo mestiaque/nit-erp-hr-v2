@@ -17,7 +17,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">{{ $bonusPageTitle }}</h4>
-            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-light btn-sm btn-icon" title="Back"><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ route('hr-center.reports.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
         </div>
         <div class="card-body">
 @php
@@ -138,8 +138,8 @@
 
                     <div class="col-md-3 mb-3 d-flex align-items-end">
                         <div class="w-100 d-flex gap-2">
-                            <a href="{{ route('hr-center.reports.bonus-sheet.category', $bonusCategory) }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
-                            <button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-primary btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></button>
+                            <a href="{{ route('hr-center.reports.bonus-sheet.category', $bonusCategory) }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+                            <button type="submit" name="print" value="1" formtarget="_blank" id="reportPrintBtn" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</button>
                         </div>
                     </div>
 

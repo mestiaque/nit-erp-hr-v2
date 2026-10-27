@@ -24,7 +24,7 @@
                 <h4 class="mb-0">Shift Assignments</h4>
                 <small class="text-muted">Put one employee on a specific shift for a single date — a one-time override, does not repeat.</small>
             </div>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createRosterModal" title="Assign Shift"><i class="fa-solid fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#createRosterModal" title="Assign Shift"><i class="fa-solid fa-plus"></i> Assign Shift</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -52,11 +52,11 @@
                             <td><span class="badge badge-info">{{ $roster->shift->name ?? '-' }}</span></td>
                             <td>{{ $roster->remarks }}</td>
                             <td>
-                                <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#editRosterModal_{{ $roster->id }}" title="Edit"><i class="fas fa-edit"></i></a>
+                                <a href="javascript:void(0)" class="btn-custom ui-act ui-act-edit" data-toggle="modal" data-target="#editRosterModal_{{ $roster->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form action="{{ route('hr-center.rosters.destroy', $roster->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Delete this roster assignment?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-custom danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -82,7 +82,7 @@
                 <h4 class="mb-0"><i class="fas fa-calendar-alt text-primary mr-2"></i>Auto Roster Rules</h4>
                 <small class="text-muted">A standing, repeating rule per employee: a regular shift every day, except on one chosen weekday which rotates through a sequence of alternative shifts (in the order you add them), then back to the regular shift, then repeats.</small>
             </div>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createRuleModal" title="Add Auto Roster Rule"><i class="fas fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#createRuleModal" title="Add Auto Roster Rule"><i class="fa-solid fa-plus"></i> Add Auto Roster Rule</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -121,11 +121,11 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#editRuleModal_{{ $rule->id }}" title="Edit"><i class="fas fa-edit"></i></a>
+                                <a href="javascript:void(0)" class="btn-custom ui-act ui-act-edit" data-toggle="modal" data-target="#editRuleModal_{{ $rule->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form action="{{ route('hr-center.rosters.rules.destroy', $rule->id) }}" method="POST" style="display:inline-block" onsubmit="return confirm('Delete this Auto Roster rule? This employee will fall back to their default shift.')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-custom danger" title="Delete"><i class="fas fa-trash"></i></button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -186,8 +186,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-assign" title="Assign"><i class="fa-solid fa-user-check"></i> Assign</button>
                 </div>
             </form>
         </div>
@@ -236,8 +236,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -297,12 +297,12 @@
                         <div class="alt-shift-rows">
                             @include('hr::rosters.partials.alt-shift-row', ['shifts' => $shifts, 'selected' => null, 'order' => 1])
                         </div>
-                        <button type="button" class="add-alt-shift-btn"><i class="fas fa-plus mr-1"></i>Add Alternative Shift</button>
+                        <button type="button" class="btn btn-sm add-alt-shift-btn ui-act ui-act-create" title="Add Alternative Shift"><i class="fa-solid fa-plus"></i> Add Alternative Shift</button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save Rule</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save Rule"><i class="fa-solid fa-floppy-disk"></i> Save Rule</button>
                 </div>
             </form>
         </div>
@@ -366,12 +366,12 @@
                                 @include('hr::rosters.partials.alt-shift-row', ['shifts' => $shifts, 'selected' => null, 'order' => 1])
                             @endforelse
                         </div>
-                        <button type="button" class="add-alt-shift-btn"><i class="fas fa-plus mr-1"></i>Add Alternative Shift</button>
+                        <button type="button" class="btn btn-sm add-alt-shift-btn ui-act ui-act-create" title="Add Alternative Shift"><i class="fa-solid fa-plus"></i> Add Alternative Shift</button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update Rule</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update Rule"><i class="fa-solid fa-floppy-disk"></i> Update Rule</button>
                 </div>
             </form>
         </div>
@@ -505,7 +505,7 @@
                 row.innerHTML =
                     '<span class="alt-shift-badge"></span>' +
                     '<select name="alt_shift_ids[]" class="form-control form-control-sm" required>' + optionsHtml + '</select>' +
-                    '<button type="button" class="remove-alt-shift-btn" title="Remove this step"><i class="fas fa-times"></i></button>';
+                    '<button type="button" class="btn btn-sm remove-alt-shift-btn btn-icon ui-act ui-act-delete" title="Remove this step"><i class="fa-solid fa-trash"></i></button>';
                 rows.appendChild(row);
                 renumber(rows);
             }

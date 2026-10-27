@@ -9,7 +9,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Production Rate</h4>
-            <a href="javascript:void(0)" class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#CreateProductionRateModal" title="Add"><i class="fa-solid fa-plus"></i></a>
+            <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#CreateProductionRateModal" title="Add"><i class="fa-solid fa-plus"></i> Add</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -45,12 +45,12 @@
                             <td>{{ $rate->rate }}</td>
                             <td>{{ $rate->pro_process }}</td>
                             <td>
-                                <button type="button" class="btn btn-custom info btn-sm btn-assign-progress" data-id="{{ $rate->id }}" data-toggle="modal" data-target="#AssignProgressModal">Assign Progress</button>
-                                <a href="{{ route('hr-center.production-rate.edit', $rate->id) }}" class="btn btn-custom warning btn-sm btn-warning btn-icon" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <button type="button" class="btn btn-custom btn-sm btn-assign-progress btn-icon ui-act ui-act-assign" data-id="{{ $rate->id }}" data-toggle="modal" data-target="#AssignProgressModal" title="Assign Progress"><i class="fa-solid fa-user-check"></i></button>
+                                <a href="{{ route('hr-center.production-rate.edit', $rate->id) }}" class="btn btn-custom btn-sm btn-icon ui-act ui-act-edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form action="{{ route('hr-center.production-rate.destroy', $rate->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-custom danger btn-sm btn-icon" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                    <button type="submit" class="btn btn-custom btn-sm btn-icon ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -121,8 +121,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-custom secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-custom primary">Save</button>
+                    <button type="button" class="btn btn-custom ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-custom ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -148,7 +148,7 @@
                                 <th>Process</th>
                                 <th>Rate</th>
                                 <th>Pro. Process</th>
-                                <th><button type="button" class="btn btn-custom success btn-sm" id="addRowBtn">+</button></th>
+                                <th><button type="button" class="btn btn-custom btn-sm ui-act ui-act-create" id="addRowBtn" title="+"><i class="fa-solid fa-plus"></i> +</button></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -156,8 +156,8 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-custom secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-custom primary">Save</button>
+                    <button type="button" class="btn btn-custom ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-custom ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -177,7 +177,7 @@
                     <td><input type="text" name="processes[${idx}][process]" class="form-control form-control-sm    " value="${proc.process || ''}"></td>
                     <td><input type="number" step="0.01" name="processes[${idx}][rate]" class="form-control form-control-sm " value="${proc.rate || ''}"></td>
                     <td><input type="text" name="processes[${idx}][pro_process]" class="form-control form-control-sm    " value="${proc.pro_process || ''}"></td>
-                    <td><button type="button" class="btn btn-custom danger btn-sm removeRowBtn">-</button></td>
+                    <td><button type="button" class="btn btn-custom btn-sm removeRowBtn btn-icon ui-act ui-act-delete" title="Remove row"><i class="fa-solid fa-trash"></i></button></td>
                 </tr>
             `);
         });

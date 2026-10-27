@@ -10,8 +10,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Disciplinary Notices</h4>
             <div class="d-flex" style="gap:6px;">
-                <a href="{{ route('hr-center.disciplinary-notices.create', ['type' => 'fine']) }}" class="btn btn-danger btn-sm"><i class="fa-solid fa-plus"></i> Fine &amp; Penalty</a>
-                <a href="{{ route('hr-center.disciplinary-notices.create', ['type' => 'show_cause']) }}" class="btn btn-warning btn-sm"><i class="fa-solid fa-plus"></i> Show Cause</a>
+                <a href="{{ route('hr-center.disciplinary-notices.create', ['type' => 'fine']) }}" class="btn btn-sm ui-act ui-act-create" title="Fine & Penalty"><i class="fa-solid fa-plus"></i> Fine &amp; Penalty</a>
+                <a href="{{ route('hr-center.disciplinary-notices.create', ['type' => 'show_cause']) }}" class="btn btn-sm ui-act ui-act-create" title="Show Cause"><i class="fa-solid fa-plus"></i> Show Cause</a>
             </div>
         </div>
         <div class="card-body">
@@ -42,8 +42,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.disciplinary-notices.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.disciplinary-notices.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -73,18 +73,12 @@
                             <td class="text-center">{{ $notice->deduction_days ?? '-' }}</td>
                             <td>{{ $notice->memo_no ?: '-' }}</td>
                             <td class="text-center">
-                                <a href="{{ route('hr-center.disciplinary-notices.print', $notice->id) }}" class="btn-custom primary" title="Print" target="_blank">
-                                    <i class="fa-solid fa-print"></i>
-                                </a>
-                                <a href="{{ route('hr-center.disciplinary-notices.edit', $notice->id) }}" class="btn-custom yellow" title="Edit">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
+                                <a href="{{ route('hr-center.disciplinary-notices.print', $notice->id) }}" class="btn-custom ui-act ui-act-print" title="Print" target="_blank"><i class="fa-solid fa-print"></i></a>
+                                <a href="{{ route('hr-center.disciplinary-notices.edit', $notice->id) }}" class="btn-custom ui-act ui-act-edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 <form method="POST" action="{{ route('hr-center.disciplinary-notices.destroy', $notice->id) }}" style="display:inline" onsubmit="return confirm('Delete this notice?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-custom red danger" title="Delete">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

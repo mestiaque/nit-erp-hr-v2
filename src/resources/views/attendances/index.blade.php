@@ -35,8 +35,8 @@
     <div class="card">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Attendance List</h5>
-            <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-sm btn-outline-info">
-                <i class="fa fa-list-alt mr-1"></i> Machine Log
+            <a href="{{ route('hr-center.machine-logs.index') }}" class="btn btn-sm ui-act ui-act-nav" title="Machine Log">
+                <i class="fa fa-list-alt"></i> Machine Log
             </a>
         </div>
         <div class="card-body">
@@ -111,8 +111,8 @@
                         <input type="date" name="date_to" class="form-control form-control-sm" value="{{ request('date_to', $dateTo ?? '') }}">
                     </div>
                     <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                        <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-secondary btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                        <button type="submit" class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                        <a href="{{ route('hr-center.attendances.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                     </div>
                 </div>
             </form>
@@ -223,9 +223,7 @@
                         </div>
 
                         <div class="save-row">
-                            <button type="submit" class="btn btn-sm btn-success">
-                                <i class="fa fa-save mr-1"></i> Save
-                            </button>
+                            <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                         </div>
                     </form>
                 </div>

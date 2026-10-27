@@ -13,5 +13,5 @@
             <option value="{{ $shift->id }}" @selected((string) ($selected ?? '') === (string) $shift->id)>{{ $shift->name }}</option>
         @endforeach
     </select>
-    <button type="button" class="remove-alt-shift-btn" title="Remove this step"><i class="fas fa-times"></i></button>
+    <button type="button" class="btn btn-sm remove-alt-shift-btn btn-icon ui-act ui-act-delete" title="Remove this step"><i class="fa-solid fa-trash"></i></button>
 </div>

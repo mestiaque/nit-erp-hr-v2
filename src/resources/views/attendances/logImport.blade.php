@@ -183,9 +183,7 @@
                         </div>
 
                         <div class="text-center mt-3">
-                            <button type="submit" class="btn btn-import shadow-sm" id="submitBtn">
-                                <i class="fa fa-upload mr-1"></i> Start Import
-                            </button>
+                            <button type="submit" class="btn btn-import shadow-sm ui-act ui-act-import" id="submitBtn" title="Start Import"><i class="fa-solid fa-file-import"></i> Start Import</button>
                         </div>
                     </form>
                 </div>
@@ -200,9 +198,7 @@
         <div class="card shadow-sm border-0 mb-4" style="border-left: 4px solid #56d2ff !important;">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fa fa-plug mr-2 text-info"></i> ADMS Push API</h5>
-                <button class="btn btn-sm btn-outline-info" type="button" data-toggle="collapse" data-target="#admsApiInfo">
-                    <i class="fa fa-chevron-down"></i> Details
-                </button>
+                <button class="btn btn-sm ui-act ui-act-view" type="button" data-toggle="collapse" data-target="#admsApiInfo" title="Details"><i class="fa-solid fa-eye"></i> Details</button>
             </div>
             <div class="collapse show" id="admsApiInfo">
                 <div class="card-body">
@@ -217,9 +213,7 @@
                         <div class="d-flex align-items-center">
                             <span class="badge badge-success mr-2" style="font-size:.85rem;">POST</span>
                             <code id="admsEndpoint" class="flex-grow-1 p-2 bg-light rounded" style="word-break:break-all;font-size:.92rem;">{{ $admsUrl }}</code>
-                            <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn btn-icon" data-copy="admsEndpoint" title="Copy">
-                                <i class="fa fa-copy"></i>
-                            </button>
+                            <button class="btn btn-sm ml-2 copy-btn ui-act ui-act-copy" data-copy="admsEndpoint" title="Copy"><i class="fa-solid fa-copy"></i> Copy</button>
                         </div>
                     </div>
 
@@ -230,9 +224,7 @@
                             <span class="badge badge-warning mr-2 text-dark" style="font-size:.85rem;">Bearer</span>
                             @if($machineToken)
                                 <code id="admsToken" class="flex-grow-1 p-2 bg-light rounded" style="font-size:.92rem;filter:blur(4px);transition:.2s;" onmouseenter="this.style.filter='none'" onmouseleave="this.style.filter='blur(4px)'">{{ $machineToken }}</code>
-                                <button class="btn btn-sm btn-outline-secondary ml-2 copy-btn btn-icon" data-copy="admsToken" title="Copy Token">
-                                    <i class="fa fa-copy"></i>
-                                </button>
+                                <button class="btn btn-sm ml-2 copy-btn ui-act ui-act-copy" data-copy="admsToken" title="Copy Token"><i class="fa-solid fa-copy"></i> Copy Token</button>
                             @else
                                 <span class="text-danger small">No token configured. Set <code>machine_api_token</code> in <code>config/hr.php</code>.</span>
                             @endif
@@ -295,9 +287,7 @@ Authorization: Bearer &lt;token&gt;</pre>
 
         <!-- ZKTimeSync Tutorial Modal Trigger Button -->
         {{-- <div class="text-center my-4">
-            <button type="button" class="btn btn-import btn-sm shado text-dark" data-toggle="modal" data-target="#zkTutorialModal" style="background: #bfc1d03b; border: 1px dashed #56d2ff;">
-                <i class="fa fa-book mr-2"></i> ZKTimeSync App
-            </button>
+            <button type="button" class="btn btn-import btn-sm shado ui-act ui-act-help" data-toggle="modal" data-target="#zkTutorialModal" style="background: #bfc1d03b; border: 1px dashed #56d2ff;" title="ZKTimeSync App"><i class="fa-solid fa-circle-question"></i> ZKTimeSync App</button>
         </div> --}}
 
         <!-- ZKTimeSync Tutorial Modal -->

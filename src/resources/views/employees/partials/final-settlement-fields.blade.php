@@ -28,9 +28,7 @@
         </select>
     </div>
     <div class="col-12 mb-3">
-        <button type="button" class="btn btn-info btn-sm" id="printBtn_{{ $employee->id }}" onclick="handlePrintClick(event, {{ $employee->id }})">
-            <i class="fas fa-print"></i> Print Letter
-        </button>
+        <button type="button" class="btn btn-sm ui-act ui-act-print" id="printBtn_{{ $employee->id }}" onclick="handlePrintClick(event, {{ $employee->id }})" title="Print Letter"><i class="fa-solid fa-print"></i> Print Letter</button>
     </div>
 
     <div class="col-12"><hr class="my-1"><h6 class="mb-2">Settlement Calculation</h6></div>
@@ -46,7 +44,7 @@
             Advance due: {{ number_format($suggestion['advance_deduction'], 2) }},
             Net: {{ number_format($suggestion['net_payable'], 2) }}
         </div>
-        <button type="button" class="btn btn-outline-primary btn-sm mb-2"
+        <button type="button" class="btn btn-sm mb-2 ui-act ui-act-auto"
             id="useSuggestedBtn_{{ $employee->id }}"
             data-last-basic-salary="{{ $suggestion['last_basic_salary'] }}"
             data-last-gross-salary="{{ $suggestion['last_gross_salary'] }}"
@@ -57,9 +55,7 @@
             data-leave-encashment-amount="{{ $suggestion['leave_encashment_amount'] }}"
             data-gratuity-amount="{{ $suggestion['gratuity_amount'] }}"
             data-advance-deduction="{{ $suggestion['advance_deduction'] }}"
-            onclick="useSuggestedSettlement(event, {{ $employee->id }})">
-            <i class="fas fa-magic"></i> Use Suggested
-        </button>
+            onclick="useSuggestedSettlement(event, {{ $employee->id }})" title="Use Suggested"><i class="fa-solid fa-wand-magic-sparkles"></i> Use Suggested</button>
     </div>
     @endif
 
@@ -88,9 +84,7 @@
     <div class="col-md-12 mb-2"><label class="mb-1">Calculation Notes</label><textarea name="calculation_notes" class="form-control form-control-sm" rows="2">{{ old('calculation_notes', optional($settlement)->calculation_notes) }}</textarea></div>
 
     <div class="col-12">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="printSettlementStatement(event, {{ $employee->id }})">
-            <i class="fas fa-file-invoice-dollar"></i> Print Settlement Statement
-        </button>
+        <button type="button" class="btn btn-sm ui-act ui-act-print" onclick="printSettlementStatement(event, {{ $employee->id }})" title="Print Settlement Statement"><i class="fa-solid fa-print"></i> Print Settlement Statement</button>
     </div>
 </div>
 

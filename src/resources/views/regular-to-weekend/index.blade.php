@@ -9,7 +9,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Weekend to Regular</h4>
-            <button class="btn btn-primary btn-sm btn-icon" data-toggle="modal" data-target="#createModal" title="Add New"><i class="fa-solid fa-plus"></i></button>
+            <button class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#createModal" title="Add New"><i class="fa-solid fa-plus"></i> Add New</button>
         </div>
         <div class="card-body">
             <form method="get" class="row mb-3 align-items-end">
@@ -43,8 +43,8 @@
                     <input type="date" name="date" class="form-control form-control-sm" value="{{ $request->date }}">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.regular-to-weekend.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.regular-to-weekend.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
             <div class="table-responsive">
@@ -66,7 +66,7 @@
                                 <td>{{ ucfirst($item->type) }}</td>
                                 <td>{{ $item->is_active ? 'Yes' : 'No' }}</td>
                                 <td>
-                                    <a href="javascript:void(0)" class="btn btn-custom yellow btn-sm" data-toggle="modal" data-target="#editModal{{ $item->id }}"><i class="fa fa-edit"></i></a>
+                                    <a href="javascript:void(0)" class="btn btn-custom btn-sm btn-icon ui-act ui-act-edit" data-toggle="modal" data-target="#editModal{{ $item->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 </td>
                             </tr>
                         @empty
@@ -123,8 +123,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary btn-sm">Save</button>
+              <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+              <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
             </div>
           </form>
         </div>
@@ -174,8 +174,8 @@
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary btn-sm">Update</button>
+              <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+              <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
             </div>
           </form>
         </div>

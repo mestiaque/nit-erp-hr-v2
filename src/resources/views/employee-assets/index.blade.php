@@ -16,7 +16,7 @@
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Employee Asset Management</h4>
-            <a href="{{ route('hr-center.employee-assets.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" title="Create Handover"><i class="fa-solid fa-plus"></i></a>
+            <a href="{{ route('hr-center.employee-assets.create') }}" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" title="Create Handover"><i class="fa-solid fa-plus"></i> Create Handover</a>
         </div>
         <div class="card-body">
 
@@ -36,8 +36,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('hr-center.employee-assets.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('hr-center.employee-assets.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -74,19 +74,13 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                <a href="{{ route('hr-center.employee-assets.print', $asset->id) }}" class="btn-custom primary" title="Print" target="_blank">
-                                    <i class="fa-solid fa-print"></i>
-                                </a>
-                                <a href="{{ route('hr-center.employee-assets.edit', $asset->id) }}" class="btn-custom yellow" title="Edit">
-                                    <i class="fa-solid fa-pen"></i>
-                                </a>
+                                <a href="{{ route('hr-center.employee-assets.print', $asset->id) }}" class="btn-custom ui-act ui-act-print" title="Print" target="_blank"><i class="fa-solid fa-print"></i></a>
+                                <a href="{{ route('hr-center.employee-assets.edit', $asset->id) }}" class="btn-custom ui-act ui-act-edit" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                 @if($asset->status === 'Active')
-                                    <button type="button" class="btn-custom primary" title="Mark Returned"
+                                    <button type="button" class="btn-custom ui-act ui-act-receive" title="Mark Returned"
                                             data-toggle="modal" data-target="#ReturnAssetModal"
                                             data-id="{{ $asset->id }}"
-                                            data-asset-no="{{ $asset->asset_no }}">
-                                        <i class="fa-solid fa-right-to-bracket"></i>
-                                    </button>
+                                            data-asset-no="{{ $asset->asset_no }}"><i class="fa-solid fa-box-open"></i></button>
                                 @endif
                             </td>
                         </tr>
@@ -141,8 +135,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Cancel"><i class="fa-solid fa-ban"></i> Cancel</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </div>
         </form>

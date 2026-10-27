@@ -10,9 +10,9 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0">Others Earnings & Deductions: {{ $employee->name }}</h4>
             <div class="d-flex align-items-center" style="gap: 8px;">
-                <a href="javascript:void(0)" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#CreateAdvanceApplicationModal"><i class="fa-solid fa-file-signature mr-1"></i> Advance Application</a>
-                <a href="javascript:void(0)" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#CreateEarningsDeductionModal">Add Entry</a>
-                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-light btn-sm">Back</a>
+                <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#CreateAdvanceApplicationModal" title="Advance Application"><i class="fa-solid fa-plus"></i> Advance Application</a>
+                <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-create" data-toggle="modal" data-target="#CreateEarningsDeductionModal" title="Add Entry"><i class="fa-solid fa-plus"></i> Add Entry</a>
+                <a href="{{ route('hr-center.employees.index') }}" class="btn btn-sm ui-act ui-act-back" title="Back"><i class="fa-solid fa-arrow-left"></i> Back</a>
             </div>
         </div>
         <div class="card-body">
@@ -56,12 +56,12 @@
                                 <td>{{ number_format((float) data_get($row, 'deductions', 0), 2) }}</td>
                                 <td>{{ data_get($row, 'remarks') ?: '-' }}</td>
                                 <td>
-                                    <a href="javascript:void(0)" class="btn-custom yellow" data-toggle="modal" data-target="#EditEarningsDeductionModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-edit" data-toggle="modal" data-target="#EditEarningsDeductionModal_{{ $loop->index }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></a>
                                     <form method="post" action="{{ route('hr-center.employees.earnings.delete', $employee->id) }}" style="display:inline-block" onsubmit="return confirm('Delete this entry?');">
                                         @csrf
                                         @method('delete')
                                         <input type="hidden" name="identifier" value="{{ data_get($row, 'identifier') }}">
-                                        <button type="submit" class="btn-custom danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                        <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -93,11 +93,11 @@
                                 <td>{{ $application->reason ?: '-' }}</td>
                                 <td>{{ $application->deduction_month?->format('F Y') ?? 'Next month' }}</td>
                                 <td>
-                                    <a href="{{ route('hr-center.employees.advance-applications.print', [$employee->id, $application->id]) }}" target="_blank" class="btn-custom primary" title="Print"><i class="fa-solid fa-print"></i></a>
+                                    <a href="{{ route('hr-center.employees.advance-applications.print', [$employee->id, $application->id]) }}" target="_blank" class="btn-custom ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i></a>
                                     <form method="post" action="{{ route('hr-center.employees.advance-applications.destroy', [$employee->id, $application->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this application?');">
                                         @csrf
                                         @method('delete')
-                                        <button type="submit" class="btn-custom danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                        <button type="submit" class="btn-custom ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -132,8 +132,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -164,8 +164,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -191,8 +191,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-print mr-1"></i> Save &amp; Print</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-print" title="Save & Print"><i class="fa-solid fa-print"></i> Save &amp; Print</button>
                 </div>
             </form>
         </div>
