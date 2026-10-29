@@ -107,6 +107,14 @@ return [
             'label' => 'Employee',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
+        'hr_leave_approval' => [
+            'label' => 'Leave Approval',
+            'permissions' => ['approve' => 'Approve (gets the mail)', 'all' => 'All'],
+        ],
+        'hr_advance_application' => [
+            'label' => 'Salary Advance Approval',
+            'permissions' => ['approve' => 'Approve (gets the mail)', 'all' => 'All'],
+        ],
         'hr_attendance' => [
             'label' => 'Attendance',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],

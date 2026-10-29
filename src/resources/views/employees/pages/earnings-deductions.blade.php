@@ -72,7 +72,7 @@
                 </table>
             </div>
 
-            {{-- Saved salary advance application letters: record + print only, they change no figure above. --}}
+            {{-- Saved salary advance application letters: record + print + HR & Accounts approval; they change no figure above. --}}
             <h6 class="mt-4 mb-2">Advance Applications <small class="text-muted">(print only — not counted in any calculation)</small></h6>
             <div class="table-responsive">
                 <table class="table table-bordered table-sm">
@@ -82,6 +82,7 @@
                             <th>Amount</th>
                             <th>Reason</th>
                             <th>Deduct From</th>
+                            <th>Approval</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -93,6 +94,15 @@
                                 <td>{{ $application->reason ?: '-' }}</td>
                                 <td>{{ $application->deduction_month?->format('F Y') ?? 'Next month' }}</td>
                                 <td>
+                                    @php $approval = ($advanceApprovals ?? collect())->get($application->id); @endphp
+                                    @if($approval)
+                                        <span class="badge {{ ['approved' => 'badge-success', 'rejected' => 'badge-danger', 'cancelled' => 'badge-secondary'][$approval->status] ?? 'badge-warning' }}"
+                                              title="{{ $approval->remarks }}">{{ ucfirst($approval->status) }}</span>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                                <td>
                                     <a href="{{ route('hr-center.employees.advance-applications.print', [$employee->id, $application->id]) }}" target="_blank" class="btn-custom ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i></a>
                                     <form method="post" action="{{ route('hr-center.employees.advance-applications.destroy', [$employee->id, $application->id]) }}" style="display:inline-block" onsubmit="return confirm('Delete this application?');">
                                         @csrf
@@ -102,7 +112,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center">No advance application yet.</td></tr>
+                            <tr><td colspan="6" class="text-center">No advance application yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -182,7 +192,7 @@
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small mb-2">Saves the application and opens it for printing. It does not add an advance to Earnings &amp; Deductions or change any salary figure.</p>
+                    <p class="text-muted small mb-2">Saves the application, opens it for printing and mails HR &amp; Accounts for approval. It does not add an advance to Earnings &amp; Deductions or change any salary figure.</p>
                     <div class="row">
                         <div class="col-md-3 mb-2"><label class="mb-1">Application Date <span class="text-danger">*</span></label><input type="date" name="application_date" value="{{ old('application_date', now()->toDateString()) }}" class="form-control form-control-sm" required></div>
                         <div class="col-md-3 mb-2"><label class="mb-1">Amount (Tk) <span class="text-danger">*</span></label><input type="number" step="0.01" min="1" name="amount" value="{{ old('amount') }}" class="form-control form-control-sm" required></div>

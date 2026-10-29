@@ -915,8 +915,10 @@ class HrEmployeeController extends Controller
 
         $advanceApplications = \ME\Hr\Models\HrAdvanceApplication::where('employee_id', $employee->id)
             ->latest('application_date')->latest('id')->get();
+        $advanceApprovals = \ME\Hr\Services\HrApprovals::latestFor(\ME\Hr\Services\HrApprovals::ADVANCE,
+            \ME\Hr\Models\HrAdvanceApplication::class, $advanceApplications->pluck('id')->all());
 
-        return view('hr::employees.pages.earnings-deductions', compact('employee', 'rows', 'employeeMeta', 'advanceApplications'));
+        return view('hr::employees.pages.earnings-deductions', compact('employee', 'rows', 'employeeMeta', 'advanceApplications', 'advanceApprovals'));
     }
 
     public function earningsDeductionsStore(Request $request, HrEmployee $employee): RedirectResponse
@@ -1137,7 +1139,7 @@ class HrEmployeeController extends Controller
 
         $total_days = $this->calculateTotalDays($payload['start_date'], $payload['end_date']);
 
-        HrEmployeeLeave::create([
+        $leave = HrEmployeeLeave::create([
             'employee_id' => $employee->id,
             'leave_type_id' => $payload['leave_type_id'],
             'application_date' => $payload['application_date'],
@@ -1149,6 +1151,8 @@ class HrEmployeeController extends Controller
             'remarks' => $payload['remarks'] ?? null,
             'status' => $payload['status'] ?? 'pending',
         ]);
+        \ME\Hr\Services\HrApprovals::requestLeave($leave);
+
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave added.');
     }
 
@@ -1180,8 +1184,11 @@ class HrEmployeeController extends Controller
         $row->total_days = $this->calculateTotalDays($payload['start_date'], $payload['end_date']);
         $row->reason = $payload['reason'] ?? null;
         $row->remarks = $payload['remarks'] ?? null;
-        $row->status = $payload['status'] ?? 'pending';
+        $row->status = $payload['status'] ?? ($row->status ?: 'pending');
         $row->save();
+        $row->status === 'pending'
+            ? \ME\Hr\Services\HrApprovals::requestLeave($row)
+            : \ME\Hr\Services\HrApprovals::closeLeave($row);
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave updated.');
     }
 
@@ -1198,6 +1205,7 @@ class HrEmployeeController extends Controller
         if (!$row) {
             return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('error', 'Leave row not found.');
         }
+        \ME\Hr\Services\HrApprovals::cancel(\ME\Hr\Services\HrApprovals::LEAVE, $row);
         $row->delete();
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave deleted.');
     }
@@ -1209,6 +1217,7 @@ class HrEmployeeController extends Controller
 
         $leave->status = 'approved';
         $leave->save();
+        \ME\Hr\Services\HrApprovals::closeLeave($leave);
 
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave approved.');
     }
@@ -1220,6 +1229,7 @@ class HrEmployeeController extends Controller
 
         $leave->status = 'rejected';
         $leave->save();
+        \ME\Hr\Services\HrApprovals::closeLeave($leave);
 
         return redirect()->route('hr-center.employees.leaves.page', $employee->id)->with('success', 'Leave rejected.');
     }

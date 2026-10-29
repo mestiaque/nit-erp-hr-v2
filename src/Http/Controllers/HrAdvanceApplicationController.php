@@ -8,10 +8,12 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
 use ME\Hr\Models\HrAdvanceApplication;
 use ME\Hr\Models\HrEmployee;
+use ME\Hr\Services\HrApprovals;
 
 /**
  * Salary advance application letters, managed from the employee's Earnings & Deductions page.
- * Saving only records the letter for printing - it affects no salary or Earnings & Deductions figure.
+ * Saving records the letter for printing and asks HR & Accounts to approve it (HrApprovals) -
+ * it affects no salary or Earnings & Deductions figure.
  */
 class HrAdvanceApplicationController extends Controller
 {
@@ -33,9 +35,10 @@ class HrAdvanceApplicationController extends Controller
                 ? Carbon::createFromFormat('Y-m', $validated['deduction_month'])->startOfMonth()
                 : null,
         ]);
+        HrApprovals::requestAdvance($application);
 
         return redirect()->route('hr-center.employees.earnings.page', $employee->id)
-            ->with('success', 'Advance application saved.')
+            ->with('success', 'Advance application saved and sent to HR & Accounts for approval.')
             ->with('printed_advance_application_id', $application->id);
     }
 
@@ -50,7 +53,9 @@ class HrAdvanceApplicationController extends Controller
 
     public function destroy(HrEmployee $employee, int $application): RedirectResponse
     {
-        HrAdvanceApplication::where('employee_id', $employee->id)->findOrFail($application)->delete();
+        $application = HrAdvanceApplication::where('employee_id', $employee->id)->findOrFail($application);
+        HrApprovals::cancel(HrApprovals::ADVANCE, $application);
+        $application->delete();
 
         return redirect()->route('hr-center.employees.earnings.page', $employee->id)
             ->with('success', 'Advance application deleted.');

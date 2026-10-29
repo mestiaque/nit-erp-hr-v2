@@ -40,6 +40,26 @@ class HrServiceProvider extends ServiceProvider
                 config(['permission' => array_merge($mainPermissions, $hrPermissions)]);
             }
         }
+
+        $this->registerApprovalModules();
+    }
+
+    /** Leave and salary advance approvals go through the host app's central Approvals (page + mail). */
+    private function registerApprovalModules(): void
+    {
+        if (! interface_exists(\App\Contracts\ApprovalHandlerInterface::class)) {
+            return;
+        }
+
+        config(['approval.modules' => array_merge([
+            \ME\Hr\Services\HrApprovals::LEAVE => \ME\Hr\Approvals\LeaveApprovalHandler::class,
+            \ME\Hr\Services\HrApprovals::ADVANCE => \ME\Hr\Approvals\AdvanceApplicationApprovalHandler::class,
+        ], config('approval.modules', []))]);
+
+        config(['mail_notifications.actions' => array_merge([
+            \ME\Hr\Services\HrApprovals::LEAVE => ['title' => 'Approval: HR Leave', 'group' => 'Approval', 'approval' => true],
+            \ME\Hr\Services\HrApprovals::ADVANCE => ['title' => 'Approval: Salary Advance (HR & Accounts)', 'group' => 'Approval', 'approval' => true],
+        ], config('mail_notifications.actions', []))]);
     }
 
     public function register()
