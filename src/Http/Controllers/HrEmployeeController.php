@@ -108,6 +108,18 @@ class HrEmployeeController extends Controller
             $this->applyStringFilter($query, 'weekend', (string) $request->weekend, 'weekend');
         }
 
+        if ($request->filled('is_active')) {
+            $query->where('status', $this->normalizeUserStatus((string) $request->is_active));
+        }
+
+        // Regular / Lefty / Resign / Transfer tab counts, under every filter except the status itself.
+        $statusCounts = (clone $query)->toBase()->cloneWithout(['columns', 'orders'])
+            ->selectRaw("CASE WHEN employment_status IN ('lefty', 'left') THEN 'lefty'
+                WHEN employment_status IN ('resign', 'resigned') THEN 'resign'
+                WHEN employment_status = 'transfer' THEN 'transfer' ELSE 'regular' END AS employment_group, COUNT(*) AS total")
+            ->groupBy('employment_group')
+            ->pluck('total', 'employment_group');
+
         if ($request->filled('status')) {
             $employmentStatus = (string) $request->status;
             $query->where(function ($builder) use ($employmentStatus) {
@@ -129,10 +141,6 @@ class HrEmployeeController extends Controller
             });
         }
 
-        if ($request->filled('is_active')) {
-            $query->where('status', $this->normalizeUserStatus((string) $request->is_active));
-        }
-
         $employees = $query->with('ageVerification')->naturalOrderById()->paginate(20)->appends($request->query());
 
         $options = $this->options();
@@ -144,6 +152,7 @@ class HrEmployeeController extends Controller
 
         return view('hr::employees.index', [
             'employees' => $employees,
+            'statusCounts' => $statusCounts,
             'request' => $request,
             'options' => $options,
             'basicInfoOptions' => $basicInfoOptions,

@@ -148,6 +148,23 @@
                 </div>
             </form>
 
+            {{-- Regular / Lefty / Resign / Transfer kept apart: one tab each (same as the Status filter). --}}
+            @php
+                $statusTabs = ['' => ['All', 'secondary'], 'regular' => ['Regular', 'success'], 'lefty' => ['Lefty', 'warning'], 'resign' => ['Resign', 'danger'], 'transfer' => ['Transfer', 'info']];
+                $currentStatus = (string) $request->status;
+            @endphp
+            <ul class="nav nav-tabs mb-2 emp-status-tabs">
+                @foreach($statusTabs as $key => [$label, $color])
+                    @php $count = $key === '' ? ($statusCounts ?? collect())->sum() : (int) (($statusCounts ?? collect())[$key] ?? 0); @endphp
+                    <li class="nav-item">
+                        <a class="nav-link {{ $currentStatus === $key ? 'active font-weight-bold' : '' }}"
+                           href="{{ request()->fullUrlWithQuery(['status' => $key ?: null, 'page' => null]) }}">
+                            {{ $label }} <span class="badge badge-{{ $color }}">{{ $count }}</span>
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+
             <div class="table-responsive">
                 <table class="table table-bordered table-sm">
                     <thead>
@@ -188,7 +205,7 @@
                                 }
                                 $isActive = (string) ($employee->status ?? '') === '1' || (string) ($employee->status ?? '') === 'active';
                             @endphp
-                            <tr @if($employmentStatus === 'resign') style="background-color:#fde8e8;" @endif>
+                            <tr @if($employmentStatus === 'resign') style="background-color:#fde8e8;" @elseif($employmentStatus === 'lefty') style="background-color:#fff3dc;" @endif>
 
                                 <td>{{ $employee->employee_id }}</td>
                                 <td>{{ $employee->name }}</td>
@@ -203,7 +220,7 @@
                                 <td>{{ $workingPlaceMap->get($employee->working_place_id ?? data_get($profile, 'working_place_id')) }}</td>
                                 <td>{{ $lineMap->get($employee->line_number) }}</td>
                                 <td>{{ $weekend }}</td>
-                                <td>{{ ucfirst($employmentStatus) }}</td>
+                                <td><span class="badge badge-{{ ['lefty' => 'warning', 'resign' => 'danger', 'transfer' => 'info'][$employmentStatus] ?? 'success' }}">{{ ucfirst($employmentStatus) }}</span></td>
                                 <td>{{ $isActive ? 'Active' : 'Inactive' }}</td>
                                 <td >
                                     <a href="{{ route('hr-center.employees.show', $employee->id) }}" class="btn-custom ui-act ui-act-view" title="View Full Profile"><i class="fa-solid fa-eye"></i></a>
