@@ -215,6 +215,6 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 			<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Managing Director</div></div>
 		</div>
 	@else
-		<div class="rpt-footer-note">This is a system generated report, no signature required. &mdash; {{ $company }} &mdash; Confidential</div>
+		<div class="rpt-footer-note">@unless(request('sign_note') === '0')This is a system generated report, no signature required. &mdash; @endunless{{ $company }} &mdash; Confidential</div>
 	@endif
 </div>

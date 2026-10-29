@@ -273,7 +273,7 @@
 				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Accounts Manager</div></div>
 				<div class="sig-box"><div class="sig-line"></div><div class="sig-lbl">Managing Director</div></div>
 			</div>
-		@else
+		@elseif(request('sign_note') !== '0')
 			<div class="rpt-footer-note">This is a system generated report, no signature required.</div>
 		@endif
 	</div>

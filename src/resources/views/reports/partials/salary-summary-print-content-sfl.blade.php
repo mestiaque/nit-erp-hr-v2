@@ -133,7 +133,7 @@ body { font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
 				<div>Date:_______________</div>
 			</div>
 		</div>
-	@else
+	@elseif(request('sign_note') !== '0')
 		<div class="rpt-footer-note">This is a system generated report, no signature required.</div>
 	@endif
 </div>
