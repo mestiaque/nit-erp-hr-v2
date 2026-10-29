@@ -4,6 +4,7 @@
 
 @section('contents')
 @php
+    $hideGeneratedNote = true; // signed letter, not a "no signature required" report
     $na = '';
     $separation = $employee->separation;
 
@@ -52,19 +53,20 @@
         অতএব জনাবের নিকট আকুল আবেদন এই যে, উপরোক্ত বিষয়টি বিবেচনা করিয়া আমাকে চাকুরী হইতে অব্যাহতি প্রদানে মহোদয়ের মর্জি হয়।
     </p>
 
-    <div class="rl-sign-row">
-        <div class="rl-sign-left">
-            <div class="rl-sign-line"></div>
-            <p>ব্যবস্থাপক (এইচ আর ও এডমিন)</p>
-        </div>
-        <div class="rl-sign-right">
-            <p class="rl-nibedok">নিবেদক</p>
-            <p>নামঃ {{ $employeeName }}</p>
-            <p>পদবীঃ {{ $designation }}</p>
-            <p>আইডি নংঃ {{ $employeeId }}</p>
-            <p style="margin-top: 3rem">স্বাক্ষরঃ ------------------------</p>
-            <p class="rl-thumb">টিপসহিঃ <span class="rl-thumb-box"></span></p>
-        </div>
+    {{-- Applicant first, right under the application; the approvals in signing order below. --}}
+    <div class="rl-applicant">
+        <p class="rl-nibedok">নিবেদক</p>
+        <p>নামঃ {{ $employeeName }}</p>
+        <p>পদবীঃ {{ $designation }}</p>
+        <p>আইডি নংঃ {{ $employeeId }}</p>
+        <p class="rl-applicant-sign">স্বাক্ষরঃ ------------------------</p>
+        <p class="rl-thumb">টিপসহিঃ <span class="rl-thumb-box"></span></p>
+    </div>
+
+    <div class="rl-approvals">
+        @foreach(['ইনচার্জ', 'প্রোডাকশন ম্যানেজার', 'এইচ আর এডমিন ম্যানেজার', 'ম্যানেজিং ডিরেক্টর'] as $signatory)
+            <div><div class="rl-sign-line"></div>{{ $signatory }}</div>
+        @endforeach
     </div>
 </div>
 
@@ -78,12 +80,13 @@
     .rl-salutation { margin-bottom: 10px; }
     .rl-body { text-align: justify; margin-bottom: 30px; }
     .rl-fill { border-bottom: 1px dotted #000; padding: 0 6px; display: inline-block; min-width: 70px; text-align: center; }
-    .rl-sign-row { display: flex; justify-content: space-between; margin-top: 140px; }
-    .rl-sign-left { width: 45%; text-align: center; }
-    .rl-sign-line { border-top: 1px solid #000; margin-bottom: 10px; }
-    .rl-sign-right { width: 35%; }
-    .rl-sign-right p { margin-bottom: 14px; }
+    .rl-applicant { width: 40%; margin-left: auto; margin-top: 10px; }
+    .rl-applicant p { margin-bottom: 8px; }
+    .rl-applicant-sign { margin-top: 2.2rem; }
     .rl-nibedok { font-weight: bold; }
+    .rl-approvals { display: flex; gap: 18px; margin-top: 90px; text-align: center; font-size: 16px; }
+    .rl-approvals > div { flex: 1; }
+    .rl-sign-line { border-top: 1px solid #000; margin-bottom: 6px; }
     .rl-thumb { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     .rl-thumb-box { display: inline-block; width: 45mm; height: 18mm; border: 1px solid #000; }
 
