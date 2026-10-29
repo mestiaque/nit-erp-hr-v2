@@ -1,235 +1,134 @@
 @extends('printMaster2')
 
-@section('title', 'Final Settlement Letter')
+@section('title', 'Absence Letter')
+
+{{--
+    Absence letters for a lefty employee (Bangladesh Labour Act 2006, section 27(3A)), laid out
+    like the company's own templates. What the templates mark in yellow comes from data: the
+    employee, their addresses and the Final Settlement form (absent date, 1st / 2nd / 3rd letter
+    dates). The rest of the text is the templates' own wording.
+--}}
+@php
+    $hideGeneratedNote = true;
+
+    $selectedOption = data_get($settlement, 'final_settlement_option');
+    $letterNo = ['1st Letter' => 1, '2nd Letter' => 2, '3rd Letter' => 3][$selectedOption] ?? null;
+
+    $bnDate = fn ($date) => $date ? bn_date($date, 'd/m/Y') : '';
+    $absentDate = data_get($settlement, 'absent_date');
+    $letterDates = [
+        1 => data_get($settlement, 'letter_1_date'),
+        2 => data_get($settlement, 'letter_2_date'),
+        3 => data_get($settlement, 'letter_3_date'),
+    ];
+
+    // সূত্রঃ সুহানা/মানবসম্পদ ও কমপ্লায়েন্স/<year>/<month>/<letter no> - year and month of the first day absent.
+    $refDate = $absentDate ?: ($letterNo ? $letterDates[$letterNo] : null);
+    $refBase = $refDate ? \Carbon\Carbon::parse($refDate) : now();
+    $reference = 'সুহানা/মানবসম্পদ ও কমপ্লায়েন্স/' . en2bnNumber($refBase->format('Y') . '/' . $refBase->format('n') . '/' . sprintf('%02d', $letterNo ?? 1));
+
+    $designationModel = $employee->designation_id ? \ME\Hr\Models\HrDesignation::find($employee->designation_id, ['id', 'name', 'bn_name']) : null;
+    $departmentModel = $employee->department;
+
+    $employeeName = $employee->bn_name ?: $employee->name;
+    $info = [
+        'নামঃ' => $employeeName,
+        'পদবীঃ' => ($designation_bn ?? null) ?: ($designationModel?->bn_name ?: $designationModel?->name),
+        'আইডি.নংঃ' => en2bnNumber((string) $employee->employee_id),
+        'ডিপার্টমেন্টঃ' => $departmentModel?->bn_name ?: $departmentModel?->name,
+        'যোগদানের তারিখঃ' => $bnDate($employee->join_date),
+    ];
+    $address = fn (string $type) => [
+        'নামঃ' => $employeeName,
+        'পিতাঃ' => $employee->father_name_bn ?: $employee->father_name,
+        'গ্রাম/মহল্লাঃ' => $employee->{"{$type}_village_bn"} ?: $employee->{"{$type}_village"},
+        'ডাকঘরঃ' => $employee->{"{$type}_post_office_bn"} ?: $employee->{"{$type}_post_office"},
+        'থানাঃ' => $employee->{"{$type}_upazila_bn"} ?: $employee->{"{$type}_upazila"},
+        'জেলাঃ' => $employee->{"{$type}_district_bn"} ?: $employee->{"{$type}_district"},
+    ];
+
+    // A date in the body; blank dashes when that date isn't entered yet.
+    $d = fn ($date) => e($bnDate($date) ?: '__/__/____');
+@endphp
+
+@push('css')
+<style>
+    @page { size: A4 portrait; margin: 14mm 16mm; }
+    .container { max-width: 190mm; }
+    .al { font-size: 13.5px; line-height: 1.65; color: #000; }
+    .al .co { text-align: center; font-size: 30px; font-weight: 800; line-height: 1.2; }
+    .al .co-addr { text-align: center; font-size: 14px; }
+    .al .act { text-align: center; font-size: 16px; font-weight: 700; margin: 10px 0 14px; }
+    .al .info { display: flex; gap: 16px; margin: 6px 0 18px; }
+    .al .info > div { flex: 1; }
+    .al .info table { width: auto; margin: 0; border: 0; }
+    .al .info td { border: 0; padding: 0 4px 0 0; font-size: 13.5px; background: none; vertical-align: top; }
+    .al .info td.k { white-space: nowrap; }
+    .al .info .h { font-weight: 700; text-decoration: underline; min-height: 1.65em; }
+    .al .subject { margin-bottom: 14px; }
+    .al .subject b { text-decoration: underline; }
+    .al p { margin: 0 0 12px; text-align: justify; }
+    .al .closing { margin-top: 18px; }
+    .al .sign { margin-top: 58px; }
+</style>
+@endpush
 
 @section('contents')
-@php
-    $language = $language ?? data_get($request ?? null, 'language', 'bn');
-    $isBangla = $language === 'bn';
-    $t = fn (string $bn, string $en) => $isBangla ? $bn : $en;
-    $na = $t('প্রযোজ্য নয়', 'N/A');
+<div class="al">
+    <div class="co">সুহানা ফ্যাশন্স লিঃ</div>
+    <div class="co-addr">কাঠগড়া, জিরাবো, আশুলিয়া, ঢাকা।</div>
+    <div class="act">(অনুমোদিত অনুপস্থিতির জন্য বাংলাদেশ শ্রম আইন'২০০৬ এর ২৭ (৩ক) ধারা মোতাবেক)</div>
 
-    $companyName = $isBangla
-        ? (hr_factory('bn_name') ?? hr_factory('name') ?? general()->name ?? $na)
-        : (hr_factory('name') ?? general()->name ?? hr_factory('bn_name') ?? $na);
-    $companyAddress = $isBangla
-        ? (hr_factory('bn_address') ?? hr_factory('address') ?? general()->address ?? $na)
-        : (hr_factory('address') ?? general()->address ?? hr_factory('bn_address') ?? $na);
+    <div>সূত্রঃ {{ $reference }}</div>
+    <div>তারিখ: {{ $d($letterNo ? $letterDates[$letterNo] : null) }} ইং রেজিস্ট্রার ডাকে প্রেরিত</div>
 
-    $employeeName = $isBangla
-        ? (data_get($employee, 'bn_name') ?? data_get($employee, 'name') ?? $na)
-        : (data_get($employee, 'name') ?? data_get($employee, 'bn_name') ?? $na);
-
-    $fatherName = data_get($employee, 'father_name', $na);
-    $motherName = data_get($employee, 'mother_name', $na);
-    $presentVillage = data_get($employee, 'present_village', $na);
-    $presentPostOffice = data_get($employee, 'present_post_office', $na);
-    $presentUpazila = data_get($employee, 'present_upazila', $na);
-    $presentDistrict = data_get($employee, 'present_district', $na);
-    $permanentVillage = data_get($employee, 'permanent_village', $na);
-    $permanentPostOffice = data_get($employee, 'permanent_post_office', $na);
-    $permanentUpazila = data_get($employee, 'permanent_upazila', $na);
-    $permanentDistrict = data_get($employee, 'permanent_district', $na);
-
-    $designationModel = data_get($employee, 'designation');
-    if (!$designationModel && data_get($employee, 'designation_id')) {
-        $designationModel = \ME\Hr\Models\HrDesignation::query()
-            ->select(['id', 'name', 'bn_name'])
-            ->find(data_get($employee, 'designation_id'));
-    }
-    $designation = $isBangla
-        ? ($designation_bn ?? data_get($designationModel, 'bn_name') ?? data_get($designationModel, 'name') ?? data_get($employee, 'designation_bn_name') ?? data_get($employee, 'designation_name') ?? $na)
-        : ($designation_en ?? data_get($designationModel, 'name') ?? data_get($employee, 'designation_name') ?? data_get($designationModel, 'bn_name') ?? data_get($employee, 'designation_bn_name') ?? $na);
-
-    $sectionAttr = $employee->section_id
-        ? \ME\Hr\Models\HrSection::query()->find($employee->section_id, ['id', 'name', 'bn_name'])
-        : null;
-    $section = $isBangla
-        ? (data_get($sectionAttr, 'bn_name') ?? data_get($sectionAttr, 'name') ?? $na)
-        : (data_get($sectionAttr, 'name') ?? data_get($sectionAttr, 'bn_name') ?? $na);
-
-    $departmentModel = optional($employee->department);
-    $department = $isBangla
-        ? ($departmentModel->bn_name ?? $departmentModel->name ?? data_get($employee, 'department_bn_name') ?? data_get($employee, 'department_name') ?? $na)
-        : ($departmentModel->name ?? data_get($employee, 'department_name') ?? $departmentModel->bn_name ?? data_get($employee, 'department_bn_name') ?? $na);
-
-    $presentAddress = trim(implode(', ', array_filter([
-        $presentVillage,
-        $presentPostOffice,
-        $presentUpazila,
-        $presentDistrict,
-    ])));
-    $presentAddress = $presentAddress !== '' ? $presentAddress : $na;
-
-    $permanentAddress = trim(implode(', ', array_filter([
-        $permanentVillage,
-        $permanentPostOffice,
-        $permanentUpazila,
-        $permanentDistrict,
-    ])));
-    $permanentAddress = $permanentAddress !== '' ? $permanentAddress : $na;
-
-    $applicationDate = now()->format('d/m/Y');
-
-    $gender = strtolower(trim((string) ($employee->gender ?? '')));
-    $salutation = match(true) {
-        in_array($gender, ['male', 'পুরুষ']) => 'জনাব',
-        in_array($gender, ['female', 'মহিলা', 'নারী']) => 'জনাবা',
-        default => 'জনাব/জনাবা',
-    };
-@endphp
-@php
-    $selectedOption = data_get($settlement, 'final_settlement_option');
-    $absentDate = data_get($settlement, 'absent_date');
-    $firstLetterDate = data_get($settlement, 'letter_1_date');
-    $secondLetterDate = data_get($settlement, 'letter_2_date');
-    $today = now()->format('Y-m-d');
-    $absentDays = 0;
-    if (!empty($absentDate)) {
-        try {
-            $absentDays = (int) \Carbon\Carbon::parse($absentDate)->diffInDays(now()) + 1;
-        } catch (\Throwable $e) {
-            $absentDays = 0;
-        }
-    }
-
-    $finalSettlementDeadline = now()->addDays(7)->format('Y-m-d');
-    $letterLabel = [
-        '1st Letter' => 'প্রথম চিঠি: কারণ দর্শানোর নোটিশ (Show Cause Notice)',
-        '2nd Letter' => 'দ্বিতীয় চিঠি: পুনরায় যোগদানের নির্দেশ ও চূড়ান্ত সতর্কীকরণ',
-        '3rd Letter' => 'তৃতীয় চিঠি: চূড়ান্ত সেটেলমেন্ট ও অব্যাহতি',
-    ][$selectedOption] ?? '';
-@endphp
-
-<div style="text-align:center; margin-bottom:10px;">
-    @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" style="display:block;height:50px;max-width:160px;object-fit:contain;margin:0 auto 4px;">@endif
-    <h3 style="margin:0;">{{ $companyName }}</h3>
-    <div>{{ $companyAddress }}</div>
-    <div style="margin-top:4px; font-weight:700; font-size:16px;">{{ $t($letterLabel, $letterLabel) }}</div>
-</div>
-
-{{-- <table style="margin-bottom: 8px;">
-    <tr>
-        <th style="width: 18%;">তারিখ</th>
-        <td style="width: 32%;">{{ $applicationDate }}</td>
-        <th style="width: 18%;">রেফারেন্স</th>
-        <td style="width: 32%;">FS/{{ $employee->employee_id ?? $employee->id }}/{{ now()->format('Ymd') }}</td>
-    </tr>
-    <tr>
-        <th>নাম</th>
-        <td>{{ $employeeName }}</td>
-        <th>কার্ড নং</th>
-        <td>{{ $employee->employee_id ?? $employee->id }}</td>
-    </tr>
-    <tr>
-        <th>পদবী</th>
-        <td>{{ $designation }}</td>
-        <th>বিভাগ</th>
-        <td>{{ $department }}</td>
-    </tr>
-    <tr>
-        <th>সেকশন</th>
-        <td>{{ $section }}</td>
-        <th>মোট অনুপস্থিতি</th>
-        <td>{{ $absentDays }} দিন</td>
-    </tr>
-    <tr>
-        <th>পিতার নাম</th>
-        <td>{{ $fatherName }}</td>
-        <th>মাতার নাম</th>
-        <td>{{ $motherName }}</td>
-    </tr>
-    <tr>
-        <th>বর্তমান ঠিকানা</th>
-        <td colspan="3">{{ $presentAddress }}</td>
-    </tr>
-    <tr>
-        <th>স্থায়ী ঠিকানা</th>
-        <td colspan="3">{{ $permanentAddress }}</td>
-    </tr>
-</table> --}}
-
-<div style="margin-top: 20px; line-height: 1.8; font-size: 14px;">
-    @if($selectedOption === '1st Letter')
-        <p><strong>বিষয়: অননুমোদিত অনুপস্থিতির জন্য কারণ দর্শানোর নোটিশ।</strong></p>
-        <p>{{ $salutation }} {{ $employeeName }}, কার্ড নং- {{ $employee->employee_id ?? $employee->id }}, পদবী- {{ $designation }}</p>
-        <p>
-            আপনাকে জানানো যাচ্ছে যে, আপনি গত {{ $absentDate ?: 'N/A' }} তারিখ হতে অদ্যবধি {{ $absentDays }} দিন যাবত
-            কর্তৃপক্ষের কোনো অনুমতি ছাড়াই কর্মস্থলে অনুপস্থিত রয়েছেন। বাংলাদেশ শ্রম আইন মোতাবেক বিনা অনুমতিতে
-            ১০ দিনের অধিক অনুপস্থিত থাকা একটি "অসদাচরণ"।
-        </p>
-        <p>
-            আপনার দায়িত্বপ্রাপ্ত বিভাগ {{ $department }} এবং সেকশন {{ $section }}-এর কার্যক্রমে আপনার অনুপস্থিতির কারণে
-            উৎপাদন পরিকল্পনা, কর্মপ্রবাহ এবং টিম ম্যানেজমেন্টে নেতিবাচক প্রভাব পড়ছে। প্রতিষ্ঠানের নীতিমালা অনুযায়ী,
-            অনুপস্থিতির ক্ষেত্রে যথাযথ কর্তৃপক্ষকে অবহিত করা ও অনুমোদন গ্রহণ বাধ্যতামূলক।
-        </p>
-        <p>
-            এমতাবস্থায়, কেন আপনার বিরুদ্ধে আইনানুগ ব্যবস্থা গ্রহণ করা হবে না, তা অত্র পত্র প্রাপ্তির ০৭ (সাত) দিনের
-            মধ্যে লিখিতভাবে জানানোর জন্য নির্দেশ দেওয়া হলো।
-        </p>
-        <p>
-            আপনার লিখিত ব্যাখ্যায় অনুপস্থিতির কারণ, প্রমাণক নথি (যদি থাকে), এবং পুনরায় কাজে যোগদানের সম্ভাব্য
-            তারিখ উল্লেখ করতে হবে। নির্ধারিত সময়ের মধ্যে ব্যাখ্যা দাখিল না করলে বিষয়টি একতরফাভাবে নিষ্পত্তি করে
-            আইনানুগ পরবর্তী ব্যবস্থা গ্রহণ করা হবে।
-        </p>
-        <p>ধন্যবাদান্তে,</p>
-    @elseif($selectedOption === '2nd Letter')
-        <p><strong>বিষয়: কর্মস্থলে যোগদানের চূড়ান্ত নোটিশ ও সতর্কীকরণ।</strong></p>
-        <p>{{ $salutation }} {{ $employeeName }}, কার্ড নং- {{ $employee->employee_id ?? $employee->id }}, পদবী- {{ $designation }}</p>
-        <p>
-            গত {{ $firstLetterDate ?: 'N/A' }} তারিখে আপনাকে অনুপস্থিতির কারণ দর্শানোর নোটিশ পাঠানো হয়েছিল,
-            যার কোনো উত্তর আমরা পাইনি। আপনি এখনও কর্মস্থলে অনুপস্থিত। আপনার এই আচরণ প্রতিষ্ঠানের উৎপাদন ও
-            শৃঙ্খলার পরিপন্থী।
-        </p>
-        <p>
-            বারংবার অনুপস্থিতি এবং প্রতিষ্ঠানের সাথে যোগাযোগ না রাখার ফলে আপনার দায়িত্বাধীন কাজগুলোতে বিলম্ব,
-            সহকর্মীদের উপর অতিরিক্ত চাপ এবং প্রতিষ্ঠানের আর্থিক ও প্রশাসনিক ক্ষতির ঝুঁকি সৃষ্টি হয়েছে। এটি শ্রম আইন,
-            নিয়োগপত্রের শর্তাবলি এবং প্রতিষ্ঠানিক আচরণবিধির লঙ্ঘন হিসেবে বিবেচিত।
-        </p>
-        <p>
-            আপনাকে অত্র নোটিশ প্রাপ্তির ০৩ (তিন) দিনের মধ্যে কর্মস্থলে যোগদান করে আপনার অনুপস্থিতির সন্তোষজনক
-            লিখিত ব্যাখ্যা প্রদানের চূড়ান্ত সুযোগ দেওয়া হলো। অন্যথায়, শ্রম আইন অনুযায়ী আপনার নিয়োগ বাতিল করার
-            প্রক্রিয়া শুরু করা হবে।
-        </p>
-        <p>
-            নির্ধারিত সময়ের মধ্যে যোগদান বা গ্রহণযোগ্য ব্যাখ্যা প্রদান করতে ব্যর্থ হলে, পরবর্তী নোটিশ ছাড়াই আপনার
-            বিরুদ্ধে চূড়ান্ত প্রশাসনিক ব্যবস্থা নেওয়া হবে এবং বিষয়টি কর্মী নথিতে সংরক্ষিত থাকবে।
-        </p>
-        <p>ধন্যবাদান্তে,</p>
-    @elseif($selectedOption === '3rd Letter')
-        <p><strong>বিষয়: দীর্ঘস্থায়ী অনুপস্থিতির কারণে চাকুরীর অবসান সংক্রান্ত চূড়ান্ত নোটিশ।</strong></p>
-        <p>{{ $salutation }} {{ $employeeName }}, কার্ড নং- {{ $employee->employee_id ?? $employee->id }}, পদবী- {{ $designation }}</p>
-        <p>
-            আপনি গত {{ $absentDate ?: 'N/A' }} থেকে কর্মস্থলে অননুমোদিতভাবে অনুপস্থিত। ইতিপূর্বে আপনাকে
-            {{ $firstLetterDate ?: 'N/A' }} এবং {{ $secondLetterDate ?: 'N/A' }} তারিখে দুটি নোটিশ রেজিস্টার্ড
-            ডাকযোগে পাঠানো সত্ত্বেও আপনি কোনো যোগাযোগ করেননি।
-        </p>
-        <p>
-            আপনার বিরুদ্ধে আনা অভিযোগসমূহের বিষয়ে আত্মপক্ষ সমর্থনের যথাযথ সুযোগ প্রদান করা হলেও আপনি তা গ্রহণ
-            করেননি এবং প্রতিষ্ঠানের সাথে কোনো প্রকার কার্যকর যোগাযোগ স্থাপন করেননি। ফলে বিষয়টি শ্রম আইন ও
-            কোম্পানির প্রযোজ্য বিধান অনুযায়ী নিষ্পত্তি করা আবশ্যক হয়ে পড়েছে।
-        </p>
-        <p>
-            এমতাবস্থায়, বাংলাদেশ শ্রম আইন ২০০৬ এর ধারা ২৭(৩ক) অনুযায়ী, আপনি স্বেচ্ছায় চাকুরীতে ইস্তফা দিয়েছেন
-            বলে গণ্য করা হলো। অত্র {{ $today }} হতে আপনার নাম অত্র প্রতিষ্ঠানের মাস্টার রোল হতে কর্তন করা হলো।
-            আপনার পাওনাদি বা ফাইনাল সেটেলমেন্ট (Final Settlement) গ্রহণের জন্য আগামী {{ $finalSettlementDeadline }}
-            এর মধ্যে মানব সম্পদ বিভাগে যোগাযোগ করতে বলা হলো।
-        </p>
-        <p>
-            নির্ধারিত সময়ের মধ্যে উপস্থিত হয়ে আপনার বকেয়া পাওনা নিষ্পত্তি, প্রতিষ্ঠানের নথি হালনাগাদ, এবং যদি থাকে
-            কোম্পানির সম্পদ/আইডি কার্ড/ইউনিফর্ম ফেরত দেওয়ার অনুরোধ করা হলো। পরবর্তী কোনো দাবি-দাওয়া প্রতিষ্ঠানের
-            নীতিমালা ও প্রযোজ্য আইন অনুযায়ী বিবেচিত হবে।
-        </p>
-        <p>ধন্যবাদান্তে,</p>
-    @endif
-</div>
-
-<div class="print-footer">
-    <div class="signature-box">
-        <div class="signature-line">[কর্তৃপক্ষের স্বাক্ষর]</div>
+    <div class="info">
+        <div>
+            <table>@foreach($info as $k => $v)<tr><td class="k">{{ $k }}</td><td>{{ $v }}</td></tr>@endforeach</table>
+        </div>
+        @foreach(['present' => 'বর্তমান ঠিকানাঃ', 'permanent' => 'স্থায়ী ঠিকানাঃ'] as $type => $heading)
+            <div>
+                <div class="h">{{ $heading }}</div>
+                <table>@foreach($address($type) as $k => $v)<tr><td class="k">{{ $k }}</td><td>{{ $v }}</td></tr>@endforeach</table>
+            </div>
+        @endforeach
     </div>
-    <div class="signature-box">
-        <div class="signature-line">[প্রতিষ্ঠানের নাম ও সিল]</div>
+
+    @if($letterNo === 3)
+        <div class="subject"><b>বিষয়ঃ বাংলাদেশ শ্রম আইন, ২০০৬ এর ২৭(৩ক) ধারা মতে চাকুরী হতে অব্যহতি গ্রহন প্রদান।</b></div>
+    @else
+        <div class="subject"><b>বিষয়ঃ</b> অননুমোদিত অনুপস্থিতির কারনব্যাখ্যা সহ অনতিবিলম্বে কাজে যোগদান প্রসঙ্গে।</div>
+    @endif
+
+    <p>জনাবা/জনাব,</p>
+
+    @if($letterNo === 1)
+        <p>আপনি গত {{ $d($absentDate) }} ইং তারিখ হতে অদ্যাবধি বিনা নোটিশে এবং কর্তৃপক্ষের বিনা অনুমতিতে কারখানায় অনুপস্থিত রয়েছেন। আপনার এ ধরনের অনুপস্থিতির কারনে কারখানায় উৎপাদন ব্যহত হচ্ছে বিধায় অনতিবিলম্বে আপনাকে অনুপস্থিতির কারন ব্যাখ্যা সহ কাজে যোগদানের অথবা আপনার এ ধরনের বিনা নোটিশে বা উদ্ধর্তন কর্তৃপক্ষের অনুমতি ব্যতিরেকে কারখানায় ১০ দিনের অধিক সময় অনুপস্থিত থাকার বিষয়ে ব্যাখ্যা প্রদানের নির্দেশ প্রদান করা হল।</p>
+        <p>আপনি অদ্য হতে ১০ দিনের মধ্যে কারখানায় যোগদান করতে ব্যর্থ বা আপনার এধরনের অননুমোদিত অনুপস্থিতির কারন উক্ত সময়ের মধ্যে কর্তৃপক্ষের নিকট ব্যাখ্যা প্রদান করতে ব্যর্থ হন তবে কর্তৃপক্ষ আপনার বিরুদ্ধে পরবর্তী আইনানুগ ব্যবস্থা গ্রহনকরবে।</p>
+    @elseif($letterNo === 2)
+        <p>আপনি গত {{ $d($absentDate) }} ইং তারিখ হতে অদ্যাবধি কারখানায় অননুমোদিত ভাবে অনুপস্থিত রয়েছেন এবং উক্ত অনুপস্থিতির বিষয়ে কারখানা কর্তৃপক্ষকে পূর্বে কোন প্রকার নোটিশ প্রদান বা অবহিত করেননি।</p>
+        <p>আপনাকে অনতিবিলম্বে অনুপস্থিতির কারন ব্যাখ্যা সহ কাজে যোগদান বা উক্ত অনুপস্থিতির কারন ব্যাখ্যা করনের নির্দেশ প্রদান করে গত {{ $d($letterDates[1]) }} ইং তারিখ একটি চিঠি ইস্যু করা হয়। আপনি প্রদত্ত সময় অতিক্রম করা স্বত্তেও অদ্যাবধি কাজে যোগদান বা অনুপস্থিতির কারন ব্যাখ্যা করতে ব্যর্থ হন।</p>
+        <p>তথাপি আপনার আত্মপক্ষ সমর্থনের ন্যায় বিচারের স্বার্থে এবং আইনগত অধিকার সংরক্ষনে আপনাকে অনতিবিলম্বে অনুপস্থিতির কারন ব্যাখ্যা সহ কাজে যোগদানের অথবা আপনার এ ধরনের বিনা নোটিশে বা উদ্ধর্তন কর্তৃপক্ষের অনুমতি ব্যতিরেকে কারখানায় অনুপস্থিত থাকার বিষয়ে ব্যাখ্যা প্রদানের জন্য পুনরায় ১০ দিন সময় প্রদান করা হল।</p>
+        <p>আপনি অদ্য হতে ১০ দিনের মধ্যে যদি অনুপস্থিতির কারন ব্যাখ্যা সহ কারখানায় যোগদান করতে ব্যর্থ হন বা আপনার এধরনের অননুমোদিত অনুপস্থিতির কারন উক্ত সময়ের মধ্যে কর্তৃপক্ষের নিকট ব্যাখ্যা প্রদান করতে ব্যর্থ হন তবে বাংলাদেশ শ্রম-আইন, ২০০৬ এর ২৭(৩ক) ধারা মতে আপনি চাকুরী হতে অব্যহতি গ্রহন করেছেন এবং কোম্পানীর সাথে আপনার যাবতীয় সম্পর্ক ছিন্ন হয়েছে বলে গন্য হবে।</p>
+    @elseif($letterNo === 3)
+        <p>আপনি গত {{ $d($absentDate) }} ইং তারিখ হতে অদ্যাবধি কারখানায় অনুমোদিত ভাবে অনুপস্থিত রয়েছেন এবং এ অনুপস্থিতির বিষয়ে কারখানা কর্তৃপক্ষকে পূর্বে কোন প্রকার নোটিশ প্রদান বা অবহিত করেননি।</p>
+        <p>আপনাকে অনতিবিলম্বে অনুপস্থিতির কারন ব্যাখ্যা সহ কাজে যোগদান বা উক্ত অনুপস্থিতির কারন ব্যাখ্যা দানের জন্য ১০ দিনের সময় দিয়ে গত {{ $d($letterDates[1]) }} ইং তারিখ একটি চিঠি ইস্যু করা হয়।</p>
+        <p>আপনি উক্ত সময়ের মধ্যে কাজে যোগদান বা আপনার অনুপস্থিতির কারন ব্যাখ্যা করতে ব্যর্থ হওয়ায় পুনরায় আপনাকে ১০ দিনের সময় দিয়ে {{ $d($letterDates[2]) }} ইং তারিখে আরও একটি চিঠি ইস্যু করা হয়। আপনি দ্বিতীয়বারও প্রদত্ত সময়ের মধ্যে কাজে যোগদান বা আপনার অনুপস্থিতির কারন ব্যাখ্যা করতে ব্যর্থ হন।</p>
+        <p>যেহেতু আপনাকে বাংলাদেশ শ্রম-আইন, ২০০৬ এর ২৭(৩ক) ধারা মতে অনতিবিলম্বে অনুপস্থিতির কারন ব্যাখ্যা সহ কাজে যোগদান বা উক্ত অনুপস্থিতির কারন ব্যাখ্যা দানের জন্য আপনার আইনগত অধিকার সংরক্ষন করে দুইবার সময় প্রদান করা স্বত্ত্বেও আপনি যথা সময়ে অনুপস্থিতির কারন ব্যাখ্যা সহ কাজে যোগদান করতে অথবা অনুপস্থিতির কারন ব্যাখ্যা করতে ব্যর্থ হয়েছেন সেহেতু আপনি বাংলাদেশ শ্রম-আইন, ২০০৬ এর ২৭(৩ক) ধারা মতে চাকুরী হতে আপনার অনুপস্থিতির দিন থেকে অর্থাৎ, গত {{ $d($absentDate) }} ইং তারিখ হতে অব্যহতি গ্রহন করেছেন বলে গন্য হল এবং আপনাকে আইনগত ভাবে চাকুরী থেকে অব্যাহতি প্রদান করা হইল।</p>
+    @else
+        <p style="color:#b91c1c">Select 1st, 2nd or 3rd Letter in Final Settlement Info, then print again.</p>
+    @endif
+
+    <div class="closing">
+        ধন্যবাদান্তে,<br>
+        সুহানা ফ্যাশন্স লিঃ<br>
+        পক্ষে,
+    </div>
+
+    <div class="sign">
+        <b>ব্যবস্থাপক (মানব সম্পদ,প্রশাসন ও কমপ্লায়েন্স)</b><br>
+        <b>সুহানা ফ্যাশন্স লিঃ</b><br>
+        অনুলিপি : ব্যক্তিগত নথি
     </div>
 </div>
 @endsection
