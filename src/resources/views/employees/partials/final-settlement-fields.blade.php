@@ -8,7 +8,7 @@
 
     // Only run the (relatively expensive) suggestion calculator for employees who are
     // actually leaving — skip it for regular/active rows rendered on the same index page.
-    $suggestion = in_array($employee->employment_status, ['resign', 'lefty', 'transfer'], true)
+    $suggestion = in_array($employee->employment_status, ['resign', 'lefty', 'termination', 'transfer'], true)
         ? \ME\Hr\Services\FinalSettlementCalculator::suggest($employee)
         : null;
 @endphp

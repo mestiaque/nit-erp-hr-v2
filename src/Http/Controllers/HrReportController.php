@@ -249,7 +249,7 @@ class HrReportController extends Controller
         $options = $this->employeeReportOptions();
         $reportTypes = [
             'recruitment' => 'Recruitment',
-            'migration' => 'Migration',
+            'migration' => 'Separation (Resign / Lefty / Termination / Transfer)',
             'long-absent' => 'Long Absent',
             'attendance-with-ot' => 'Attendance With OT',
             'increment' => 'Increment',
@@ -304,6 +304,7 @@ class HrReportController extends Controller
                 'reportTitle' => config('hr.reports.' . $report),
                 'reportType' => $reportType,
                 'reportTypeLabel' => $reportTypes[$reportType],
+                'separationTypes' => self::SEPARATION_TYPES,
                 'request' => $request,
                 'options' => $options,
                 'data' => $data,
@@ -322,6 +323,7 @@ class HrReportController extends Controller
             'options' => $options,
             'reportTypes' => $reportTypes,
             'reportType' => $reportType,
+            'separationTypes' => self::SEPARATION_TYPES,
             'groupByOptions' => self::GROUP_BY_OPTIONS,
             'incrementPercent' => $incrementPercent,
             'effectiveDate' => $effectiveDate,
@@ -403,16 +405,30 @@ class HrReportController extends Controller
         ];
     }
 
+    /** Separation report kinds: employment_status value => label. */
+    private const SEPARATION_TYPES = [
+        'resign' => 'Resign',
+        'lefty' => 'Lefty',
+        'termination' => 'Termination',
+        'transfer' => 'Transfer',
+    ];
+
+    /** Separation (old "Migration"): employees who left within From-To by exit date, optionally one kind only. */
     private function monthlyMigrationData($employees, array $options, Request $request): array
     {
+        // 'left' / 'resigned' are older spellings of lefty / resign.
+        $kindOf = fn (string $status) => ['left' => 'lefty', 'resigned' => 'resign'][$status] ?? $status;
+        $only = array_key_exists((string) $request->input('separation_type'), self::SEPARATION_TYPES)
+            ? (string) $request->input('separation_type') : null;
+
         $departmentMap = collect($options['departments'] ?? [])->pluck('name', 'id');
         $sectionMap = collect($options['sections'] ?? [])->pluck('name', 'id');
         $designationMap = collect($options['designations'] ?? [])->pluck('name', 'id');
 
         $rows = $employees
-            ->filter(function (HrEmployee $employee) use ($request) {
-                $status = strtolower((string) ($employee->employment_status ?? ''));
-                if (!in_array($status, ['transfer', 'lefty', 'left', 'resign', 'resigned'], true)) {
+            ->filter(function (HrEmployee $employee) use ($request, $kindOf, $only) {
+                $kind = $kindOf(strtolower((string) ($employee->employment_status ?? '')));
+                if (!array_key_exists($kind, self::SEPARATION_TYPES) || ($only && $kind !== $only)) {
                     return false;
                 }
 
@@ -431,9 +447,9 @@ class HrReportController extends Controller
 
                 return true;
             })
-            ->map(function (HrEmployee $employee) use ($departmentMap, $sectionMap, $designationMap) {
+            ->map(function (HrEmployee $employee) use ($departmentMap, $sectionMap, $designationMap, $kindOf) {
                 $other = is_array($employee->other_information) ? $employee->other_information : [];
-                $status = (string) ($employee->employment_status ?? 'N/A');
+                $kind = $kindOf(strtolower((string) ($employee->employment_status ?? '')));
 
                 return [
                     'employee' => $employee,
@@ -442,14 +458,23 @@ class HrReportController extends Controller
                     'department' => $departmentMap->get($employee->department_id, 'N/A'),
                     'section' => $sectionMap->get($employee->section_id, 'N/A'),
                     'designation' => $designationMap->get($employee->designation_id, 'N/A'),
-                    'migration_type' => ucfirst($status),
+                    'migration_type' => self::SEPARATION_TYPES[$kind],
                     'migration_date' => !blank($employee->exited_at) ? \Carbon\Carbon::parse($employee->exited_at)->format('d-M-Y') : 'N/A',
                     'remarks' => data_get($other, 'resign_info.remarks', ''),
                 ];
             })
+            ->sortBy(fn (array $row) => $row['employee']->exited_at)
             ->values();
 
-        return ['rows' => $rows];
+        $counts = $rows->countBy(fn (array $row) => $row['migration_type']);
+
+        return [
+            'rows' => $rows,
+            'separation_type' => $only,
+            'separation_counts' => collect(self::SEPARATION_TYPES)
+                ->filter(fn ($label, $key) => !$only || $key === $only)
+                ->mapWithKeys(fn ($label) => [$label => (int) ($counts[$label] ?? 0)]),
+        ];
     }
 
     private function monthlyLongAbsentData($employees, array $options, Request $request): array
@@ -1200,6 +1225,7 @@ class HrReportController extends Controller
                 ['id' => 'regular', 'name' => 'Regular'],
                 ['id' => 'lefty', 'name' => 'Lefty'],
                 ['id' => 'resign', 'name' => 'Resign'],
+                ['id' => 'termination', 'name' => 'Termination'],
                 ['id' => 'transfer', 'name' => 'Transfer'],
             ]),
             'salaryTypes' => collect([

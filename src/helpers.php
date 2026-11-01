@@ -211,7 +211,7 @@ if (! function_exists('hr_employee_status_note')) {
             'resign' => 'Resign', 'resigned' => 'Resign',
             'lefty' => 'Lefty', 'left' => 'Lefty',
             'transfer' => 'Transfer',
-            'terminate' => 'Terminated', 'terminated' => 'Terminated',
+            'terminate' => 'Terminated', 'terminated' => 'Terminated', 'termination' => 'Terminated',
         ];
 
         if (isset($labels[$status])) {

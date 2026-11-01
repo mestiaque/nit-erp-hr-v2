@@ -96,6 +96,15 @@
                         <label class="mb-1">Date</label>
                         <input type="date" name="date" class="form-control form-control-sm" value="{{ $request->input('date', date('Y-m-d')) }}">
                     </div>
+                    <div class="col-md-3 mb-3" id="separationTypeWrap" style="display:none;">
+                        <label class="mb-1">Separation Type</label>
+                        <select name="separation_type" class="form-control form-control-sm">
+                            <option value="">All (Resign / Lefty / Termination / Transfer)</option>
+                            @foreach($separationTypes ?? [] as $key => $label)
+                                <option value="{{ $key }}" @selected($request->separation_type === $key)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="col-md-3 mb-3" id="incrementPercentWrap" style="display:none;">
                         <label class="mb-1">Increment %</label>
                         <input type="number" step="0.01" min="0" name="increment_percent" class="form-control form-control-sm" value="{{ $incrementPercent }}">
@@ -153,6 +162,7 @@
         const effectiveWrap = document.getElementById('effectiveDateWrap');
         const minAbsentWrap = document.getElementById('minAbsentDaysWrap');
         const attWithOtDateWrap = document.getElementById('attWithOtDateWrap');
+        const separationWrap = document.getElementById('separationTypeWrap');
         const fromLabel     = document.getElementById('fromLabel');
         const toLabel       = document.getElementById('toLabel');
         const fromInput     = document.getElementById('fromInput');
@@ -167,10 +177,11 @@
             if (effectiveWrap) effectiveWrap.style.display = showIncrement ? 'block' : 'none';
             if (minAbsentWrap) minAbsentWrap.style.display = showLongAbsent ? 'block' : 'none';
             if (attWithOtDateWrap) attWithOtDateWrap.style.display = showAttWithOt ? 'block' : 'none';
+            if (separationWrap) separationWrap.style.display = value === 'migration' ? 'block' : 'none';
 
             // Change From/To labels to clarify join-date / increment-date filtering
-            if (fromLabel) fromLabel.textContent = showIncrement ? 'Join / Inc Date From' : 'From';
-            if (toLabel)   toLabel.textContent   = showIncrement ? 'Join / Inc Date To'   : 'To';
+            if (fromLabel) fromLabel.textContent = showIncrement ? 'Join / Inc Date From' : (value === 'migration' ? 'Exit Date From' : (value === 'recruitment' ? 'Join Date From' : 'From'));
+            if (toLabel)   toLabel.textContent   = showIncrement ? 'Join / Inc Date To'   : (value === 'migration' ? 'Exit Date To' : (value === 'recruitment' ? 'Join Date To' : 'To'));
         }
 
         if (reportTypeEl) {

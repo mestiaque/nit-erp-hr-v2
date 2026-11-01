@@ -116,6 +116,7 @@ class HrEmployeeController extends Controller
         $statusCounts = (clone $query)->toBase()->cloneWithout(['columns', 'orders'])
             ->selectRaw("CASE WHEN employment_status IN ('lefty', 'left') THEN 'lefty'
                 WHEN employment_status IN ('resign', 'resigned') THEN 'resign'
+                WHEN employment_status = 'termination' THEN 'termination'
                 WHEN employment_status = 'transfer' THEN 'transfer' ELSE 'regular' END AS employment_group, COUNT(*) AS total")
             ->groupBy('employment_group')
             ->pluck('total', 'employment_group');
@@ -554,7 +555,7 @@ class HrEmployeeController extends Controller
         $this->ensureEmployee($employee);
 
         $payload = $request->validate([
-            'employment_status' => 'nullable|in:regular,resign,lefty,transfer',
+            'employment_status' => 'nullable|in:regular,resign,lefty,termination,transfer',
             'resign_remarks' => 'nullable|string|max:500',
             'resign_date' => 'nullable|date',
             'final_settlement_type' => 'nullable|string|max:191',

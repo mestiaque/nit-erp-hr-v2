@@ -206,7 +206,7 @@ class EmployeeAttendanceService
         // fabricated attendance nor gets wrongly deducted for days they no longer worked.
         $exitedAt = null;
         $empExitStatus = strtolower((string) ($employee->employment_status ?? ''));
-        if (in_array($empExitStatus, ['lefty', 'left', 'resign', 'resigned'], true) && !blank($employee->exited_at)) {
+        if (in_array($empExitStatus, ['lefty', 'left', 'resign', 'resigned', 'termination'], true) && !blank($employee->exited_at)) {
             $exitedAt = Carbon::parse($employee->exited_at)->startOfDay();
         }
 

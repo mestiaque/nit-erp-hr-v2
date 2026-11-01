@@ -160,7 +160,8 @@
         </tbody>
     </table>
 @elseif($reportType === 'migration')
-    <div class="sub"><strong>Employee Migration Report-{{ $fromLabel }} To {{ $toLabel }}</strong></div>
+    @php $sepOnly = $data['separation_type'] ?? null; @endphp
+    <div class="sub"><strong>Employee Separation Report{{ $sepOnly ? ' (' . ($separationTypes[$sepOnly] ?? '') . ')' : '' }} - {{ $fromLabel }} To {{ $toLabel }}</strong></div>
     @forelse($groups as $groupKey => $groupRows)
     @if($groupBy !== 'none')
         <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>
@@ -174,8 +175,8 @@
                 <th>Department</th>
                 @unless(hr_hide_section_line())<th>Section</th>@endunless
                 <th>Designation</th>
-                <th>Migration Type</th>
-                <th>Migration Date</th>
+                <th>Separation Type</th>
+                <th>Exit Date</th>
                 <th>Remarks</th>
             </tr>
         </thead>
@@ -198,6 +199,12 @@
     @empty
         <p style="text-align:center;color:#888;padding:12px 0;">No data found.</p>
     @endforelse
+    @if(! empty($data['separation_counts']))
+        <table class="table-report" style="width:auto;margin-top:8px;">
+            <thead><tr>@foreach($data['separation_counts'] as $label => $n)<th>{{ $label }}</th>@endforeach<th>Total</th></tr></thead>
+            <tbody><tr>@foreach($data['separation_counts'] as $n)<td class="text-center">{{ $n }}</td>@endforeach<td class="text-center"><strong>{{ $data['separation_counts']->sum() }}</strong></td></tr></tbody>
+        </table>
+    @endif
 @elseif($reportType === 'long-absent')
     <div class="sub"><strong>Long absent Report ({{ $fromLabel }} To {{ $toLabel }})</strong></div>
     @forelse($groups as $groupKey => $groupRows)

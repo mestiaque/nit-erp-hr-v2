@@ -22,7 +22,7 @@
     $issueDate = $isBangla ? bn_date(now()->toDateString(), 'd/m/Y') : now()->format('d/m/Y');
 
     $status = (string) ($employee->employment_status ?? 'regular');
-    $isSeparated = in_array($status, ['lefty', 'left', 'resign', 'resigned'], true);
+    $isSeparated = in_array($status, ['lefty', 'left', 'resign', 'resigned', 'termination'], true);
 
     // Effective salary (increment override already applied by HrOptionsService)
     $sal = $employeeData['salary'] ?? [];

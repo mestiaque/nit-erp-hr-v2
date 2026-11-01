@@ -67,7 +67,7 @@
                         @php
                             $statusLabel = $employee->status ?? 'regular';
                             $statusColor = match(strtolower($statusLabel)) {
-                                'lefty','resign','transfer' => 'danger',
+                                'lefty','resign','termination','transfer' => 'danger',
                                 default => 'success',
                             };
                         @endphp

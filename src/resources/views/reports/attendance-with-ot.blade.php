@@ -94,6 +94,7 @@
                             <option value="regular" @selected(in_array('regular', (array)$request->employee_status))>Regular</option>
                             <option value="lefty" @selected(in_array('lefty', (array)$request->employee_status))>Lefty</option>
                             <option value="resign" @selected(in_array('resign', (array)$request->employee_status))>Resign</option>
+                            <option value="termination" @selected(in_array('termination', (array)$request->employee_status))>Termination</option>
                         </select>
                     </div>
 

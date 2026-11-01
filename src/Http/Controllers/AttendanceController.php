@@ -217,7 +217,7 @@ class AttendanceController extends Controller
     private function resolveExitedAt(HrEmployee $employee): ?Carbon
     {
         $status = strtolower((string) ($employee->employment_status ?? ''));
-        if (in_array($status, ['lefty', 'left', 'resign', 'resigned'], true) && !blank($employee->exited_at)) {
+        if (in_array($status, ['lefty', 'left', 'resign', 'resigned', 'termination'], true) && !blank($employee->exited_at)) {
             return Carbon::parse($employee->exited_at)->startOfDay();
         }
         return null;
