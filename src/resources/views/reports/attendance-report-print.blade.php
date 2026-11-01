@@ -17,6 +17,7 @@
 .present { color:green; font-weight:700; }
 .absent  { color:red; }
 .total-days { font-weight:700; background:#eef2f7; }
+.sign { white-space:nowrap; font-weight:800; }
 .section-summary { font-size:10px; margin:2px 0 6px; }
 </style>
 @endpush
@@ -61,13 +62,13 @@
                 <th>Name</th>
                 <th>Designation</th>
                 <th>Join Date</th>
-                <th>Present</th>
-                <th>Absent</th>
+                <th>Present <span class="sign">(+)</span></th>
+                <th>Absent <span class="sign">(−)</span></th>
                 <th>Late</th>
-                <th>Leave</th>
-                <th>Weekend</th>
-                <th>Holiday</th>
-                <th title="Present + Leave + Weekend + Holiday (absent days left out)">Total Days</th>
+                <th>Leave <span class="sign">(+)</span></th>
+                <th>Weekend <span class="sign">(+)</span></th>
+                <th>Holiday <span class="sign">(+)</span></th>
+                <th title="Present + Leave + Weekend + Holiday (absent days left out)">Total Days <span class="sign">(=)</span></th>
                 <th>OT Hrs</th>
             </tr>
         </thead>
@@ -138,13 +139,13 @@
     <thead>
         <tr>
             <th colspan="5">Grand Total ({{ $employees->count() }} employees)</th>
-            <th>Present</th>
-            <th>Absent</th>
+            <th>Present <span class="sign">(+)</span></th>
+            <th>Absent <span class="sign">(−)</span></th>
             <th>Late</th>
-            <th>Leave</th>
-            <th>Weekend</th>
-            <th>Holiday</th>
-            <th title="Present + Leave + Weekend + Holiday (absent days left out)">Total Days</th>
+            <th>Leave <span class="sign">(+)</span></th>
+            <th>Weekend <span class="sign">(+)</span></th>
+            <th>Holiday <span class="sign">(+)</span></th>
+            <th title="Present + Leave + Weekend + Holiday (absent days left out)">Total Days <span class="sign">(=)</span></th>
             <th>OT Hrs</th>
         </tr>
     </thead>
