@@ -159,9 +159,8 @@
             @endforelse
         </tbody>
     </table>
-@elseif($reportType === 'migration')
-    @php $sepOnly = $data['separation_type'] ?? null; @endphp
-    <div class="sub"><strong>Employee Separation Report{{ $sepOnly ? ' (' . ($separationTypes[$sepOnly] ?? '') . ')' : '' }} - {{ $fromLabel }} To {{ $toLabel }}</strong></div>
+@elseif($reportType === 'migration' || str_starts_with($reportType, 'separation-'))
+    <div class="sub"><strong>Employee Separation Report{{ ($data['separation_type'] ?? null) ? ' (' . $reportTypeLabel . ')' : '' }} - {{ $fromLabel }} To {{ $toLabel }}</strong></div>
     @forelse($groups as $groupKey => $groupRows)
     @if($groupBy !== 'none')
         <div class="section-title">{{ $groupLabel((string) $groupKey) }}</div>

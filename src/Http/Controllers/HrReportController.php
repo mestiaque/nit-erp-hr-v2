@@ -248,8 +248,12 @@ class HrReportController extends Controller
     {
         $options = $this->employeeReportOptions();
         $reportTypes = [
-            'recruitment' => 'Recruitment',
-            'migration' => 'Separation (Resign / Lefty / Termination / Transfer)',
+            'recruitment' => 'New Join (Recruitment)',
+            'separation-resign' => 'Resign',
+            'separation-lefty' => 'Lefty',
+            'separation-termination' => 'Termination',
+            'separation-transfer' => 'Transfer',
+            'migration' => 'All Separation (Resign / Lefty / Termination / Transfer)',
             'long-absent' => 'Long Absent',
             'attendance-with-ot' => 'Attendance With OT',
             'increment' => 'Increment',
@@ -260,6 +264,8 @@ class HrReportController extends Controller
         if (!array_key_exists($reportType, $reportTypes)) {
             $reportType = 'recruitment';
         }
+        // separation-<kind>: the separation report for that one kind; 'migration' is all kinds together.
+        $separationOnly = str_starts_with($reportType, 'separation-') ? substr($reportType, strlen('separation-')) : null;
 
         $incrementPercent = (float) $request->input('increment_percent', 0);
         $effectiveDate = $request->input('effective_date');
@@ -281,6 +287,7 @@ class HrReportController extends Controller
         $data = match ($reportType) {
             'recruitment' => $this->monthlyRecruitmentData($employees, $options, $request),
             'migration' => $this->monthlyMigrationData($employees, $options, $request),
+            'separation-resign', 'separation-lefty', 'separation-termination', 'separation-transfer' => $this->monthlyMigrationData($employees, $options, $request, $separationOnly),
             'long-absent' => $this->monthlyLongAbsentData($employees, $options, $request),
             'increment' => $this->monthlyIncrementData($employees, $options, $request, $incrementMap, $incrementPercent, $effectiveDate, false),
             'increment-summary' => $this->monthlyIncrementData($employees, $options, $request, $incrementMap, $incrementPercent, $effectiveDate, true),
@@ -304,7 +311,6 @@ class HrReportController extends Controller
                 'reportTitle' => config('hr.reports.' . $report),
                 'reportType' => $reportType,
                 'reportTypeLabel' => $reportTypes[$reportType],
-                'separationTypes' => self::SEPARATION_TYPES,
                 'request' => $request,
                 'options' => $options,
                 'data' => $data,
@@ -323,7 +329,6 @@ class HrReportController extends Controller
             'options' => $options,
             'reportTypes' => $reportTypes,
             'reportType' => $reportType,
-            'separationTypes' => self::SEPARATION_TYPES,
             'groupByOptions' => self::GROUP_BY_OPTIONS,
             'incrementPercent' => $incrementPercent,
             'effectiveDate' => $effectiveDate,
@@ -414,12 +419,11 @@ class HrReportController extends Controller
     ];
 
     /** Separation (old "Migration"): employees who left within From-To by exit date, optionally one kind only. */
-    private function monthlyMigrationData($employees, array $options, Request $request): array
+    private function monthlyMigrationData($employees, array $options, Request $request, ?string $only = null): array
     {
         // 'left' / 'resigned' are older spellings of lefty / resign.
         $kindOf = fn (string $status) => ['left' => 'lefty', 'resigned' => 'resign'][$status] ?? $status;
-        $only = array_key_exists((string) $request->input('separation_type'), self::SEPARATION_TYPES)
-            ? (string) $request->input('separation_type') : null;
+        $only = array_key_exists((string) $only, self::SEPARATION_TYPES) ? $only : null;
 
         $departmentMap = collect($options['departments'] ?? [])->pluck('name', 'id');
         $sectionMap = collect($options['sections'] ?? [])->pluck('name', 'id');
