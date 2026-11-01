@@ -16,6 +16,7 @@
 .tr { text-align:right; }
 .present { color:green; font-weight:700; }
 .absent  { color:red; }
+.total-days { font-weight:700; background:#eef2f7; }
 .section-summary { font-size:10px; margin:2px 0 6px; }
 </style>
 @endpush
@@ -66,6 +67,7 @@
                 <th>Leave</th>
                 <th>Weekend</th>
                 <th>Holiday</th>
+                <th title="Present + Leave + Weekend + Holiday (absent days left out)">Total Days</th>
                 <th>OT Hrs</th>
             </tr>
         </thead>
@@ -99,10 +101,11 @@
                     <td class="tc">{{ $leave }}</td>
                     <td class="tc">{{ $weekend }}</td>
                     <td class="tc">{{ $holiday }}</td>
+                    <td class="tc total-days">{{ $present + $leave + $weekend + $holiday }}</td>
                     <td class="tr">{{ $otHrs }}</td>
                 </tr>
             @empty
-                <tr><td colspan="12" class="tc">No data.</td></tr>
+                <tr><td colspan="13" class="tc">No data.</td></tr>
             @endforelse
             {{-- Section subtotal row --}}
             @if($sectionEmps->count() > 1)
@@ -114,6 +117,7 @@
                 <td class="tc">{{ $secLeave }}</td>
                 <td class="tc">{{ $secWeekend }}</td>
                 <td class="tc">{{ $secHoliday }}</td>
+                <td class="tc total-days">{{ $secPresent + $secLeave + $secWeekend + $secHoliday }}</td>
                 <td class="tr">{{ number_format($secOt, 2) }}</td>
             </tr>
             @endif
@@ -140,6 +144,7 @@
             <th>Leave</th>
             <th>Weekend</th>
             <th>Holiday</th>
+            <th title="Present + Leave + Weekend + Holiday (absent days left out)">Total Days</th>
             <th>OT Hrs</th>
         </tr>
     </thead>
@@ -152,6 +157,7 @@
             <td class="tc">{{ $grandLeave }}</td>
             <td class="tc">{{ $grandWeekend }}</td>
             <td class="tc">{{ $grandHoliday }}</td>
+            <td class="tc total-days">{{ $grandPresent + $grandLeave + $grandWeekend + $grandHoliday }}</td>
             <td class="tr">{{ number_format($grandOt, 2) }}</td>
         </tr>
     </tbody>
