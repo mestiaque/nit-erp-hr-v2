@@ -118,6 +118,10 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::put('/holidays/{id}', [HrHolidayController::class, 'update'])->name('holidays.update');
 		Route::delete('/holidays/{id}', [HrHolidayController::class, 'destroy'])->name('holidays.destroy');
 
+		Route::get('/no-ot-dates', [\ME\Hr\Http\Controllers\HrNoOtDateController::class, 'index'])->name('no-ot-dates.index');
+		Route::post('/no-ot-dates', [\ME\Hr\Http\Controllers\HrNoOtDateController::class, 'store'])->name('no-ot-dates.store');
+		Route::delete('/no-ot-dates/{id}', [\ME\Hr\Http\Controllers\HrNoOtDateController::class, 'destroy'])->name('no-ot-dates.destroy');
+
 		// Employee Gate Pass
 		Route::get('/gate-passes', [HrEmployeeGatePassController::class, 'index'])->name('gate-passes.index');
 		Route::post('/gate-passes', [HrEmployeeGatePassController::class, 'store'])->name('gate-passes.store');

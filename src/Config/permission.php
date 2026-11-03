@@ -123,6 +123,10 @@ return [
             'label' => 'Factory Holiday',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All' ],
         ],
+        'hr_no_ot_date' => [
+            'label' => 'No-OT Dates',
+            'permissions' => [ 'list' => 'List', 'add' => 'Create', 'delete' => 'Delete', 'all' => 'All' ],
+        ],
         'hr_employee_gate_pass' => [
             'label' => 'Employee Gate Pass',
             'permissions' => [ 'list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'all' => 'All' ],

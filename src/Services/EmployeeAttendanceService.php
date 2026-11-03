@@ -299,6 +299,10 @@ class EmployeeAttendanceService
         $offDayWorkedDays      = 0;
         $offDayWorkedOtMinutes = 0;
 
+        // No-OT Dates (HR → No-OT Dates): nobody earns OT on these days. Applied here, the one
+        // engine every report and the salary sheet read OT from, so they can never disagree.
+        $noOtDates = \ME\Hr\Models\HrNoOtDate::between($from->toDateString(), $to->toDateString());
+
         if (!$attendanceMap) $attendanceMap = collect();
         if (!$holidays)      $holidays      = collect();
 
@@ -420,7 +424,8 @@ class EmployeeAttendanceService
             // shares this engine (Job Card, Salary, Wages Summary, OT Summary, ...) must
             // reflect the current grace-period setting immediately, including for
             // attendance rows that were synced/saved before the setting was changed.
-            $otMinRaw = $otEnabled
+            $isNoOtDate = isset($noOtDates[$dateStr]);
+            $otMinRaw = ($otEnabled && !$isNoOtDate)
                 ? self::calculateOvertimeMinutes($resolvedShift, $dateStr, $effectiveInTime, $effectiveOutTime, $employee)
                 : 0;
 
@@ -449,7 +454,7 @@ class EmployeeAttendanceService
                     $outTime = $att && $effectiveOutTime ? $effectiveOutTime : null;
 
                     $otMinRawForActual = $otMinRaw;
-                    if ($otEnabled && $isOtBasisWphp && $att && $att->in_time) {
+                    if ($otEnabled && !$isNoOtDate && $isOtBasisWphp && $att && $att->in_time) {
                         $otMinRawForActual = max($otMinRaw, (int) ($att->total_working_minute ?? 0));
                     }
                     $actualOt     = round($otMinRawForActual / 60, 2);
@@ -498,6 +503,12 @@ class EmployeeAttendanceService
                     $extraOt      = null;
                 }
             }
+            // A No-OT date shows no time past shift end in Comp-1 either (it hides extra time
+            // by capping the displayed Out Time, as for any OT over the compliance cap).
+            if ($isNoOtDate && $factoryNo == 1 && $outTime && $resolvedShift && $resolvedShift->end_time
+                && $shiftMinutes > 0 && Carbon::parse($dateStr . ' ' . $outTime)->gt(Carbon::parse($dateStr . ' ' . $resolvedShift->end_time))) {
+                $outTime = $resolvedShift->end_time;
+            }
             // ─────────────────────────────────────────────────────────────────────
 
             // ── Meal allowance eligibility ────────────────────────────────
@@ -514,7 +525,10 @@ class EmployeeAttendanceService
             // suppression above, since the allowance is still paid in every factory mode.
             if ($isGenuineOffDay && $att && ($att->in_time || $att->out_time)) {
                 $offDayWorkedDays++;
-                $offDayWorkedOtMinutes += max((int) ($att->total_working_minute ?? 0), 0);
+                // The day still counts for weekend/holiday pay; only its OT-hour part is dropped.
+                if (!$isNoOtDate) {
+                    $offDayWorkedOtMinutes += max((int) ($att->total_working_minute ?? 0), 0);
+                }
             }
             $result[] = [
                 'date'            => $d->format('d-m-Y'),

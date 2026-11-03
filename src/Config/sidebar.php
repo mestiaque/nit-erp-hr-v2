@@ -227,6 +227,13 @@ return [
                     'permission' => 'hr_factory_holiday',
                 ],
                 [
+                    'title'      => 'No-OT Dates',
+                    'icon'       => 'fa-solid fa-business-time',
+                    'route'      => '/admin/hr-center/no-ot-dates',
+                    'icon_color' => 'text-danger',
+                    'permission' => 'hr_no_ot_date',
+                ],
+                [
                     'title'      => 'Employee Gate Pass',
                     'icon'       => 'fa-solid fa-right-to-bracket',
                     'route'      => '/admin/hr-center/gate-passes',

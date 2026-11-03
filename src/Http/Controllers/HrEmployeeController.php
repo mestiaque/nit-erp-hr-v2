@@ -1599,6 +1599,14 @@ class HrEmployeeController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
+        // No-OT Dates: show 0 OT for them here too (display only — the stored row is untouched).
+        $noOtDates = \ME\Hr\Models\HrNoOtDate::between($attendanceDateFrom, $attendanceDateTo);
+        foreach ($attendances as $att) {
+            if (isset($noOtDates[\Carbon\Carbon::parse($att->date)->toDateString()])) {
+                $att->total_ot_minute = 0;
+            }
+        }
+
         // Transaction totals
         $txnTotalAdvance    = (float) $transactions->sum('advance_iou');
         $txnTotalEarnings   = (float) $transactions->sum('earnings');
