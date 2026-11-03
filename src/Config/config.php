@@ -36,6 +36,15 @@ return [
      | Leave null to disable the machine API endpoints.
      */
     'machine_api_token' => env('HR_MACHINE_API_TOKEN'),
+
+    /*
+     | Continuous-absence mail (hr:absent-alert): employees absent this many working days in a row
+     | are mailed every day at `at` to the recipients picked in Settings > Mail Notifications.
+     */
+    'absent_alert' => [
+        'days' => (int) env('HR_ABSENT_ALERT_DAYS', 3),
+        'at'   => env('HR_ABSENT_ALERT_AT', '09:00'),
+    ],
     'legacy_links' => [
         [
             'title' => 'Employee Type',

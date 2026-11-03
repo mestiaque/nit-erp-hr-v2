@@ -27,6 +27,19 @@ class HrServiceProvider extends ServiceProvider
             __DIR__ . '/Config' => config_path('hr'),
         ], 'hr-config');
 
+        if ($this->app->runningInConsole()) {
+            $this->commands([\ME\Hr\Console\Commands\AbsentAlertCommand::class]);
+        }
+
+        // Morning mail: employees absent several working days in a row (Settings > Mail Notifications).
+        $this->callAfterResolving(\Illuminate\Console\Scheduling\Schedule::class, function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+            $schedule->command('hr:absent-alert')->dailyAt(config('hr.absent_alert.at', '09:00'))->withoutOverlapping();
+        });
+
+        config(['mail_notifications.actions' => array_merge([
+            \ME\Hr\Services\AbsentAlert::MAIL_ACTION => ['title' => 'HR: Employee absent ' . config('hr.absent_alert.days', 3) . ' days in a row', 'group' => 'HR', 'approval' => false],
+        ], config('mail_notifications.actions', []))]);
+
         // Merge hr-permission into main permission config
         $hrPermissions = config('hr-permission');
         if ($hrPermissions && is_array($hrPermissions)) {
