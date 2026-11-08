@@ -61,6 +61,7 @@
                         @endforeach
                     </select>
                 </div>
+                @unless(hr_hide_section_line())
                 <div class="col-md-2">
                     <label class="form-label mb-1">Section</label>
                     <select name="section_id" class="form-control form-control-sm">
@@ -79,6 +80,7 @@
                         @endforeach
                     </select>
                 </div>
+                @endunless
                 <div class="col-md-2">
                     <label class="form-label mb-1">Designation</label>
                     <select name="designation_id" class="form-control form-control-sm">
@@ -176,8 +178,10 @@
                             <th>Contact</th>
                             <th>Classification</th>
                             <th>Department</th>
+                            @unless(hr_hide_section_line())
                             <th>Section</th>
                             <th>Sub Section</th>
+                            @endunless
                             <th>Designation</th>
                             <th>Shift</th>
                             <th>Working Place</th>
@@ -214,8 +218,10 @@
                                 <td>{{ $employee->mobile }}</td>
                                 <td>{{ $classificationMap->get($employee->employee_type) }}</td>
                                 <td>{{ $departmentMap->get($employee->department_id) }}</td>
+                                @unless(hr_hide_section_line())
                                 <td>{{ $sectionMap->get($employee->section_id) }}</td>
                                 <td>{{ $subSectionMap->get($employee->sub_section_id ?? data_get($profile, 'sub_section_id')) }}</td>
+                                @endunless
                                 <td>{{ $designationMap->get($employee->designation_id) }}</td>
                                 <td>{{ $shiftMap->get($employee->shift_id) }}</td>
                                 <td>{{ $workingPlaceMap->get($employee->working_place_id ?? data_get($profile, 'working_place_id')) }}</td>
@@ -241,7 +247,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="16" class="text-center">No employee found.</td></tr>
+                            <tr><td colspan="{{ hr_hide_section_line() ? 14 : 16 }}" class="text-center">No employee found.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
