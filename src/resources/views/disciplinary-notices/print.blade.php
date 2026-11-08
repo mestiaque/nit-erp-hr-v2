@@ -46,7 +46,7 @@
     <div style="margin-bottom:18px;"><strong>তারিখ:</strong> {{ $bd($notice->notice_date) }}</div>
 
     <div style="margin-bottom:18px;">
-        <strong>বিষয়: কাজে অবহেলার কারণে জরিমানা ও {{ $bnDays }} দিনের বেতন কর্তন প্রসঙ্গে।</strong>
+        <strong>বিষয়: {{ $notice->subject ?: \ME\Hr\Models\HrDisciplinaryNotice::fineDefaultSubject($notice->deduction_days) }}</strong>
     </div>
 
     <div style="text-align: justify;">
@@ -55,13 +55,13 @@
         <p style="margin-bottom:14px;">
             উপরে উল্লিখিত বিষয়ের প্রেক্ষিতে আপনাকে জানানো যাচ্ছে যে,
             @if($notice->incident_date)
-                {{ $bd($notice->incident_date) }} তারিখে আপনার দায়িত্বে অবহেলায় ও ভুল সিদ্ধান্ত গ্রহণ করার কারণে
+                {{ $bd($notice->incident_date) }} তারিখে
             @endif
-            {{ $notice->incident_description }} । এর ফলে প্রতিষ্ঠানের আর্থিক এবং ব্যবসায়িক ক্ষতি সাধন হয়েছে।
+            {!! nl2br(e(trim((string) $notice->incident_description))) !!}। এর ফলে প্রতিষ্ঠানের আর্থিক এবং ব্যবসায়িক ক্ষতি সাধন হয়েছে।
         </p>
 
         <p style="margin-bottom:14px;">
-            এর আগেও আপনাকে মৌখিকভাবে কাজের প্রতি যত্নশীল হওয়ার নির্দেশ দেওয়া হয়েছিল। কিন্তু আপনার কর্মপদ্ধতিতে কোনো পরিবর্তন লক্ষ্য করা যায়নি।
+            {!! nl2br(e($notice->prior_warning ?: \ME\Hr\Models\HrDisciplinaryNotice::FINE_DEFAULT_PRIOR_WARNING)) !!}
         </p>
 
         <p style="margin-bottom:0;">

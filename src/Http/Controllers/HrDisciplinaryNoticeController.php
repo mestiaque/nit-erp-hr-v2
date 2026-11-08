@@ -114,14 +114,17 @@ class HrDisciplinaryNoticeController extends Controller
             'deduction_days'        => 'required_if:notice_type,' . HrDisciplinaryNotice::TYPE_FINE . '|nullable|integer|min:1',
             'subject'               => 'required_if:notice_type,' . HrDisciplinaryNotice::TYPE_SHOW_CAUSE . '|nullable|string|max:255',
             'consequence'           => 'nullable|string|max:1000',
+            'prior_warning'         => 'nullable|string|max:2000',
         ]);
 
-        // Each type keeps only its own fields.
+        // Each type keeps only its own fields. A blank fine subject / prior warning prints the default text.
         if ($validated['notice_type'] === HrDisciplinaryNotice::TYPE_SHOW_CAUSE) {
             $validated['deduction_days'] = null;
+            $validated['prior_warning'] = null;
         } else {
-            $validated['subject'] = null;
             $validated['consequence'] = null;
+            $validated['subject'] = $validated['subject'] ?? null;
+            $validated['prior_warning'] = $validated['prior_warning'] ?? null;
         }
 
         return $validated;

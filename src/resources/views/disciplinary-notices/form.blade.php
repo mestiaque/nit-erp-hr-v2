@@ -86,9 +86,23 @@
                         <input type="text" name="subject" maxlength="255" class="form-control form-control-sm" value="{{ old('subject', $notice->subject) }}" placeholder="অতি গুরুত্বপূর্ণ প্রোডাক্ট হারানো প্রসঙ্গে।" required>
                     </div>
 
+                    <div class="col-md-12 mb-2" data-notice-type="fine">
+                        <label class="form-label mb-1">Subject (বিষয়) <small class="text-muted">(leave blank for the default subject)</small></label>
+                        <input type="text" name="subject" maxlength="255" class="form-control form-control-sm" value="{{ old('subject', $notice->subject) }}" placeholder="{{ \ME\Hr\Models\HrDisciplinaryNotice::fineDefaultSubject(old('deduction_days', $notice->deduction_days ?: 1)) }}">
+                    </div>
+
+                    @php
+                        $incidentDefault = (!$notice->id && $noticeType === \ME\Hr\Models\HrDisciplinaryNotice::TYPE_FINE)
+                            ? \ME\Hr\Models\HrDisciplinaryNotice::FINE_DEFAULT_INCIDENT : $notice->incident_description;
+                    @endphp
                     <div class="col-md-12 mb-2">
-                        <label class="form-label mb-1">Incident Description <small class="text-muted">(what happened — printed in the notice body)</small></label>
-                        <textarea name="incident_description" class="form-control form-control-sm" rows="3" placeholder="আপনার দায়িত্বে অবহেলায় উৎপাদন কাজে একক ভাবে ভুল সিদ্ধান্ত গ্রহণ করার কারণে উৎপাদন কাজে ব্যাঘাত ঘটে।">{{ old('incident_description', $notice->incident_description) }}</textarea>
+                        <label class="form-label mb-1">Incident Description <small class="text-muted">(what happened — printed in the notice body after the incident date)</small></label>
+                        <textarea name="incident_description" class="form-control form-control-sm" rows="3" placeholder="আপনার দায়িত্বে অবহেলায় উৎপাদন কাজে একক ভাবে ভুল সিদ্ধান্ত গ্রহণ করার কারণে উৎপাদন কাজে ব্যাঘাত ঘটে।">{{ old('incident_description', $incidentDefault) }}</textarea>
+                    </div>
+
+                    <div class="col-md-12 mb-2" data-notice-type="fine">
+                        <label class="form-label mb-1">Prior Warning <small class="text-muted">(second paragraph — leave blank for the default text)</small></label>
+                        <textarea name="prior_warning" class="form-control form-control-sm" rows="2">{{ old('prior_warning', $notice->id ? $notice->prior_warning : \ME\Hr\Models\HrDisciplinaryNotice::FINE_DEFAULT_PRIOR_WARNING) }}</textarea>
                     </div>
 
                     <div class="col-md-12 mb-2" data-notice-type="show_cause">
