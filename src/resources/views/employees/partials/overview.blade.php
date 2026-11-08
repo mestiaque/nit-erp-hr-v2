@@ -18,48 +18,108 @@
             'values' => [$onTime, $perf['late_or_early'], $perf['absent'], (float) $perf['leave_days']],
         ],
     ];
+    // The running month is partial: flag it so a low month-to-date figure doesn't read as a drop.
+    $mtd = ! $perf['to']->isSameDay($perf['to']->copy()->endOfMonth());
+    $chartData['mtd'] = $mtd && $monthly->isNotEmpty();
+    if ($chartData['mtd']) {
+        $chartData['months'] = $chartData['months']->values()->all();
+        $chartData['months'][count($chartData['months']) - 1] .= ' (MTD)';
+    }
+    $chartData['hasLeave'] = $monthly->sum('leave') > 0;
+    $chartData['hasOt'] = $monthly->sum('ot_hours') > 0;
+
+    // Trend: last complete month vs the one before it.
+    $complete = $chartData['mtd'] ? $monthly->slice(0, -1)->values() : $monthly;
+    $pctOf = fn ($m) => ($m['present'] + $m['absent']) > 0 ? round($m['present'] / ($m['present'] + $m['absent']) * 100) : null;
+    $trend = function (string $key) use ($complete, $pctOf) {
+        if ($complete->count() < 2) return null;
+        [$a, $b] = [$complete[$complete->count() - 2], $complete->last()];
+        return $key === 'pct' ? (($pctOf($a) === null || $pctOf($b) === null) ? null : $pctOf($b) - $pctOf($a)) : $b[$key] - $a[$key];
+    };
+    $fmt = fn ($n) => rtrim(rtrim(number_format((float) $n, 1), '0'), '.');
     $tiles = [
-        ['Service Time', $employee->serviceTimeText() ?? '—', 'fa-hourglass-half'],
-        ['Job Status', $status ?? '—', 'fa-user-check', $status === 'Confirmed' ? 'text-success' : ($status ? 'text-warning' : '')],
-        ['Attendance', $perf['attendance_pct'] !== null ? $perf['attendance_pct'].'%' : '—', 'fa-calendar-check'],
-        ['Present', $perf['present'], 'fa-circle-check'],
-        ['Absent', $perf['absent'], 'fa-circle-xmark', $perf['absent'] ? 'text-danger' : ''],
-        ['Late / Early', $perf['late_or_early'], 'fa-clock', $perf['late_or_early'] ? 'text-warning' : ''],
-        ['Punch Missing', $perf['punch_missing'], 'fa-fingerprint'],
-        ['Leave', rtrim(rtrim(number_format($perf['leave_days'], 1), '0'), '.').' d', 'fa-umbrella-beach'],
-        ['OT Hours', $perf['ot_hours'], 'fa-business-time'],
-        ['Notices', $perf['notices'], 'fa-triangle-exclamation', $perf['notices'] ? 'text-danger' : 'text-success'],
+        // [label, value, sub text, icon, icon colour, trend, trend is good when up?, unit]
+        ['Attendance', $perf['attendance_pct'] !== null ? $perf['attendance_pct'].'%' : '—', 'of working days', 'fa-calendar-check', '#2a78d6', $trend('pct'), true, ' pts'],
+        ['Present / Absent', $perf['present'].' / '.$perf['absent'], $fmt($perf['leave_days']).' day(s) leave', 'fa-user-clock', '#1baf7a', $trend('absent'), false, ' absent'],
+        ['Late / Early', $perf['late_or_early'], $perf['punch_missing'].' punch missing', 'fa-clock', '#eda100', $trend('late_or_early'), false, ''],
+        ['OT Hours', $fmt($perf['ot_hours']), 'overtime in period', 'fa-business-time', '#7c5cd6', $trend('ot_hours'), true, ' h'],
+        ['Notices', $perf['notices'], $perf['notices'] ? 'disciplinary' : 'clean record', 'fa-shield-halved', $perf['notices'] ? '#e34948' : '#16a34a', null, false, ''],
     ];
+
+    // One-line plain-language summary under the rating.
+    $insight = null;
+    if ($perf['has_data']) {
+        $scored = collect($perf['parts'])->filter(fn ($p) => $p['score'] !== null);
+        $best = $scored->sortByDesc('score')->keys()->first();
+        $worst = $scored->sortBy('score')->keys()->first();
+        $insight = $scored->min('score') >= 0.9
+            ? 'Consistent on every measure.'
+            : "Strongest in {$best}; {$worst} needs attention.";
+        $absTrend = $trend('absent');
+        if ($absTrend !== null && $absTrend > 0) $insight .= " Absences up by {$absTrend} last month.";
+    }
 @endphp
 <style>
-    .emp-dash { --ed-border: #eef0f4; --ed-muted: #6b7280; --ed-ink: #1f2937; margin-bottom: 22px; }
-    .emp-dash .ed-card { background: #fff; border: 1px solid var(--ed-border); border-radius: 12px; padding: 12px 14px; height: 100%; }
-    .emp-dash .ed-title { font-size: 12px; font-weight: 700; color: var(--ed-ink); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 4px; }
+    .emp-dash { --ed-border: #e8ebf0; --ed-muted: #6b7280; --ed-ink: #111827; margin-bottom: 22px; }
+    .emp-dash .ed-card { background: #fff; border: 1px solid var(--ed-border); border-radius: 12px; padding: 14px 16px; width: 100%; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
+    .emp-dash .ed-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px; }
+    .emp-dash .ed-title { font-size: 12px; font-weight: 700; color: var(--ed-ink); text-transform: uppercase; letter-spacing: .4px; }
     .emp-dash .ed-sub { font-size: 11px; color: var(--ed-muted); }
-    .emp-dash .ed-tile { display: flex; align-items: center; gap: 8px; background: #fafbfd; border: 1px solid var(--ed-border); border-radius: 8px; padding: 7px 9px; height: 100%; }
-    .emp-dash .ed-tile i { color: #94a3b8; width: 16px; text-align: center; }
-    .emp-dash .ed-tile .k { font-size: 10px; color: var(--ed-muted); text-transform: uppercase; letter-spacing: .3px; line-height: 1.2; }
-    .emp-dash .ed-tile .v { font-size: 14px; font-weight: 700; color: var(--ed-ink); line-height: 1.3; }
+    .emp-dash .ed-kpi { display: flex; gap: 12px; align-items: flex-start; }
+    .emp-dash .ed-kpi .ic { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex: none; }
+    .emp-dash .ed-kpi .k { font-size: 11px; color: var(--ed-muted); font-weight: 600; }
+    .emp-dash .ed-kpi .v { font-size: 22px; font-weight: 700; color: var(--ed-ink); line-height: 1.15; }
+    .emp-dash .ed-kpi .s { font-size: 11px; color: var(--ed-muted); }
+    .emp-dash .ed-trend { font-size: 11px; font-weight: 600; margin-left: 4px; }
     .emp-dash .ed-bar { height: 6px; background: #eceff4; border-radius: 3px; overflow: hidden; }
     .emp-dash .ed-bar > span { display: block; height: 100%; border-radius: 3px; }
     .emp-dash .ed-stars { color: #f5a623; letter-spacing: 1px; }
     .emp-dash .ed-stars .off { color: #d7dbe2; }
-    .emp-dash .ed-row { margin-left: -6px; margin-right: -6px; }
-    .emp-dash .ed-row > [class*="col"] { padding-left: 6px; padding-right: 6px; margin-bottom: 12px; }
+    .emp-dash .ed-insight { font-size: 12px; color: #374151; background: #f6f8fb; border-radius: 8px; padding: 7px 10px; margin-top: 10px; text-align: left; }
+    .emp-dash .ed-empty { height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px; }
+    .emp-dash .ed-empty i { font-size: 26px; margin-bottom: 8px; color: #d1d5db; }
+    .emp-dash .ed-row { margin-left: -7px; margin-right: -7px; }
+    .emp-dash .ed-row > [class*="col"] { padding-left: 7px; padding-right: 7px; margin-bottom: 14px; display: flex; }
 </style>
 
 <div class="emp-dash">
-    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
-        <div class="section-title mb-0">Employee Dashboard</div>
-        <small class="text-muted">{{ $perf['from']->format('d M Y') }} – {{ $perf['to']->format('d M Y') }} · last {{ \ME\Hr\Services\EmployeePerformance::MONTHS }} months (from joining / first punch if later)</small>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap" style="gap:8px;">
+        <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+            <div class="section-title mb-0">Employee Dashboard</div>
+        </div>
+        <small class="text-muted"><i class="fa-regular fa-calendar mr-1"></i>{{ $perf['from']->format('d M Y') }} – {{ $perf['to']->format('d M Y') }}</small>
+    </div>
+
+    {{-- KPIs --}}
+    <div class="row ed-row">
+        @foreach($tiles as [$k, $v, $sub, $icon, $color, $tr, $upGood, $unit])
+            <div class="col-6 col-md-4 col-xl">
+                <div class="ed-card ed-kpi">
+                    <div class="ic" style="background: {{ $color }}1a; color: {{ $color }};"><i class="fa-solid {{ $icon }}"></i></div>
+                    <div>
+                        <div class="k">{{ $k }}</div>
+                        <div class="v">{{ $v }}</div>
+                        <div class="s">{{ $sub }}
+                            @if($tr !== null && $tr != 0)
+                                @php $good = ($tr > 0) === $upGood; @endphp
+                                <span class="ed-trend {{ $good ? 'text-success' : 'text-danger' }}" title="Last complete month vs the month before">{{ $tr > 0 ? '▲' : '▼' }} {{ $fmt(abs($tr)) }}{{ $unit }}</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
     </div>
 
     <div class="row ed-row">
         {{-- Rating --}}
-        <div class="col-lg-3 col-md-5">
+        <div class="col-lg-4 col-xl-3">
             <div class="ed-card text-center">
-                <div class="ed-title text-left">Performance Rating</div>
-                <div id="ed-gauge" style="min-height:150px;"></div>
+                <div class="ed-head">
+                    <div class="ed-title">Performance Rating</div>
+                    <i class="fa-solid fa-circle-info text-muted" style="cursor:help;" title="Rating = Attendance 60% + Punctuality 15% + Discipline 15% + Punching 10%, from recorded attendance and disciplinary notices over the last {{ \ME\Hr\Services\EmployeePerformance::MONTHS }} months (from joining / first punch if later). Approved leave, weekends and holidays are not counted against the employee."></i>
+                </div>
+                <div id="ed-gauge" style="min-height:140px;"></div>
                 <div class="ed-stars mb-1">
                     @for($i = 1; $i <= 5; $i++)
                         <i class="fa-solid {{ $rating !== null && $rating >= $i - 0.25 ? 'fa-star' : ($rating !== null && $rating >= $i - 0.75 ? 'fa-star-half-stroke' : 'fa-star off') }}"></i>
@@ -80,28 +140,17 @@
                     @endforeach
                 </div>
                 @endif
+                @if($insight)<div class="ed-insight"><i class="fa-solid fa-lightbulb mr-1" style="color:#eda100;"></i>{{ $insight }}</div>@endif
             </div>
         </div>
 
-        {{-- KPIs + monthly attendance --}}
-        <div class="col-lg-9 col-md-7">
-            <div class="row ed-row">
-                @foreach($tiles as $tile)
-                    <div class="col-6 col-sm-4 col-xl" style="margin-bottom:8px;">
-                        <div class="ed-tile">
-                            <i class="fa-solid {{ $tile[2] }}"></i>
-                            <div><div class="k">{{ $tile[0] }}</div><div class="v {{ $tile[3] ?? '' }}">{{ $tile[1] }}</div></div>
-                        </div>
-                    </div>
-                    @if($loop->iteration === 5)<div class="w-100 d-none d-xl-block"></div>@endif
-                @endforeach
-            </div>
-            <div class="ed-card" style="height:auto;">
-                <div class="d-flex justify-content-between">
+        <div class="col-lg-8 col-xl-9">
+            <div class="ed-card">
+                <div class="ed-head">
                     <div class="ed-title">Monthly Attendance</div>
-                    <div class="ed-sub">days per month</div>
+                    <div class="ed-sub">days per month{{ $chartData['mtd'] ? ' · MTD = month to date' : '' }}</div>
                 </div>
-                <div id="ed-monthly" style="min-height:220px;"></div>
+                <div id="ed-monthly" style="min-height:260px;"></div>
             </div>
         </div>
     </div>
@@ -117,7 +166,7 @@
         <div class="col-lg-4 col-md-6">
             <div class="ed-card">
                 <div class="ed-title">Attendance Rate</div>
-                <div class="ed-sub">present ÷ (present + absent), %</div>
+                <div class="ed-sub">present ÷ (present + absent){{ $chartData['mtd'] ? ' · dashed = month to date' : '' }}</div>
                 <div id="ed-rate" style="min-height:220px;"></div>
             </div>
         </div>
@@ -125,14 +174,14 @@
             <div class="ed-card">
                 <div class="ed-title">Overtime</div>
                 <div class="ed-sub">OT hours per month</div>
-                <div id="ed-ot" style="min-height:220px;"></div>
+                @if($chartData['hasOt'])
+                    <div id="ed-ot" style="min-height:220px;"></div>
+                @else
+                    <div class="ed-empty"><i class="fa-solid fa-business-time"></i>No overtime in this period</div>
+                @endif
             </div>
         </div>
     </div>
-
-    <small class="text-muted d-block">
-        Rating = Attendance 60% + Punctuality 15% + Discipline 15% + Punching 10%, from recorded attendance and disciplinary notices. Approved leave, weekends and holidays are not counted against the employee.
-    </small>
 </div>
 
 @push('js')
@@ -159,7 +208,7 @@
     var r = d.rating === null ? 0 : d.rating;
     var rColor = r >= 4.5 ? '#16a34a' : (r >= 3.5 ? C.blue : (r >= 2.5 ? C.yellow : '#e34948'));
     draw('ed-gauge', {
-        chart: { type: 'radialBar', height: 170, fontFamily: 'inherit', sparkline: { enabled: true }, animations: { enabled: false } },
+        chart: { type: 'radialBar', height: 160, fontFamily: 'inherit', sparkline: { enabled: true }, animations: { enabled: false } },
         series: [Math.round(r / 5 * 100)],
         colors: [rColor],
         plotOptions: { radialBar: {
@@ -174,10 +223,11 @@
     });
 
     draw('ed-monthly', merge({
-        chart: Object.assign({}, base.chart, { type: 'bar', height: 230, stacked: true }),
-        series: [{ name: 'Present', data: d.present }, { name: 'Absent', data: d.absent }, { name: 'Leave', data: d.leave }],
+        chart: Object.assign({}, base.chart, { type: 'bar', height: 340, stacked: true }),
+        series: [{ name: 'Present', data: d.present }, { name: 'Absent', data: d.absent }].concat(d.hasLeave ? [{ name: 'Leave', data: d.leave }] : []),
         colors: [C.blue, C.orange, C.aqua],
-        plotOptions: { bar: { columnWidth: '42%', borderRadius: 4, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
+        dataLabels: { enabled: true, enabledOnSeries: [0], style: { fontSize: '11px', fontWeight: 600, colors: ['#fff'] }, formatter: function (v) { return v ? v : ''; } },
+        plotOptions: { bar: { columnWidth: '26%', borderRadius: 4, borderRadiusApplication: 'end', borderRadiusWhenStacked: 'last' } },
         stroke: { show: true, width: 2, colors: ['#fff'] },
         tooltip: { theme: 'light', shared: true, intersect: false, y: { formatter: function (v) { return v + ' days'; } } }
     }));
@@ -202,6 +252,7 @@
         stroke: { curve: 'straight', width: 2 },
         fill: { type: 'gradient', gradient: { opacityFrom: .25, opacityTo: .02 } },
         markers: { size: 4, strokeColors: '#fff', strokeWidth: 2 },
+        forecastDataPoints: { count: d.mtd ? 1 : 0, dashArray: 4 },
         legend: { show: false },
         yaxis: { min: 0, max: 100, tickAmount: 4, labels: { style: { colors: ink, fontSize: '11px' }, formatter: function (v) { return Math.round(v) + '%'; } } },
         tooltip: { theme: 'light', y: { formatter: function (v) { return v === null ? '—' : v + '%'; } } }
@@ -211,7 +262,7 @@
         chart: Object.assign({}, base.chart, { type: 'bar', height: 230 }),
         series: [{ name: 'OT hours', data: d.ot }],
         colors: [C.blue],
-        plotOptions: { bar: { columnWidth: '42%', borderRadius: 4, borderRadiusApplication: 'end' } },
+        plotOptions: { bar: { columnWidth: '30%', borderRadius: 4, borderRadiusApplication: 'end' } },
         legend: { show: false },
         tooltip: { theme: 'light', y: { formatter: function (v) { return v + ' h'; } } }
     }));

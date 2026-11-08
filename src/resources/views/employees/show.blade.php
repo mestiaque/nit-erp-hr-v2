@@ -64,6 +64,12 @@
                         <span><i class="fa-solid fa-building me-1"></i> {{ optional($employee->department)->name ?? '—' }}</span>
                         <span><i class="fa-solid fa-briefcase me-1"></i> {{ optional($employee->designation)->name ?? '—' }}</span>
                         <span><i class="fa-solid fa-calendar-check me-1"></i> Join: {{ optional($employee->joining_date)->format('d M Y') ?? $employee->join_date ?? '—' }}</span>
+                        @if($employee->serviceTimeText())
+                            <span><i class="fa-solid fa-hourglass-half me-1"></i> {{ $employee->serviceTimeText() }}</span>
+                        @endif
+                        @if($probation = $employee->probationStatus())
+                            <span class="badge badge-{{ $probation === 'Confirmed' ? 'success' : 'warning' }} status-badge">{{ $probation }}</span>
+                        @endif
                         @php
                             $statusLabel = $employee->status ?? 'regular';
                             $statusColor = match(strtolower($statusLabel)) {
