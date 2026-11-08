@@ -57,12 +57,14 @@
             @if($notice->incident_date)
                 {{ $bd($notice->incident_date) }} তারিখে
             @endif
-            {!! nl2br(e(trim((string) $notice->incident_description))) !!}। এর ফলে প্রতিষ্ঠানের আর্থিক এবং ব্যবসায়িক ক্ষতি সাধন হয়েছে।
+            {!! nl2br(e(rtrim(trim((string) $notice->incident_description), '।. '))) !!}। এর ফলে প্রতিষ্ঠানের আর্থিক এবং ব্যবসায়িক ক্ষতি সাধন হয়েছে।
         </p>
 
+        @if(filled($notice->prior_warning))
         <p style="margin-bottom:14px;">
-            {!! nl2br(e($notice->prior_warning ?: \ME\Hr\Models\HrDisciplinaryNotice::FINE_DEFAULT_PRIOR_WARNING)) !!}
+            {!! nl2br(e($notice->prior_warning)) !!}
         </p>
+        @endif
 
         <p style="margin-bottom:0;">
             বাংলাদেশ শ্রম আইন অনুযায়ী, আপনার এই গুরুতর অবহেলার কারণে আপনার বিরুদ্ধে শাস্তিমূলক ব্যবস্থা হিসেবে {{ $bnDays }} ({{ $bnDaysWords }}) দিনের মূল বেতন কর্তন করা হলো।

@@ -101,8 +101,8 @@
                     </div>
 
                     <div class="col-md-12 mb-2" data-notice-type="fine">
-                        <label class="form-label mb-1">Prior Warning <small class="text-muted">(second paragraph — leave blank for the default text)</small></label>
-                        <textarea name="prior_warning" class="form-control form-control-sm" rows="2">{{ old('prior_warning', $notice->id ? $notice->prior_warning : \ME\Hr\Models\HrDisciplinaryNotice::FINE_DEFAULT_PRIOR_WARNING) }}</textarea>
+                        <label class="form-label mb-1">Prior Warning <small class="text-muted">(optional second paragraph — left out of the print when blank)</small></label>
+                        <textarea name="prior_warning" class="form-control form-control-sm" rows="2" placeholder="{{ \ME\Hr\Models\HrDisciplinaryNotice::FINE_DEFAULT_PRIOR_WARNING }}">{{ old('prior_warning', $notice->prior_warning) }}</textarea>
                     </div>
 
                     <div class="col-md-12 mb-2" data-notice-type="show_cause">

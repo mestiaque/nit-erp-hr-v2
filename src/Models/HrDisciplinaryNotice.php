@@ -22,7 +22,7 @@ class HrDisciplinaryNotice extends BaseHrModel
         3 => '৩য় নোটিশ (চূড়ান্ত)',
     ];
 
-    /** Default fine-notice texts, prefilled in the form and used when a field is blank. */
+    /** Fine-notice texts: the incident lead-in is prefilled; the prior warning is only a placeholder hint. */
     public const FINE_DEFAULT_INCIDENT = 'আপনার দায়িত্বে অবহেলায় ও ভুল সিদ্ধান্ত গ্রহণ করার কারণে ';
     public const FINE_DEFAULT_PRIOR_WARNING = 'এর আগেও আপনাকে মৌখিকভাবে কাজের প্রতি যত্নশীল হওয়ার নির্দেশ দেওয়া হয়েছিল। কিন্তু আপনার কর্মপদ্ধতিতে কোনো পরিবর্তন লক্ষ্য করা যায়নি।';
 
