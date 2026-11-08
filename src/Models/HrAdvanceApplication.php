@@ -4,7 +4,7 @@ namespace ME\Hr\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** Salary advance application letter (record + print only - see its migration). */
+/** Salary advance application letter. Approving it creates a pending Salary Advance expense (AdvanceExpenseService). */
 class HrAdvanceApplication extends BaseHrModel
 {
     protected $table = 'hr_advance_applications';
