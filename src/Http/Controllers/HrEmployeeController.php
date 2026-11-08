@@ -711,6 +711,88 @@ class HrEmployeeController extends Controller
         ]);
     }
 
+    /**
+     * Salary History tab, Monthly Salary table - loaded by AJAX when the tab is opened, because
+     * every month since joining is computed (a long-serving employee has many months).
+     */
+    public function monthlySalaries(HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        return view('hr::employees.partials.monthly-salaries', [
+            'monthlySalaries' => $this->monthlySalaryHistory($employee),
+        ]);
+    }
+
+    /**
+     * Month-by-month salary from the first month with attendance through the current month,
+     * newest first. Same figures as the salary sheet - a locked month comes from its salary
+     * snapshot, any other month is computed live.
+     */
+    private function monthlySalaryHistory(HrEmployee $employee): \Illuminate\Support\Collection
+    {
+        // Starts at the first month with attendance data (never before the joining month):
+        // months before attendance was recorded would only show everyone absent.
+        $firstAttendance = \Illuminate\Support\Facades\DB::table('hr_attendances')
+            ->where('employee_id', $employee->id)
+            ->where(fn ($q) => $q->whereNotNull('in_time')->orWhereNotNull('out_time'))
+            ->min('date');
+        if (! $firstAttendance) {
+            return collect();
+        }
+
+        $start = \Carbon\Carbon::parse($firstAttendance)->startOfMonth();
+        if (! blank($employee->join_date)) {
+            $start = $start->max(\Carbon\Carbon::parse($employee->join_date)->startOfMonth());
+        }
+        if ($start->gt(now())) {
+            return collect();
+        }
+
+        try {
+            // Same leave types and same per-employee row as the Salary Sheet report, so the
+            // absent deduction and pay figures here match the sheet exactly.
+            $sfl = hr_hide_section_line();
+            $leaveInfos = \ME\Hr\Models\HrLeaveInfo::where('status', 'active')
+                ->when(! $sfl, fn ($q) => $q->whereNotIn('code', ['FL', 'GL']))
+                ->orderBy('id')->get(['id', 'name', 'code']);
+
+            $rows = collect();
+            for ($month = now()->startOfMonth(); $month->gte($start); $month->subMonth()) {
+                $sheet = \ME\Hr\Services\SalaryReportService::buildSalarySheetData(
+                    collect([$employee]), $month->toDateString(), $month->copy()->endOfMonth()->toDateString(), request(), $leaveInfos, 'none'
+                );
+                $r = $sheet['sheetRows'][0]['rows'][0] ?? null;
+                if (! $r) {
+                    continue;
+                }
+
+                $rows->push([
+                    'month' => $month->format('M Y'),
+                    'locked' => \ME\Hr\Models\HrLock::isLocked('salary', $month->year, $month->month, $employee->department_id),
+                    'running' => $month->isSameMonth(now()),
+                    'gross' => (float) $r['gross'],
+                    'pay_days' => $sfl ? $r['sfl_pay_day'] : $r['earn_days'],
+                    'present' => $r['pr'],
+                    'absent' => $sfl ? $r['sfl_ab'] : $r['ab'],
+                    'leave' => collect($r)->filter(fn ($v, $k) => str_starts_with((string) $k, 'leave_'))->sum(),
+                    'deduct_absent' => (float) ($sfl ? $r['sfl_deduct_absent'] : $r['deduct_absent']),
+                    'att_bonus' => (float) $r['att_bonus'],
+                    'ot' => (float) $r['ot_total'],
+                    'advance' => (float) $r['loan'],
+                    'stamp' => (float) $r['stamp'],
+                    'net' => (float) ($sfl ? $r['sfl_payable'] : $r['net']),
+                ]);
+            }
+
+            return $rows;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return collect();
+        }
+    }
+
     public function incrementsPage(HrEmployee $employee)
     {
         $this->ensureEmployee($employee);

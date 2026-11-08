@@ -56,6 +56,7 @@ Route::middleware($route['middleware'] ?? ['web'])
 
 		Route::put('/employees/{employee}/basic-info', [HrEmployeeController::class, 'updateBasicInfo'])->name('employees.basic-info.update');
 		Route::get('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsPage'])->name('employees.increments.page');
+		Route::get('/employees/{employee}/monthly-salaries', [HrEmployeeController::class, 'monthlySalaries'])->name('employees.monthly-salaries');
 		Route::post('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsStore'])->name('employees.increments.store');
 		Route::put('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsUpdate'])->name('employees.increments.update');
 		Route::post('/employees/{employee}/increments/{increment}/lock', [HrEmployeeController::class, 'incrementsLock'])->name('employees.increments.lock');

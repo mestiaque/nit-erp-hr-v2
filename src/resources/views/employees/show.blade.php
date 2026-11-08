@@ -108,6 +108,8 @@
 
             {{-- ===== TAB 1: PROFILE ===== --}}
             <div class="tab-pane active tab-section" id="tab-profile">
+                @include('hr::employees.partials.overview', ['perf' => \ME\Hr\Services\EmployeePerformance::for($employee)])
+
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="section-title mb-0">Employee Profile</div>
                     {{-- <a href="javascript:void(0)" class="btn btn-sm ui-act ui-act-edit" data-toggle="modal" data-target="#EditEmployeeModal_{{ $employee->id }}" title="Edit"><i class="fa-solid fa-pen-to-square"></i> Edit</a> --}}
@@ -433,6 +435,11 @@
                         @endif
                     </table>
                 </div>
+
+                <div class="section-title mb-3 mt-4">Monthly Salary <small class="text-muted text-normal">(from the first month with attendance — same figures as the salary sheet)</small></div>
+                <div id="monthly-salaries" data-url="{{ route('hr-center.employees.monthly-salaries', $employee->id) }}">
+                    <div class="text-center text-muted py-3"><i class="fa-solid fa-spinner fa-spin"></i> Loading monthly salary…</div>
+                </div>
             </div>
 
             {{-- ===== TAB 9: ADVANCE / TRANSACTIONS ===== --}}
@@ -754,6 +761,13 @@
 @push('js')
 <script>
 (function () {
+    // Monthly Salary (Salary History tab) is computed per month since joining - load it only when the tab is opened.
+    $('#empTabs a[href="#tab-increments"]').one('shown.bs.tab', function () {
+        var box = $('#monthly-salaries');
+        $.get(box.data('url')).done(function (html) { box.html(html); })
+            .fail(function () { box.html('<div class="text-center text-danger py-3">Could not load monthly salary.</div>'); });
+    });
+
     // Restore active tab from URL hash or anchor param
     var hash = window.location.hash;
     if (!hash) {
