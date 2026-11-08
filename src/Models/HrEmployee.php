@@ -47,6 +47,57 @@ class HrEmployee extends BaseHrModel
         return $this->belongsTo(HrClassification::class, 'classification_id');
     }
 
+    /** Joining date as d.m.Y, for mails. */
+    public function joiningDateText(): ?string
+    {
+        return blank($this->join_date) ? null : \Carbon\Carbon::parse($this->join_date)->format('d.m.Y');
+    }
+
+    /** Service length from joining date to today, e.g. "1 Year 3 Months 12 Days". */
+    public function serviceTimeText(): ?string
+    {
+        if (blank($this->join_date)) {
+            return null;
+        }
+
+        $diff = \Carbon\Carbon::parse($this->join_date)->startOfDay()->diff(now()->startOfDay());
+        $parts = [];
+        foreach (['y' => 'Year', 'm' => 'Month', 'd' => 'Day'] as $unit => $label) {
+            if ($diff->$unit > 0) {
+                $parts[] = $diff->$unit.' '.$label.($diff->$unit > 1 ? 's' : '');
+            }
+        }
+
+        return $parts ? implode(' ', $parts) : '0 Days';
+    }
+
+    /**
+     * Probation / Confirmed: still on probation while service time is shorter than the
+     * classification's probation period (months; 3 when not set - same default as the
+     * Personal File letters).
+     */
+    public function probationStatus(): ?string
+    {
+        if (blank($this->join_date)) {
+            return null;
+        }
+
+        $months = (int) ($this->classification?->probation_period ?: 3);
+
+        return now()->startOfDay()->lt(\Carbon\Carbon::parse($this->join_date)->startOfDay()->addMonthsNoOverflow($months))
+            ? 'Probation' : 'Confirmed';
+    }
+
+    /** Joining Date / Service Time / Status rows for an employee mail. */
+    public function serviceMailMeta(): array
+    {
+        return [
+            'Joining Date' => $this->joiningDateText(),
+            'Service Time' => $this->serviceTimeText(),
+            'Status' => $this->probationStatus(),
+        ];
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(HrDepartment::class, 'department_id');

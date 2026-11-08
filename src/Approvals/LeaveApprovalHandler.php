@@ -51,7 +51,7 @@ class LeaveApprovalHandler extends BaseApprovalHandler
             return [];
         }
 
-        $approvable->loadMissing(['employee.department', 'employee.designation', 'leaveType']);
+        $approvable->loadMissing(['employee.department', 'employee.designation', 'employee.classification', 'leaveType']);
         $employee = $approvable->employee;
         $date = fn ($d) => $d ? Carbon::parse($d)->format('d.m.Y') : null;
 
@@ -63,6 +63,7 @@ class LeaveApprovalHandler extends BaseApprovalHandler
                 'Employee' => $employee ? trim("{$employee->name} ({$employee->employee_id})") : null,
                 'Department' => $employee?->department?->name,
                 'Designation' => $employee?->designation?->name,
+            ] + ($employee?->serviceMailMeta() ?? []) + [
                 'Leave Type' => $approvable->leaveType
                     ? trim($approvable->leaveType->name.($approvable->leaveType->code ? " ({$approvable->leaveType->code})" : '')) : null,
                 'From' => $date($approvable->leave_from),

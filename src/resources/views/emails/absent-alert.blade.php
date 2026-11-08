@@ -15,6 +15,9 @@
                     <th style="border:1px solid #ccc;padding:6px;text-align:left;">Name</th>
                     <th style="border:1px solid #ccc;padding:6px;text-align:left;">Designation</th>
                     <th style="border:1px solid #ccc;padding:6px;text-align:left;">Department / Section</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Joining Date</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Service Time</th>
+                    <th style="border:1px solid #ccc;padding:6px;">Status</th>
                     <th style="border:1px solid #ccc;padding:6px;">Mobile</th>
                     <th style="border:1px solid #ccc;padding:6px;">Absent Dates</th>
                 </tr>
@@ -28,6 +31,9 @@
                         <td style="border:1px solid #ccc;padding:6px;">{{ $emp->name }}</td>
                         <td style="border:1px solid #ccc;padding:6px;">{{ $emp->designation?->name }}</td>
                         <td style="border:1px solid #ccc;padding:6px;">{{ $emp->department?->name }}{{ $emp->section?->name ? ' / ' . $emp->section->name : '' }}</td>
+                        <td style="border:1px solid #ccc;padding:6px;text-align:center;">{{ $emp->joiningDateText() }}</td>
+                        <td style="border:1px solid #ccc;padding:6px;text-align:center;">{{ $emp->serviceTimeText() }}</td>
+                        <td style="border:1px solid #ccc;padding:6px;text-align:center;">{{ $emp->probationStatus() }}</td>
                         <td style="border:1px solid #ccc;padding:6px;text-align:center;">{{ $emp->mobile }}</td>
                         <td style="border:1px solid #ccc;padding:6px;text-align:center;">{{ collect($row['dates'])->map(fn ($d) => \Carbon\Carbon::parse($d)->format('d M'))->implode(', ') }}</td>
                     </tr>

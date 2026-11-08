@@ -45,7 +45,7 @@ class AbsentAlert
         $from = $asOf->copy()->subDays($need * 2 + 30);
 
         $employees = HrEmployee::query()
-            ->with(['department', 'designation', 'section'])
+            ->with(['department', 'designation', 'section', 'classification'])
             ->where('status', 1)
             ->where(fn ($q) => $q->whereNull('employment_status')->orWhereNotIn(DB::raw('LOWER(employment_status)'), self::LEFT_STATUSES))
             ->get();
