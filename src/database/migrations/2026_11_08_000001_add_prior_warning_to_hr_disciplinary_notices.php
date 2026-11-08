@@ -17,12 +17,28 @@ return new class extends Migration
 
     public function up(): void
     {
-        Schema::table('hr_disciplinary_notices', function (Blueprint $table) {
-            $table->text('prior_warning')->nullable()->after('consequence');
+        // Databases created before the create migration gained notice_type / subject /
+        // consequence (show-cause notices) never got those columns - add whatever is missing.
+        $has = fn (string $column) => Schema::hasColumn('hr_disciplinary_notices', $column);
+        $hadType = $has('notice_type');
+
+        Schema::table('hr_disciplinary_notices', function (Blueprint $table) use ($has) {
+            if (! $has('notice_type')) {
+                $table->string('notice_type', 20)->default('fine')->after('employee_id');
+            }
+            if (! $has('subject')) {
+                $table->string('subject')->nullable()->after('incident_description');
+            }
+            if (! $has('consequence')) {
+                $table->text('consequence')->nullable()->after('incident_description');
+            }
+            if (! $has('prior_warning')) {
+                $table->text('prior_warning')->nullable();
+            }
         });
 
         DB::table('hr_disciplinary_notices')
-            ->where('notice_type', 'fine')
+            ->when($hadType, fn ($q) => $q->where('notice_type', 'fine'))
             ->whereNotNull('incident_date')
             ->update(['incident_description' => DB::raw("CONCAT('" . self::LEAD_IN . "', COALESCE(incident_description, ''))")]);
     }
