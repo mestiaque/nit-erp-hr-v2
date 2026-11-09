@@ -168,12 +168,24 @@
                 @endforeach
             </ul>
 
+            <style>
+                /* Freeze Emp ID + Name while the list scrolls sideways. */
+                .emp-freeze-table { border-collapse: separate; border-spacing: 0; }
+                .emp-freeze-table .emp-freeze-id,
+                .emp-freeze-table .emp-freeze-name { position: sticky; z-index: 2; background-color: inherit; }
+                .emp-freeze-table tr { background-color: #fff; }
+                .emp-freeze-table thead tr { background-color: #f8f9fa; }
+                .emp-freeze-table .emp-freeze-id { left: 0; width: 90px; min-width: 90px; max-width: 90px; }
+                .emp-freeze-table .emp-freeze-name { left: 90px; min-width: 180px; box-shadow: 2px 0 3px -1px rgba(0,0,0,.15); }
+                .emp-freeze-table thead .emp-freeze-id,
+                .emp-freeze-table thead .emp-freeze-name { z-index: 3; }
+            </style>
             <div class="table-responsive">
-                <table class="table table-bordered table-sm">
+                <table class="table table-bordered table-sm emp-freeze-table">
                     <thead>
                         <tr>
-                            <th >Emp ID</th>
-                            <th>Name</th>
+                            <th class="emp-freeze-id">Emp ID</th>
+                            <th class="emp-freeze-name">Name</th>
                             <th>Joining Date</th>
                             <th>Contact</th>
                             <th>Classification</th>
@@ -212,8 +224,8 @@
                             @endphp
                             <tr @if($employmentStatus === 'resign') style="background-color:#fde8e8;" @elseif($employmentStatus === 'lefty') style="background-color:#fff3dc;" @elseif($employmentStatus === 'termination') style="background-color:#eceff3;" @endif>
 
-                                <td>{{ $employee->employee_id }}</td>
-                                <td>{{ $employee->name }}</td>
+                                <td class="emp-freeze-id">{{ $employee->employee_id }}</td>
+                                <td class="emp-freeze-name">{{ $employee->name }}</td>
                                 <td>{{ optional($employee->joining_date)->format('d-M-Y') }}</td>
                                 <td>{{ $employee->mobile }}</td>
                                 <td>{{ $classificationMap->get($employee->employee_type) }}</td>
