@@ -6,13 +6,21 @@
     $separation = $employee->separation;
     $absentDate = optional($employee->finalSettlement)->absent_date;
     $absentDate = $absentDate ? \Carbon\Carbon::parse($absentDate)->toDateString() : null;
+
+    // Lefty and Resign have their own action button and modal; $mode picks which status the modal
+    // opens with. Termination / Transfer / back to Regular stay pickable in both.
+    $mode = $mode ?? 'resign';
+    $current = strtolower((string) $employee->employment_status);
+    $current = ['left' => 'lefty', 'resigned' => 'resign'][$current] ?? $current;
+    $statusValue = old('employment_status', in_array($current, ['', 'regular', 'lefty', 'resign'], true) ? $mode : $current);
+    $dateValue = old('resign_date', $employee->exited_at ?: ($statusValue === 'lefty' ? $absentDate : null));
 @endphp
 <div class="row">
-    <div class="col-md-12 mb-2"><label class="mb-1">Status</label><select name="employment_status" class="form-control form-control-sm" data-absent-date="{{ $absentDate }}" onchange="var d=this.closest('.row').querySelector('input[name=resign_date]');if(this.value==='lefty'&&this.dataset.absentDate&&!d.value){d.value=this.dataset.absentDate;}this.closest('.row').querySelector('.lefty-date-hint').style.display=this.value==='lefty'?'':'none';"><option value="regular" @selected(old('employment_status', $employee->employment_status) === 'regular')>Regular</option><option value="resign" @selected(old('employment_status', $employee->employment_status) === 'resign')>Resign</option><option value="lefty" @selected(old('employment_status', $employee->employment_status) === 'lefty')>Lefty</option><option value="termination" @selected(old('employment_status', $employee->employment_status) === 'termination')>Termination</option><option value="transfer" @selected(old('employment_status', $employee->employment_status) === 'transfer')>Transfer</option></select></div>
+    <div class="col-md-12 mb-2"><label class="mb-1">Status</label><select name="employment_status" class="form-control form-control-sm" data-absent-date="{{ $absentDate }}" onchange="var d=this.closest('.row').querySelector('input[name=resign_date]');if(this.value==='lefty'&&this.dataset.absentDate&&!d.value){d.value=this.dataset.absentDate;}this.closest('.row').querySelector('.lefty-date-hint').style.display=this.value==='lefty'?'':'none';"><option value="regular" @selected($statusValue === 'regular')>Regular</option><option value="resign" @selected($statusValue === 'resign')>Resign</option><option value="lefty" @selected($statusValue === 'lefty')>Lefty</option><option value="termination" @selected($statusValue === 'termination')>Termination</option><option value="transfer" @selected($statusValue === 'transfer')>Transfer</option></select></div>
     <div class="col-md-12 mb-2"><label class="mb-1">Remarks</label><textarea name="resign_remarks" class="form-control form-control-sm" rows="2">{{ old('resign_remarks', $separation->remarks ?? null) }}</textarea></div>
-    <div class="col-md-12 mb-2"><label class="mb-1">Date</label><input type="date" name="resign_date" value="{{ old('resign_date', $employee->exited_at) }}" class="form-control form-control-sm">
+    <div class="col-md-12 mb-2"><label class="mb-1">Date</label><input type="date" name="resign_date" value="{{ $dateValue }}" class="form-control form-control-sm">
         {{-- Lefty: the job ends from the first day absent (Labour Act 27(3A)), i.e. the Final Settlement Absent Date. --}}
-        <small class="form-text text-muted lefty-date-hint" @if(old('employment_status', $employee->employment_status) !== 'lefty') style="display:none" @endif>
+        <small class="form-text text-muted lefty-date-hint" @if($statusValue !== 'lefty') style="display:none" @endif>
             @if($absentDate)
                 Lefty: date is the first day absent ({{ \Carbon\Carbon::parse($absentDate)->format('d/m/Y') }}, Absent Date in Final Settlement Info). Filled in when Lefty is chosen and Date is empty.
             @else
@@ -25,8 +33,8 @@
         <label class="mb-1">With Paid</label>
         <input type="hidden" name="with_paid" value="0">
         <div class="custom-control custom-switch mt-1">
-            <input type="checkbox" class="custom-control-input" id="with_paid_switch_{{ $employee->id }}" name="with_paid" value="1" @checked((int) old('with_paid', $separation->with_paid ?? 0) === 1)>
-            <label class="custom-control-label" for="with_paid_switch_{{ $employee->id }}">Enabled</label>
+            <input type="checkbox" class="custom-control-input" id="with_paid_switch_{{ $mode }}_{{ $employee->id }}" name="with_paid" value="1" @checked((int) old('with_paid', $separation->with_paid ?? 0) === 1)>
+            <label class="custom-control-label" for="with_paid_switch_{{ $mode }}_{{ $employee->id }}">Enabled</label>
         </div>
     </div>
 </div>

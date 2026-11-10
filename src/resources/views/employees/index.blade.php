@@ -179,8 +179,53 @@
                 .emp-freeze-table .emp-freeze-name { left: 90px; min-width: 180px; box-shadow: 2px 0 3px -1px rgba(0,0,0,.15); }
                 .emp-freeze-table thead .emp-freeze-id,
                 .emp-freeze-table thead .emp-freeze-name { z-index: 3; }
+                .emp-drag-scroll { cursor: grab; }
+                .emp-drag-scroll a, .emp-drag-scroll button, .emp-drag-scroll .btn-custom { cursor: pointer; }
+                .emp-drag-scroll.is-dragging, .emp-drag-scroll.is-dragging * { cursor: grabbing !important; user-select: none; }
             </style>
-            <div class="table-responsive">
+            <script>
+                /* Hold the left or right mouse button on the list and move sideways to scroll it.
+                   Drags that start on a button, link or field are left alone; a click without
+                   movement still works as normal (left: select text / click, right: the menu). */
+                (function () {
+                    document.addEventListener('DOMContentLoaded', function () {
+                        document.querySelectorAll('.emp-drag-scroll').forEach(function (box) {
+                            var startX = 0, startLeft = 0, button = null, moved = false;
+                            box.addEventListener('mousedown', function (e) {
+                                if (e.button !== 0 && e.button !== 2) { return; }
+                                if (e.target.closest('a, button, input, select, textarea, label, .btn-custom')) { return; }
+                                button = e.button; moved = false;
+                                startX = e.pageX; startLeft = box.scrollLeft;
+                            });
+                            document.addEventListener('mousemove', function (e) {
+                                if (button === null) { return; }
+                                var dx = e.pageX - startX;
+                                if (!moved && Math.abs(dx) < 5) { return; }
+                                if (!moved) {
+                                    moved = true;
+                                    box.classList.add('is-dragging');
+                                    if (window.getSelection) { window.getSelection().removeAllRanges(); }
+                                }
+                                box.scrollLeft = startLeft - dx;
+                                e.preventDefault();
+                            });
+                            document.addEventListener('mouseup', function (e) {
+                                if (button === null || e.button !== button) { return; }
+                                button = null;
+                                box.classList.remove('is-dragging');
+                            });
+                            // After a drag, swallow the click / menu it would otherwise trigger.
+                            box.addEventListener('click', function (e) {
+                                if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
+                            }, true);
+                            box.addEventListener('contextmenu', function (e) {
+                                if (moved) { e.preventDefault(); moved = false; }
+                            });
+                        });
+                    });
+                })();
+            </script>
+            <div class="table-responsive emp-drag-scroll">
                 <table class="table table-bordered table-sm emp-freeze-table">
                     <thead>
                         <tr>
@@ -249,7 +294,8 @@
                                     <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-address" data-toggle="modal" data-target="#AddressModal_{{ $employee->id }}" title="Address"><i class="fa-solid fa-location-dot"></i></a>
                                     <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-nominee" data-toggle="modal" data-target="#NomineeModal_{{ $employee->id }}" title="Nominee Information"><i class="fa-solid fa-people-arrows"></i></a>
                                     <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-age" data-toggle="modal" data-target="#AgeModal_{{ $employee->id }}" title="Age Verification"><i class="fa-solid fa-id-card"></i></a>
-                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-separation" data-toggle="modal" data-target="#ResignModal_{{ $employee->id }}" title="Lefty / Resign"><i class="fa-solid fa-person-walking-arrow-right"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-lefty" data-toggle="modal" data-target="#LeftyModal_{{ $employee->id }}" title="Lefty"><i class="fa-solid fa-user-clock"></i></a>
+                                    <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-separation" data-toggle="modal" data-target="#ResignModal_{{ $employee->id }}" title="Resign"><i class="fa-solid fa-person-walking-arrow-right"></i></a>
                                     <a href="javascript:void(0)" class="btn-custom ui-act ui-act-emp-settlement" data-toggle="modal" data-target="#FinalSettlementModal_{{ $employee->id }}" title="Final Settlement Info"><i class="fa-solid fa-file-invoice-dollar"></i></a>
                                     <a href="{{ route('hr-center.employees.increments.page', $employee->id) }}" class="btn-custom ui-act ui-act-emp-increment" title="Salary Increment Info"><i class="fa-solid fa-arrow-trend-up"></i></a>
                                     <a href="{{ route('hr-center.employees.earnings.page', $employee->id) }}" class="btn-custom ui-act ui-act-emp-earning" title="Earnings &amp; Deductions"><i class="fa-solid fa-scale-balanced"></i></a>
@@ -341,10 +387,21 @@
     </form></div></div>
 </div>
 
+<div class="modal fade" id="LeftyModal_{{ $employee->id }}" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.resign.update', $employee->id) }}">@csrf @method('put')
+        <div class="modal-header"><h5 class="modal-title">Lefty Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+        <div class="modal-body">@include('hr::employees.partials.resign-fields', ['employee' => $employee, 'mode' => 'lefty'])</div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+            <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
+        </div>
+    </form></div></div>
+</div>
+
 <div class="modal fade" id="ResignModal_{{ $employee->id }}" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document"><div class="modal-content"><form method="post" action="{{ route('hr-center.employees.resign.update', $employee->id) }}">@csrf @method('put')
-        <div class="modal-header"><h5 class="modal-title">Lefty & Resign Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
-        <div class="modal-body">@include('hr::employees.partials.resign-fields', ['employee' => $employee])</div>
+        <div class="modal-header"><h5 class="modal-title">Resign Information</h5><button type="button" class="close" data-dismiss="modal"><span>&times;</span></button></div>
+        <div class="modal-body">@include('hr::employees.partials.resign-fields', ['employee' => $employee, 'mode' => 'resign'])</div>
         <div class="modal-footer">
             @if($employee->employment_status === 'resign')
                 <a href="{{ route('hr-center.employees.resign.print.show', $employee->id) }}" target="_blank" class="btn btn-sm mr-auto ui-act ui-act-print" title="Print Resign"><i class="fa-solid fa-print"></i> Print Resign</a>
