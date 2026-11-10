@@ -28,16 +28,21 @@ class HrServiceProvider extends ServiceProvider
         ], 'hr-config');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([\ME\Hr\Console\Commands\AbsentAlertCommand::class]);
+            $this->commands([\ME\Hr\Console\Commands\AbsentAlertCommand::class, \ME\Hr\Console\Commands\AbsenceLettersCommand::class]);
         }
 
         // Morning mail: employees absent several working days in a row (Settings > Mail Notifications).
         $this->callAfterResolving(\Illuminate\Console\Scheduling\Schedule::class, function (\Illuminate\Console\Scheduling\Schedule $schedule) {
             $schedule->command('hr:absent-alert')->dailyAt(config('hr.absent_alert.at', '09:00'))->withoutOverlapping();
+            // Section 27(3A) absence letters: 1st / 2nd / 3rd letter dates, Resign after the 3rd.
+            if (config('hr.absence_letters.enabled', true)) {
+                $schedule->command('hr:absence-letters')->dailyAt(config('hr.absence_letters.at', '08:30'))->withoutOverlapping();
+            }
         });
 
         config(['mail_notifications.actions' => array_merge([
             \ME\Hr\Services\AbsentAlert::MAIL_ACTION => ['title' => 'HR: Employee absent ' . config('hr.absent_alert.days', 3) . ' days in a row', 'group' => 'HR', 'approval' => false],
+            \ME\Hr\Services\AbsenceLetters::MAIL_ACTION => ['title' => 'HR: Absence letters issued (1st / 2nd / 3rd) and auto Resign', 'group' => 'HR', 'approval' => false],
         ], config('mail_notifications.actions', []))]);
 
         // Merge hr-permission into main permission config

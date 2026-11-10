@@ -45,6 +45,15 @@ return [
         'days' => (int) env('HR_ABSENT_ALERT_DAYS', 3),
         'at'   => env('HR_ABSENT_ALERT_AT', '09:00'),
     ],
+    /*
+     | Section 27(3A) absence letters (hr:absence-letters, every morning at `at`): 1st letter after
+     | `days` calendar days absent, 2nd and 3rd `days` after the previous one; the 3rd marks Resign.
+     */
+    'absence_letters' => [
+        'enabled' => (bool) env('HR_ABSENCE_LETTERS', true),
+        'days'    => (int) env('HR_ABSENCE_LETTER_DAYS', 10),
+        'at'      => env('HR_ABSENCE_LETTERS_AT', '08:30'),
+    ],
     'legacy_links' => [
         [
             'title' => 'Employee Type',
