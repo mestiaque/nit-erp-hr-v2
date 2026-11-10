@@ -53,6 +53,7 @@ Route::middleware($route['middleware'] ?? ['web'])
 		Route::get('/employees/{employee}/final-settlement/print', [HrEmployeeController::class, 'showFinalSettlementLetter'])->name('employees.final-settlement.print.show');
 		Route::put('/employees/{employee}/final-settlement/statement', [HrEmployeeController::class, 'printFinalSettlementStatement'])->name('employees.final-settlement.statement');
 		Route::get('/employees/{employee}/final-settlement/statement', [HrEmployeeController::class, 'showFinalSettlementStatement'])->name('employees.final-settlement.statement.show');
+		Route::get('/employees/{employee}/final-settlement/form', [HrEmployeeController::class, 'showSettlementForm'])->name('employees.final-settlement.form.show');
 
 		Route::put('/employees/{employee}/basic-info', [HrEmployeeController::class, 'updateBasicInfo'])->name('employees.basic-info.update');
 		Route::get('/employees/{employee}/increments', [HrEmployeeController::class, 'incrementsPage'])->name('employees.increments.page');

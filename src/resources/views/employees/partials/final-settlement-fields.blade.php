@@ -85,6 +85,7 @@
 
     <div class="col-12">
         <button type="button" class="btn btn-sm ui-act ui-act-print" onclick="printSettlementStatement(event, {{ $employee->id }})" title="Print Settlement Statement"><i class="fa-solid fa-print"></i> Print Settlement Statement</button>
+        <a href="{{ route('hr-center.employees.final-settlement.form.show', $employee->id) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print the factory settlement form (নিষ্পত্তিকরণ ফরম)"><i class="fa-solid fa-print"></i> নিষ্পত্তিকরণ ফরম</a>
     </div>
 </div>
 

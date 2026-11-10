@@ -568,7 +568,7 @@ class HrEmployeeController extends Controller
         $employee->setTypes('employee');
         $employee->save();
 
-        return redirect()->back()->with('success', 'Lefty/Resign info updated.');
+        return redirect()->back()->with('success', ucfirst($employee->employment_status ?: 'regular') . ' info updated.');
     }
 
     public function showResignLetter(HrEmployee $employee)
@@ -635,7 +635,8 @@ class HrEmployeeController extends Controller
         // the view doesn't need to change.
         $fs = $employee->finalSettlement;
         $settlement = [
-            'final_settlement_option' => $fs?->selected_letter_print,
+            // ?letter=1|2|3 (the link in the absence-letters mail) prints that letter; otherwise the one picked in the form.
+            'final_settlement_option' => [1 => '1st Letter', 2 => '2nd Letter', 3 => '3rd Letter'][request()->integer('letter')] ?? $fs?->selected_letter_print,
             'absent_date' => $fs?->absent_date,
             'letter_1_date' => $fs?->first_letter_date,
             'letter_2_date' => $fs?->second_letter_date,
@@ -708,6 +709,17 @@ class HrEmployeeController extends Controller
             'settlement' => $employee->finalSettlement,
             'designation_bn' => $designationBn,
             'designation_en' => $designationEn,
+        ]);
+    }
+
+    /** The factory's own "চূড়ান্ত নিষ্পত্তিকরণ ফরম", filled from salary, attendance and leave (see SettlementForm). */
+    public function showSettlementForm(HrEmployee $employee)
+    {
+        $this->ensureEmployee($employee);
+
+        return view('hr::employees.print.settlement-form', [
+            'employee' => $employee,
+            'form' => \ME\Hr\Services\SettlementForm::build($employee),
         ]);
     }
 
